@@ -1,0 +1,1254 @@
+// ============================================================
+//  MORAL MAPS — v4
+//  Bijgewerkt: Socialisatieverslag als fase 6 toegevoegd
+//
+//  SETUP:
+//  1. npm install @supabase/supabase-js
+//  2. Vul SUPABASE_URL en SUPABASE_ANON_KEY in
+//  3. Voer supabase_setup.sql uit in de Supabase SQL Editor
+// ============================================================
+
+import { useState, useMemo, useEffect, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+// ── 🔧 VERANDER DEZE TWEE WAARDEN ────────────────────────────
+const SUPABASE_URL      = "https://JOUW-PROJECT-ID.supabase.co";
+const SUPABASE_ANON_KEY = "JOUW-ANON-KEY";
+// ─────────────────────────────────────────────────────────────
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Database functies ──────────────────────────────────────────
+
+async function dbSave(entry) {
+  const { error } = await supabase
+    .from("moralmaps_results")
+    .insert({
+      group_code:        entry.groupCode,
+      age:               entry.age,
+      core_values:       entry.coreValues,
+      dilemma_responses: entry.dilemmaResponses,
+      starr:             entry.starr,
+      dominant_color:    entry.dominantColor,
+    });
+  if (error) { console.error("Supabase save:", error.message); return false; }
+  return true;
+}
+
+async function dbLoad(groupCode) {
+  const { data, error } = await supabase
+    .from("moralmaps_results")
+    .select("*")
+    .eq("group_code", groupCode.toUpperCase())
+    .order("created_at", { ascending: false });
+  if (error) { console.error("Supabase load:", error.message); return []; }
+  return (data || []).map(r => ({
+    groupCode:         r.group_code,
+    age:               r.age,
+    coreValues:        r.core_values,
+    dilemmaResponses:  r.dilemma_responses,
+    starr:             r.starr,
+    dominantColor:     r.dominant_color,
+    ts:                new Date(r.created_at).getTime(),
+  }));
+}
+
+// ── Constants ──────────────────────────────────────────────────
+
+const TEAL = "#1b9e77";
+const TEAL_DARK = "#147a5c";
+const TEAL_LIGHT = "#e6f5f0";
+const TEAL_GLOW = "#1b9e7740";
+
+const CM = {
+  geel:  { bg:"#FEF9C3", border:"#EAB308", text:"#713F12", solid:"#EAB308", label:"Geel",  desc:"Macht · Belangen · Politiek",   dot:"#EAB308" },
+  blauw: { bg:"#DBEAFE", border:"#3B82F6", text:"#1E3A8A", solid:"#3B82F6", label:"Blauw", desc:"Regels · Structuur · Rationeel",  dot:"#3B82F6" },
+  rood:  { bg:"#FFE4E6", border:"#F43F5E", text:"#881337", solid:"#F43F5E", label:"Rood",  desc:"Mens · Relatie · Harmonie",       dot:"#F43F5E" },
+  groen: { bg:"#DCFCE7", border:"#22C55E", text:"#14532D", solid:"#22C55E", label:"Groen", desc:"Leren · Groei · Dialoog",         dot:"#22C55E" },
+  wit:   { bg:"#F1F5F9", border:"#94A3B8", text:"#334155", solid:"#94A3B8", label:"Wit",   desc:"Essentie · Energie · Autonomie",  dot:"#94A3B8" },
+};
+
+const VALUES = [
+  {id:1,name:"Resultaatgerichtheid",color:"geel"},{id:2,name:"Invloed",color:"geel"},{id:3,name:"Daadkracht",color:"geel"},
+  {id:4,name:"Strategie",color:"geel"},{id:5,name:"Onderhandelen",color:"geel"},{id:6,name:"Ambitie",color:"geel"},
+  {id:7,name:"Rechtvaardigheid",color:"blauw"},{id:8,name:"Zorgvuldigheid",color:"blauw"},{id:9,name:"Transparantie",color:"blauw"},
+  {id:10,name:"Objectiviteit",color:"blauw"},{id:11,name:"Discipline",color:"blauw"},{id:12,name:"Integriteit",color:"blauw"},
+  {id:13,name:"Professionaliteit",color:"blauw"},{id:14,name:"Harmonie",color:"rood"},{id:15,name:"Loyaliteit",color:"rood"},
+  {id:16,name:"Empathie",color:"rood"},{id:17,name:"Geborgenheid",color:"rood"},{id:18,name:"Hulpvaardigheid",color:"rood"},
+  {id:19,name:"Respect",color:"rood"},{id:20,name:"Verbinding",color:"rood"},{id:21,name:"Leervermogen",color:"groen"},
+  {id:22,name:"Dialoog",color:"groen"},{id:23,name:"Openheid",color:"groen"},{id:24,name:"Reflectie",color:"groen"},
+  {id:25,name:"Samenwerking",color:"groen"},{id:26,name:"Nieuwsgierigheid",color:"groen"},{id:27,name:"Ontwikkeling",color:"groen"},
+  {id:28,name:"Autonomie",color:"wit"},{id:29,name:"Moed",color:"wit"},{id:30,name:"Authenticiteit",color:"wit"},
+  {id:31,name:"Creativiteit",color:"wit"},{id:32,name:"Zingeving",color:"wit"},{id:33,name:"Vrijheid",color:"wit"},
+  {id:34,name:"Passie",color:"wit"},{id:35,name:"Intuïtie",color:"wit"},
+];
+
+const DILEMMAS = [
+  {
+    title:"De Meelifter",
+    scenario:"Een medestudent doet weinig in de projectgroep, maar krijgt wel hetzelfde cijfer. De deadline nadert en het werk is nog niet af.",
+    options:[
+      {text:"Ik meld dit bij de docent.",color:"blauw"},
+      {text:"Ik ga het gesprek aan met de medestudent.",color:"groen"},
+      {text:"Ik accepteer het en doe het werk zelf.",color:"rood"}
+    ]
+  },
+  {
+    title:"Het Vertrouwelijke Gesprek",
+    scenario:"Een collega vertelt je in vertrouwen dat ze overweegt ontslag te nemen. Je manager vraagt jou direct of je weet waarom deze collega zich anders gedraagt.",
+    options:[
+      {text:"Ik vertel eerlijk wat ik weet aan de manager.",color:"geel"},
+      {text:"Ik houd het vertrouwen en zeg niets.",color:"rood"},
+      {text:"Ik moedig de collega aan om zelf het gesprek te voeren.",color:"groen"}
+    ]
+  },
+  {
+    title:"De Fout in het Rapport",
+    scenario:"Je ontdekt een dag na inlevering een fout in je stage-rapport. Het is al beoordeeld en je hebt een voldoende. De fout is inhoudelijk maar niet cruciaal.",
+    options:[
+      {text:"Ik meld de fout alsnog aan de begeleider.",color:"blauw"},
+      {text:"Ik laat het — de beoordeling is al gedaan.",color:"geel"},
+      {text:"Ik verwerk de correctie in een volgende versie zonder het te melden.",color:"wit"}
+    ]
+  },
+  {
+    title:"De Ongelijke Behandeling",
+    scenario:"Je ziet dat een leidinggevende een collega structureel meer kansen geeft dan anderen in het team. Jij bent één van de mensen die minder kansen krijgt.",
+    options:[
+      {text:"Ik bespreek dit rechtstreeks met de leidinggevende.",color:"groen"},
+      {text:"Ik zoek steun bij collega's en kaart het collectief aan.",color:"rood"},
+      {text:"Ik focus op mijn eigen prestaties en zorg dat ik opval.",color:"geel"}
+    ]
+  },
+  {
+    title:"De Grens van de Opdracht",
+    scenario:"Je stagebegeleider vraagt je iets te doen wat buiten je takenpakket valt en wat je ongemakkelijk maakt — het is niet onethisch, maar voelt niet goed.",
+    options:[
+      {text:"Ik doe het toch, het is mijn stagebegeleider.",color:"rood"},
+      {text:"Ik geef aan dat ik me hier niet prettig bij voel en vraag om overleg.",color:"groen"},
+      {text:"Ik verwijs naar mijn stageovereenkomst en weiger vriendelijk.",color:"blauw"}
+    ]
+  },
+  {
+    title:"De Sociale Media Post",
+    scenario:"Een klasgenoot plaatst een provocerende post op sociale media over een kwetsbare groep. Enkele studenten liken het bericht. Jij bent getuige.",
+    options:[
+      {text:"Ik reageer publiekelijk en spreek de post tegen.",color:"wit"},
+      {text:"Ik stuur de klasgenoot een privébericht.",color:"rood"},
+      {text:"Ik meld het bij een docent of vertrouwenspersoon.",color:"blauw"}
+    ]
+  },
+];
+
+const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
+const FONT = "'DM Sans',system-ui,sans-serif";
+
+// ── Privilege Wiel Data ────────────────────────────────────────
+
+const WHEEL_SEGMENTS = [
+  // Buitenste ring — maatschappelijke categorieën
+  { id:"ras", label:"Ras / Etniciteit", icon:"🌍", angle:0,
+    desc:"Witte mensen hebben in veel contexten meer onzichtbare voordelen op de arbeidsmarkt, in het onderwijs en in contact met instanties.",
+    inside:"Persoon van kleur / Niet-westers", outside:"Wit / Westers" },
+  { id:"gender", label:"Gender", icon:"⚧", angle:45,
+    desc:"Cisgender mannen hebben vaak meer toegang tot machtsposities. Vrouwen en non-binaire personen ervaren vaker structurele drempels.",
+    inside:"Vrouw / Non-binair", outside:"Cisgender man" },
+  { id:"klasse", label:"Sociale klasse", icon:"🏠", angle:90,
+    desc:"Klasse bepaalt toegang tot netwerken, onderwijs en kansen. Mensen uit hogere klassen starten met meer onzichtbaar kapitaal.",
+    inside:"Lagere / Middenklasse", outside:"Hogere klasse" },
+  { id:"seksualiteit", label:"Seksualiteit", icon:"🏳️‍🌈", angle:135,
+    desc:"Heteroseksualiteit wordt als norm gezien. LGBTQ+ personen navigeren regelmatig onveilige of uitsluitende omgevingen.",
+    inside:"LGBTQ+", outside:"Heteroseksueel" },
+  { id:"religie", label:"Religie / Levensbeschouwing", icon:"🕊", angle:180,
+    desc:"In Nederland heeft een christelijke of seculiere achtergrond historisch meer institutionele legitimiteit dan andere geloven.",
+    inside:"Niet-christelijk / Moslim / Anders", outside:"Christelijk / Seculier" },
+  { id:"taal", label:"Taal", icon:"💬", angle:225,
+    desc:"Moedertaalsprekers van het Nederlands hebben minder talige drempels in onderwijs, werk en communicatie met overheid.",
+    inside:"Andere moedertaal", outside:"Nederlands als moedertaal" },
+  { id:"beperking", label:"Beperking / Gezondheid", icon:"♿", angle:270,
+    desc:"Mensen zonder lichamelijke of psychische beperkingen hoeven minder aan te passen aan een wereld die voor hen is ontworpen.",
+    inside:"Beperking / Chronische ziekte", outside:"Geen beperking" },
+  { id:"leeftijd", label:"Leeftijd", icon:"📅", angle:315,
+    desc:"Zowel jongeren als ouderen ervaren leeftijdsdiscriminatie. Op de arbeidsmarkt geldt een smalle 'ideale' leeftijdsband.",
+    inside:"Te jong / Te oud", outside:"Middelbare leeftijd" },
+];
+
+// ── Micro components ───────────────────────────────────────────
+
+function Dot({color,size=9}){
+  return <span style={{display:"inline-block",width:size,height:size,borderRadius:"50%",background:CM[color].dot,flexShrink:0}}/>;
+}
+
+function Spinner(){
+  return(
+    <div style={{display:"flex",justifyContent:"center",padding:40}}>
+      <div style={{width:32,height:32,borderRadius:"50%",border:`3px solid #e2e8f0`,borderTopColor:TEAL,animation:"spin .7s linear infinite"}}/>
+    </div>
+  );
+}
+
+function PBar({step,pct}){
+  const L=["Bewustwording","Waarden","Kompas","Dilemma's","De Ander","STARR","Socialisatie","Verslag"];
+  return(
+    <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
+        {L.map((p,i)=>(
+          <div key={p} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:i<=step?TEAL:"#f1f5f9",color:i<=step?"#fff":"#94a3b8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,boxShadow:i===step?`0 0 0 4px ${TEAL_GLOW}`:"none",transition:"all .3s"}}>{i<step?"✓":i+1}</div>
+            <span style={{fontSize:9,fontWeight:600,color:i<=step?TEAL:"#94a3b8",textAlign:"center"}}>{p}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{height:4,borderRadius:99,background:"#f1f5f9",overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${pct}%`,background:TEAL,transition:"width .6s ease"}}/>
+      </div>
+      <div style={{textAlign:"right",fontSize:10,fontWeight:700,color:TEAL,marginTop:4}}>{Math.round(pct)}%</div>
+    </div>
+  );
+}
+
+// ── Privilege Wiel Component ───────────────────────────────────
+
+function PrivilegeWheel({onComplete}){
+  const [selected, setSelected] = useState({}); // id -> "inside" | "outside" | null
+  const [activeInfo, setActiveInfo] = useState(null);
+  const [showIntro, setShowIntro] = useState(true);
+
+  const allAnswered = WHEEL_SEGMENTS.every(s => selected[s.id]);
+  const answeredCount = Object.keys(selected).filter(k => selected[k]).length;
+
+  function toggle(id, side){
+    setSelected(prev => ({...prev, [id]: prev[id]===side ? null : side}));
+    setActiveInfo(id);
+  }
+
+  const svgSize = 340;
+  const cx = svgSize/2;
+  const cy = svgSize/2;
+  const outerR = 140;
+  const innerR = 75;
+  const labelR = 115;
+  const n = WHEEL_SEGMENTS.length;
+  const sliceAngle = (2*Math.PI)/n;
+
+  function polarToXY(angle, r){
+    return [cx + r*Math.cos(angle), cy + r*Math.sin(angle)];
+  }
+
+  function segmentPath(i){
+    const startAngle = (i * sliceAngle) - Math.PI/2 - sliceAngle/2;
+    const endAngle = startAngle + sliceAngle;
+    const [x1,y1] = polarToXY(startAngle, innerR+2);
+    const [x2,y2] = polarToXY(endAngle, innerR+2);
+    const [x3,y3] = polarToXY(endAngle, outerR-2);
+    const [x4,y4] = polarToXY(startAngle, outerR-2);
+    return `M ${x1} ${y1} A ${innerR+2} ${innerR+2} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${outerR-2} ${outerR-2} 0 0 0 ${x4} ${y4} Z`;
+  }
+
+  function labelPos(i){
+    const angle = (i * sliceAngle) - Math.PI/2;
+    return polarToXY(angle, labelR);
+  }
+
+  if(showIntro){
+    return(
+      <div style={{maxWidth:560,margin:"0 auto"}}>
+        <div style={{background:"#fff",borderRadius:20,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
+          <div style={{background:`linear-gradient(135deg,${TEAL},${TEAL_DARK})`,padding:"28px 28px 24px"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🌸</div>
+            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0,letterSpacing:-.5}}>Het Privilege Wiel</h2>
+            <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Voordat je aan de reis begint, sta je even stil bij jezelf.</p>
+          </div>
+          <div style={{padding:"24px 28px"}}>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel toont acht maatschappelijke categorieën die beïnvloeden hoeveel privilege — onzichtbare voordelen — iemand heeft in onze samenleving.</p>
+            <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 18px",marginBottom:20}}>
+              <p style={{fontSize:13,color:"#1a5c46",lineHeight:1.7,margin:0}}>
+                <strong>Wat je gaat doen:</strong> Klik per segment op de positie die het meest op jou van toepassing is. Er zijn geen goede of foute antwoorden — dit is een persoonlijk reflectiemoment.
+              </p>
+            </div>
+            <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
+              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet opgeslagen in de database. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
+            </div>
+            <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:`0 4px 20px ${TEAL_GLOW}`,fontFamily:FONT}}>
+              Bekijk het wiel →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activeSegment = activeInfo ? WHEEL_SEGMENTS.find(s=>s.id===activeInfo) : null;
+
+  return(
+    <div style={{maxWidth:680,margin:"0 auto"}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px",marginBottom:16}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <h2 style={{fontWeight:800,fontSize:17,margin:0}}>🌸 Het Privilege Wiel</h2>
+          <span style={{fontSize:12,fontWeight:700,color:TEAL}}>{answeredCount}/{WHEEL_SEGMENTS.length}</span>
+        </div>
+        <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie — de <strong>binnenkant</strong> of de <strong>buitenkant</strong> van het wiel.</p>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        {/* SVG Wiel */}
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} style={{maxWidth:"100%"}}>
+            {/* Achtergrond cirkels */}
+            <circle cx={cx} cy={cy} r={outerR} fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
+            <circle cx={cx} cy={cy} r={innerR} fill="#fff" stroke="#e2e8f0" strokeWidth="1"/>
+
+            {/* Segmenten */}
+            {WHEEL_SEGMENTS.map((seg,i)=>{
+              const sel = selected[seg.id];
+              const isActive = activeInfo === seg.id;
+              let fill = "#f1f5f9";
+              if(sel==="outside") fill = TEAL;
+              else if(sel==="inside") fill = "#f59e0b";
+              return(
+                <g key={seg.id} style={{cursor:"pointer"}} onClick={()=>setActiveInfo(seg.id)}>
+                  <path d={segmentPath(i)} fill={fill} stroke="#fff" strokeWidth="2.5"
+                    opacity={isActive ? 1 : (activeInfo ? 0.7 : 1)}
+                    style={{transition:"all .2s"}}/>
+                  {/* Label */}
+                  {(()=>{
+                    const [lx,ly] = labelPos(i);
+                    const angle = (i * sliceAngle) - Math.PI/2;
+                    const deg = (angle * 180 / Math.PI) + 90;
+                    return(
+                      <text x={lx} y={ly}
+                        textAnchor="middle" dominantBaseline="middle"
+                        fontSize="9" fontWeight="700" fill={sel?"#fff":"#475569"}
+                        transform={`rotate(${deg}, ${lx}, ${ly})`}
+                        style={{pointerEvents:"none"}}>
+                        {seg.icon}
+                      </text>
+                    );
+                  })()}
+                </g>
+              );
+            })}
+
+            {/* Midden tekst */}
+            <text x={cx} y={cy-10} textAnchor="middle" fontSize="11" fontWeight="800" fill={TEAL}>Privilege</text>
+            <text x={cx} y={cy+6} textAnchor="middle" fontSize="9" fill="#94a3b8">Wiel</text>
+            <text x={cx} y={cy+20} textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">{answeredCount}/8</text>
+          </svg>
+
+          {/* Legenda */}
+          <div style={{display:"flex",gap:16,marginTop:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
+              <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
+              <div style={{width:14,height:14,borderRadius:4,background:"#f59e0b"}}/>Minder privilege
+            </div>
+          </div>
+        </div>
+
+        {/* Rechter paneel: info + knoppen */}
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {activeSegment ? (
+            <>
+              <div style={{background:TEAL_LIGHT,borderRadius:14,border:`1px solid ${TEAL}40`,padding:"16px"}}>
+                <div style={{fontSize:24,marginBottom:6}}>{activeSegment.icon}</div>
+                <p style={{fontWeight:800,fontSize:14,color:TEAL,margin:"0 0 8px"}}>{activeSegment.label}</p>
+                <p style={{fontSize:12,color:"#334155",lineHeight:1.7,margin:0}}>{activeSegment.desc}</p>
+              </div>
+              <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
+              <button onClick={()=>toggle(activeSegment.id,"outside")}
+                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?TEAL:"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?TEAL:"#fff",color:selected[activeSegment.id]==="outside"?"#fff":"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
+                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant → Meer privilege</div>
+                <div style={{opacity:.75,fontSize:11}}>{activeSegment.outside}</div>
+              </button>
+              <button onClick={()=>toggle(activeSegment.id,"inside")}
+                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="inside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="inside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
+                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant → Minder privilege</div>
+                <div style={{opacity:.75,fontSize:11}}>{activeSegment.inside}</div>
+              </button>
+            </>
+          ) : (
+            <div style={{background:"#f8fafc",borderRadius:14,border:"1px solid #e2e8f0",padding:20,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:10}}>👆</div>
+              <p style={{fontWeight:700,fontSize:13,color:"#334155",margin:0}}>Klik op een segment</p>
+              <p style={{fontSize:12,color:"#94a3b8",marginTop:4}}>Selecteer een stuk van het wiel om meer uitleg te zien en jouw positie in te vullen.</p>
+            </div>
+          )}
+
+          {/* Segmentenlijst */}
+          <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:12}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {WHEEL_SEGMENTS.map(seg=>{
+                const sel = selected[seg.id];
+                return(
+                  <button key={seg.id} onClick={()=>setActiveInfo(seg.id)}
+                    style={{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:8,border:`1px solid ${activeInfo===seg.id?TEAL:"#e2e8f0"}`,background:sel?"#f0fdf4":activeInfo===seg.id?TEAL_LIGHT:"#f8fafc",color:"#334155",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:FONT}}>
+                    <span>{seg.icon}</span>
+                    {sel && <span style={{color:TEAL}}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Reflectievraag */}
+      {answeredCount >= 4 && (
+        <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 20px",marginBottom:16}}>
+          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>💭 Even stilstaan</p>
+          <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:0}}>
+            Je hebt nu een eerste beeld van je eigen rugzak. Privilege betekent niet dat je het makkelijk hebt gehad — maar dat bepaalde drempels voor jou onzichtbaarder zijn dan voor anderen. Houd dit beeld in gedachten tijdens de rest van de reis.
+          </p>
+        </div>
+      )}
+
+      <div style={{display:"flex",justifyContent:"flex-end"}}>
+        <button onClick={onComplete}
+          style={{padding:"12px 28px",borderRadius:99,border:"none",background:allAnswered?TEAL:"#94a3b8",color:"#fff",fontWeight:800,fontSize:14,cursor:allAnswered?"pointer":"not-allowed",boxShadow:allAnswered?`0 4px 20px ${TEAL_GLOW}`:"none",fontFamily:FONT,transition:"all .2s"}}>
+          {allAnswered ? "Start De Kaart →" : `Nog ${WHEEL_SEGMENTS.length - answeredCount} segment${WHEEL_SEGMENTS.length - answeredCount !== 1 ? 'en' : ''} in te vullen`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── De Vreemde Ander ───────────────────────────────────────────
+
+function VreemdeAnder({coreVals, onComplete}){
+  const [vreemd, setVreemd] = useState({spiegel:"", tussenruimte:"", insluiting:""});
+  const [showIntro, setShowIntro] = useState(true);
+  const isComplete = Object.values(vreemd).every(v => v.trim().length > 20);
+
+  const vragen = [
+    { key:"spiegel", icon:"🪞", label:"De Spiegel", kleur:"#6366f1", lichtkleur:"#eef2ff", borderkleur:"#a5b4fc",
+      uitleg:"Denk aan iemand die jij als 'de ander' ervaart — iemand die anders is dan jij, iemand met wie contact soms moeizaam gaat, of iemand die je instinctief op afstand houdt.",
+      hint:"Wie is deze persoon voor jou? Beschrijf hoe jij deze persoon ziet en waarom het contact soms lastig is. Wees eerlijk — dit is alleen voor jou." },
+    { key:"tussenruimte", icon:"🤝", label:"De Tussenruimte", kleur:"#f59e0b", lichtkleur:"#fffbeb", borderkleur:"#fcd34d",
+      uitleg:"De tussenruimte is de plek tussen jou en die ander — niet van jou, niet van hem/haar, maar van jullie samen. Echte ontmoeting vindt daar plaats.",
+      hint:"Wat gebeurt er in de ruimte tussen jou en deze persoon? Wanneer lukt verbinding wél, al is het maar even? Wat maakt het contact soms moeilijk?" },
+    { key:"insluiting", icon:"🌍", label:"Insluiting", kleur:TEAL, lichtkleur:TEAL_LIGHT, borderkleur:TEAL,
+      uitleg:"Insluiting gaat over bewust kiezen om er te zijn voor iemand die anders is dan jij. Niet als gunst, maar als professionele en menselijke keuze.",
+      hint:"Wat zou jij concreet kunnen doen om deze persoon meer in te sluiten? Koppel dit aan één van jouw kernwaarden." },
+  ];
+
+  if(showIntro){
+    return(
+      <div style={{maxWidth:560,margin:"0 auto"}}>
+        <div style={{background:"#fff",borderRadius:20,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
+          <div style={{background:"linear-gradient(135deg,#6366f1,#4f46e5)",padding:"28px 28px 24px"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🌍</div>
+            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0,letterSpacing:-.5}}>De Vreemde Ander</h2>
+            <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Een reflectie op ontmoeting, verschil en inclusie.</p>
+          </div>
+          <div style={{padding:"24px 28px"}}>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Je hebt net zes dilemma's doorlopen vanuit jouw eigen kompas. Nu richt je de blik op de ander — op iemand die buiten jouw cirkel valt.</p>
+            <div style={{background:"#eef2ff",borderRadius:12,border:"1px solid #a5b4fc",padding:"14px 18px",marginBottom:16}}>
+              <p style={{fontSize:13,color:"#3730a3",lineHeight:1.7,margin:0}}><strong>Drie stappen:</strong> De Spiegel (wie is de ander voor jou?), De Tussenruimte (wat gebeurt er tussen jullie?) en Insluiting (wat kun jij doen?).</p>
+            </div>
+            <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 18px",marginBottom:24}}>
+              <p style={{fontSize:13,color:"#1a5c46",lineHeight:1.7,margin:0}}>💡 Jouw kompas: <strong>{coreVals.map(v=>v.name).join(", ")}</strong>. Kom je die waarden hier ook tegen?</p>
+            </div>
+            <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:"#6366f1",color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
+              Begin de reflectie →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{maxWidth:680,margin:"0 auto"}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:20}}>
+        <div style={{background:"linear-gradient(135deg,#6366f1,#4f46e5)",padding:"20px 22px"}}>
+          <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🌍 De Vreemde Ander</h2>
+          <p style={{color:"rgba(255,255,255,.8)",fontSize:12,marginTop:6,lineHeight:1.5}}>Reflecteer op ontmoeting en verschil aan de hand van drie perspectieven.</p>
+        </div>
+        <div style={{background:"#fff",padding:20,display:"flex",flexDirection:"column",gap:20}}>
+          <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 16px",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>Jouw kompas:</span>
+            {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
+          </div>
+          {vragen.map(({key,icon,label,kleur,lichtkleur,borderkleur,uitleg,hint})=>(
+            <div key={key} style={{borderRadius:14,border:`1.5px solid ${borderkleur}`,overflow:"hidden"}}>
+              <div style={{background:`${kleur}12`,borderBottom:`1px solid ${borderkleur}`,padding:"14px 18px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
+                <div>
+                  <p style={{fontWeight:800,fontSize:14,color:kleur,margin:"0 0 4px"}}>{label}</p>
+                  <p style={{fontSize:12,color:"#475569",lineHeight:1.6,margin:0}}>{uitleg}</p>
+                </div>
+              </div>
+              <div style={{padding:"14px 18px",background:"#fff"}}>
+                <p style={{fontSize:11,color:"#94a3b8",marginBottom:8,lineHeight:1.5}}>{hint}</p>
+                <textarea value={vreemd[key]} onChange={e=>setVreemd({...vreemd,[key]:e.target.value})}
+                  placeholder="Schrijf hier je reflectie…" rows={4}
+                  style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
+                  onFocus={e=>e.target.style.borderColor=kleur} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                <div style={{textAlign:"right",fontSize:10,color:vreemd[key].trim().length>20?TEAL:"#94a3b8",marginTop:4}}>
+                  {vreemd[key].trim().length>20 ? "✓ Voldoende" : `Nog ${20-vreemd[key].trim().length} tekens`}
+                </div>
+              </div>
+            </div>
+          ))}
+          <button onClick={()=>onComplete(vreemd)} disabled={!isComplete}
+            style={{padding:"13px",borderRadius:99,border:"none",background:isComplete?"#6366f1":"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:isComplete?"pointer":"not-allowed",boxShadow:isComplete?"0 4px 12px #6366f140":"none",fontFamily:FONT,transition:"all .2s"}}>
+            {isComplete ? "Naar STARR Reflectie →" : "Vul alle drie de velden in om verder te gaan"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Socialisatieverslag ────────────────────────────────────────
+
+function Socialisatieverslag({coreVals, onComplete}){
+  const [antwoorden, setAntwoorden] = useState({
+    primair:"", secundair:"", tertiair:"", koppeling:""
+  });
+  const [showIntro, setShowIntro] = useState(true);
+
+  const isComplete = Object.values(antwoorden).every(v => v.trim().length > 20);
+
+  const lagen = [
+    {
+      key: "primair",
+      icon: "🏠",
+      label: "Primaire socialisatie",
+      kleur: "#f43f5e",
+      lichtkleur: "#ffe4e6",
+      borderkleur: "#f43f5e",
+      uitleg: "Primaire socialisatie vindt plaats in je vroege jeugd, vooral in het gezin. De waarden, normen en gewoonten die je thuis hebt meegekregen vormen de basis van wie je bent.",
+      hint: "Welke waarden of normen heb je van huis uit meegekregen? Denk aan opvattingen over eerlijkheid, hard werken, zorgen voor anderen, of juist onafhankelijkheid. Herken je die in jouw drie kernwaarden?",
+    },
+    {
+      key: "secundair",
+      icon: "🏫",
+      label: "Secundaire socialisatie",
+      kleur: "#f59e0b",
+      lichtkleur: "#fffbeb",
+      borderkleur: "#fcd34d",
+      uitleg: "Secundaire socialisatie gebeurt buiten het gezin: op school, in verenigingen, bij vrienden, via media. Je leert hoe grotere sociale verbanden werken en welke waarden daar gelden.",
+      hint: "Welke omgevingen buiten je gezin hebben jouw waarden gevormd? Denk aan school, sport, religie, sociale media of vriendschapsgroepen. Wat leerde je daar — en botste dat soms met thuis?",
+    },
+    {
+      key: "tertiair",
+      icon: "💼",
+      label: "Tertiaire socialisatie",
+      kleur: TEAL,
+      lichtkleur: TEAL_LIGHT,
+      borderkleur: TEAL,
+      uitleg: "Tertiaire socialisatie vindt plaats in je professionele context: stage, werk, studie, beroepsgroep. Je leert de normen en waarden van een specifiek werkveld of organisatie.",
+      hint: "Hoe heeft je studie of stage jouw professionele waarden gevormd of uitgedaagd? Zijn er waarden die je bewust hebt overgenomen — of juist afgewezen — in jouw beroepsidentiteit?",
+    },
+    {
+      key: "koppeling",
+      icon: "🧭",
+      label: "Koppeling aan jouw kompas",
+      kleur: "#6366f1",
+      lichtkleur: "#eef2ff",
+      borderkleur: "#a5b4fc",
+      uitleg: "Je kernwaarden zijn niet zomaar ontstaan — ze hebben een geschiedenis. In dit laatste veld breng je de drie lagen samen en koppel je ze aan jouw moreel kompas.",
+      hint: `Hoe verklaren jouw socialisatielagen de keuze voor jouw kernwaarden ${coreVals.map(v=>v.name).join(", ")}? Welke laag heeft het meeste invloed gehad? En wat betekent dit voor jouw professioneel handelen?`,
+    },
+  ];
+
+  if(showIntro){
+    return(
+      <div style={{maxWidth:560,margin:"0 auto"}}>
+        <div style={{background:"#fff",borderRadius:20,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
+          <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"28px 28px 24px"}}>
+            <div style={{fontSize:40,marginBottom:12}}>📖</div>
+            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0,letterSpacing:-.5}}>Het Socialisatieverslag</h2>
+            <p style={{color:"rgba(255,255,255,.7)",fontSize:13,marginTop:8,lineHeight:1.7}}>Waar komen jouw waarden vandaan?</p>
+          </div>
+          <div style={{padding:"24px 28px"}}>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Jouw kernwaarden zijn niet toevallig. Ze zijn gevormd door de omgevingen waarin je bent opgegroeid en gewerkt. Dit verslag helpt je die wortels te begrijpen.</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+              {[
+                {icon:"🏠",label:"Primaire socialisatie",sub:"Gezin en vroege jeugd",kleur:"#f43f5e"},
+                {icon:"🏫",label:"Secundaire socialisatie",sub:"School, vrienden, media",kleur:"#f59e0b"},
+                {icon:"💼",label:"Tertiaire socialisatie",sub:"Studie, stage en werk",kleur:TEAL},
+                {icon:"🧭",label:"Koppeling aan jouw kompas",sub:"Alles samen",kleur:"#6366f1"},
+              ].map(({icon,label,sub,kleur})=>(
+                <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:12,border:`1px solid ${kleur}30`,background:`${kleur}08`}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{icon}</div>
+                  <div><p style={{fontWeight:700,fontSize:13,color:"#1e293b",margin:0}}>{label}</p><p style={{fontSize:11,color:"#94a3b8",margin:0}}>{sub}</p></div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"12px 16px",marginBottom:24}}>
+              <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>💡 Jouw kernwaarden: <strong>{coreVals.map(v=>v.name).join(", ")}</strong>. Zie je de rode draad terug in jouw socialisatiegeschiedenis?</p>
+            </div>
+            <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
+              Begin het verslag →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{maxWidth:680,margin:"0 auto"}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:20}}>
+        <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"20px 22px"}}>
+          <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📖 Het Socialisatieverslag</h2>
+          <p style={{color:"rgba(255,255,255,.6)",fontSize:12,marginTop:6,lineHeight:1.5}}>Reflecteer op de drie lagen van jouw socialisatie en de wortels van jouw waarden.</p>
+        </div>
+        <div style={{background:"#fff",padding:20,display:"flex",flexDirection:"column",gap:20}}>
+
+          {/* Kernwaarden reminder */}
+          <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 16px",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>Jouw kompas:</span>
+            {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
+          </div>
+
+          {lagen.map(({key,icon,label,kleur,lichtkleur,borderkleur,uitleg,hint})=>(
+            <div key={key} style={{borderRadius:14,border:`1.5px solid ${borderkleur}`,overflow:"hidden"}}>
+              <div style={{background:`${kleur}10`,borderBottom:`1px solid ${borderkleur}50`,padding:"14px 18px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
+                <div>
+                  <p style={{fontWeight:800,fontSize:14,color:kleur,margin:"0 0 4px"}}>{label}</p>
+                  <p style={{fontSize:12,color:"#475569",lineHeight:1.6,margin:0}}>{uitleg}</p>
+                </div>
+              </div>
+              <div style={{padding:"14px 18px",background:"#fff"}}>
+                <p style={{fontSize:11,color:"#94a3b8",marginBottom:8,lineHeight:1.6,fontStyle:"italic"}}>{hint}</p>
+                <textarea
+                  value={antwoorden[key]}
+                  onChange={e=>setAntwoorden({...antwoorden,[key]:e.target.value})}
+                  placeholder="Schrijf hier je reflectie…"
+                  rows={4}
+                  style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
+                  onFocus={e=>e.target.style.borderColor=kleur}
+                  onBlur={e=>e.target.style.borderColor="#e2e8f0"}
+                />
+                <div style={{textAlign:"right",fontSize:10,color:antwoorden[key].trim().length>20?TEAL:"#94a3b8",marginTop:4}}>
+                  {antwoorden[key].trim().length>20 ? "✓ Voldoende" : `Nog ${20-antwoorden[key].trim().length} tekens`}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button onClick={()=>onComplete(antwoorden)} disabled={!isComplete}
+            style={{padding:"13px",borderRadius:99,border:"none",background:isComplete?"#0f172a":"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:isComplete?"pointer":"not-allowed",fontFamily:FONT,transition:"all .2s"}}>
+            {isComplete ? "Naar het Reisverslag →" : "Vul alle vier de velden in om verder te gaan"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PDF Export ─────────────────────────────────────────────────
+
+function exportPDF(coreVals, dilResp, starr, vreemd, socialisatie, domColor, groupCode, age){
+  const c = CM[domColor];
+  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+    <title>Moral Maps – Reisverslag</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'DM Sans',sans-serif;color:#0f172a;padding:40px;max-width:700px;margin:0 auto;background:#fff}
+      .header{background:linear-gradient(135deg,${TEAL},${TEAL_DARK});color:#fff;border-radius:16px;padding:32px;margin-bottom:28px}
+      .header h1{font-size:28px;font-weight:900;letter-spacing:-1px}
+      .header p{opacity:.8;font-size:13px;margin-top:6px}
+      .section{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px 24px;margin-bottom:20px}
+      .section-title{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+      .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;margin:3px}
+      .dominant{background:${c.bg};border:2px solid ${c.border};border-radius:14px;padding:18px 24px;text-align:center;margin-bottom:20px}
+      .dominant .label{font-size:28px;font-weight:900;color:${c.text}}
+      .dominant .desc{font-size:12px;color:#64748b;margin-top:4px}
+      .key{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+      .val{font-size:13px;color:#334155;line-height:1.7;margin-bottom:16px}
+      .vblock{border-radius:12px;padding:16px;margin-bottom:14px}
+      .ditem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+      .ditem:last-child{border-bottom:none}
+      .num{width:26px;height:26px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#64748b;flex-shrink:0}
+      .footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:32px;padding-top:20px;border-top:1px solid #f1f5f9}
+      @media print{body{padding:20px}.header{border-radius:8px}}
+    </style></head><body>
+    <div class="header">
+      <div style="font-size:36px;margin-bottom:12px">🏆</div>
+      <h1>Moral Maps — Reisverslag</h1>
+      <p>Groep: ${groupCode} · Leeftijd: ${age} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
+    </div>
+    <div class="section">
+      <div class="section-title">🧭 Kernwaarden</div>
+      <div>${coreVals.map(cv=>{const cc=CM[cv.color];return`<span class="chip" style="background:${cc.bg};border:1.5px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("")}</div>
+    </div>
+    <div class="dominant">
+      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Dominante veranderkleur</div>
+      <div class="label">${c.label}</div>
+      <div class="desc">${c.desc}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">🛣 Dilemma-keuzes</div>
+      ${DILEMMAS.map((d,i)=>{const r=dilResp[i];const cc=r?CM[r.color]:null;return`<div class="ditem"><div class="num">${i+1}</div><div><div style="font-weight:700;font-size:13px">${d.title}</div>${r&&cc?`<div style="font-size:12px;color:${cc.text};margin-top:3px">${r.text}</div>`:""}</div></div>`;}).join("")}
+    </div>
+    <div class="section">
+      <div class="section-title">📖 Socialisatieverslag</div>
+      ${[{key:"primair",label:"Primaire socialisatie",bg:"#ffe4e6",border:"#f43f5e",kleur:"#f43f5e"},{key:"secundair",label:"Secundaire socialisatie",bg:"#fffbeb",border:"#fcd34d",kleur:"#d97706"},{key:"tertiair",label:"Tertiaire socialisatie",bg:TEAL_LIGHT,border:TEAL,kleur:TEAL},{key:"koppeling",label:"Koppeling aan kompas",bg:"#eef2ff",border:"#a5b4fc",kleur:"#6366f1"}].map(({key,label,bg,border,kleur})=>`<div class="vblock" style="background:${bg};border:1px solid ${border}"><div style="font-weight:800;font-size:13px;color:${kleur};margin-bottom:6px">${label}</div><div style="font-size:13px;color:#334155;line-height:1.7">${(socialisatie&&socialisatie[key])||"Niet ingevuld"}</div></div>`).join("")}
+    </div>
+    <div class="section">
+      <div class="section-title">🌍 De Vreemde Ander</div>
+      ${[{key:"spiegel",label:"De Spiegel",bg:"#eef2ff",border:"#a5b4fc",kleur:"#6366f1"},{key:"tussenruimte",label:"De Tussenruimte",bg:"#fffbeb",border:"#fcd34d",kleur:"#d97706"},{key:"insluiting",label:"Insluiting",bg:TEAL_LIGHT,border:TEAL,kleur:TEAL}].map(({key,label,bg,border,kleur})=>`<div class="vblock" style="background:${bg};border:1px solid ${border}"><div style="font-weight:800;font-size:13px;color:${kleur};margin-bottom:6px">${label}</div><div style="font-size:13px;color:#334155;line-height:1.7">${(vreemd&&vreemd[key])||"Niet ingevuld"}</div></div>`).join("")}
+    </div>
+    <div class="section">
+      <div class="section-title">✨ STARR Reflectie</div>
+      ${Object.entries(starr).map(([key,val])=>`<div class="key" style="color:${TEAL}">${key.charAt(0).toUpperCase()+key.slice(1)}</div><div class="val">${val||"Niet ingevuld"}</div>`).join("")}
+    </div>
+    <div class="footer">Gegenereerd door Moral Maps · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
+    </body></html>`;
+
+  const blob = new Blob([html], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url,"_blank");
+  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+}
+
+// ── Dashboard ──────────────────────────────────────────────────
+
+function WordCloud({results}){
+  const words=useMemo(()=>{
+    const m={};
+    results.forEach(r=>(r.coreValues||[]).forEach(v=>{const k=`${v.name}|${v.color}`;m[k]=(m[k]||0)+1;}));
+    return Object.entries(m).map(([k,c])=>{const[n,col]=k.split("|");return{name:n,color:col,count:c};}).sort((a,b)=>b.count-a.count);
+  },[results]);
+  if(!words.length)return <p style={{color:"#94a3b8",textAlign:"center",padding:24,fontSize:13}}>Nog geen data voor deze groep.</p>;
+  const mx=words[0].count;
+  return(
+    <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",padding:"12px 0"}}>
+      {words.map(({name,color,count})=>{
+        const c=CM[color],s=0.75+(count/mx)*1.0;
+        return <span key={name} style={{fontSize:Math.round(11*s),fontWeight:count===mx?800:600,color:c.solid,background:c.bg,border:`1.5px solid ${c.border}`,borderRadius:8,padding:"3px 9px"}}>{name}<sup style={{fontSize:8,opacity:.5,marginLeft:2}}>{count}</sup></span>;
+      })}
+    </div>
+  );
+}
+
+function Dashboard({groupCode,onBack}){
+  const [results,setResults]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+
+  async function fetchData(){
+    setLoading(true);setError(null);
+    try{setResults(await dbLoad(groupCode));}
+    catch{setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");}
+    finally{setLoading(false);}
+  }
+  useEffect(()=>{fetchData();},[groupCode]);
+
+  const byAge=useMemo(()=>{const m={};AGE_CATS.forEach(a=>{m[a]=[];});results.forEach(r=>{if(m[r.age])m[r.age].push(r);});return m;},[results]);
+  function top3(es){const c={};es.forEach(r=>(r.coreValues||[]).forEach(v=>{if(!c[v.name])c[v.name]={count:0,color:v.color};c[v.name].count++;}));return Object.entries(c).sort(([,a],[,b])=>b.count-a.count).slice(0,3).map(([n,{color}])=>({name:n,color}));}
+  const cdist=useMemo(()=>{const d={geel:0,blauw:0,rood:0,groen:0,wit:0};results.forEach(r=>(r.coreValues||[]).forEach(v=>{d[v.color]=(d[v.color]||0)+1;}));const t=Object.values(d).reduce((a,b)=>a+b,0)||1;return Object.entries(d).map(([c,n])=>({color:c,pct:Math.round(n/t*100)}));},[results]);
+
+  return(
+    <div style={{maxWidth:700,margin:"0 auto",padding:"24px 16px 60px",fontFamily:FONT}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+        <button onClick={onBack} style={{background:"#f1f5f9",border:"none",borderRadius:99,padding:"8px 16px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#334155",fontFamily:FONT}}>← Terug</button>
+        <div><h2 style={{fontWeight:900,fontSize:20,margin:0}}>Dashboard</h2><p style={{margin:0,fontSize:12,color:"#64748b"}}>Groep: <strong>{groupCode}</strong>{!loading&&<span> · {results.length} deelnemers</span>}</p></div>
+        <button onClick={fetchData} style={{marginLeft:"auto",background:TEAL_LIGHT,border:`1px solid ${TEAL}40`,borderRadius:99,padding:"6px 14px",cursor:"pointer",fontWeight:600,fontSize:12,color:TEAL,fontFamily:FONT}}>↻ Vernieuwen</button>
+      </div>
+      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"14px 18px",marginBottom:20,color:"#b91c1c",fontSize:13}}>⚠️ {error}</div>}
+      {loading?<Spinner/>:<>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Wordcloud – Kernwaarden</p>
+          <WordCloud results={results}/>
+        </div>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Veranderkleuren Verdeling</p>
+          <div style={{display:"flex",height:28,borderRadius:8,overflow:"hidden",gap:2}}>
+            {cdist.filter(c=>c.pct>0).map(({color,pct})=>(
+              <div key={color} style={{width:`${pct}%`,background:CM[color].solid,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {pct>10&&<span style={{fontSize:10,fontWeight:700,color:color==="geel"?"#451A03":"#fff"}}>{pct}%</span>}
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:8}}>
+            {cdist.map(({color,pct})=><span key={color} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#475569"}}><Dot color={color} size={8}/>{CM[color].label} {pct}%</span>)}
+          </div>
+        </div>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden"}}>
+          <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #f1f5f9"}}><p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:0}}>Top 3 Waarden per Generatie</p></div>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead><tr style={{background:"#f8fafc"}}>{["Leeftijd","n","#1","#2","#3"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:700,color:"#64748b",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+              <tbody>{AGE_CATS.map((age,idx)=>{const es=byAge[age]||[];const t=top3(es);return(
+                <tr key={age} style={{background:idx%2?"#f8fafc":"#fff",borderTop:"1px solid #f1f5f9"}}>
+                  <td style={{padding:"10px 16px",fontWeight:700,fontSize:13}}>{age}</td>
+                  <td style={{padding:"10px 16px",color:"#64748b",fontSize:12}}>{es.length}</td>
+                  {[0,1,2].map(i=>{const v=t[i];return<td key={i} style={{padding:"10px 16px"}}>{v?<span style={{display:"inline-flex",alignItems:"center",gap:4,background:CM[v.color].bg,border:`1px solid ${CM[v.color].border}`,color:CM[v.color].text,borderRadius:99,padding:"3px 10px",fontSize:11,fontWeight:600}}><Dot color={v.color} size={7}/>{v.name}</span>:<span style={{color:"#cbd5e1",fontSize:11}}>–</span>}</td>;})}
+                </tr>
+              );})}</tbody>
+            </table>
+          </div>
+        </div>
+      </>}
+    </div>
+  );
+}
+
+// ── Landing ────────────────────────────────────────────────────
+
+function Landing({onStart}){
+  const [gc,setGc]=useState("");
+  const [age,setAge]=useState("");
+  const [dash,setDash]=useState("");
+
+  const STEPS=[
+    {color:TEAL,sc:TEAL_DARK,icon:"🌸",num:"00",label:"Privilege Wiel",tag:"Bewustwording",desc:"Verken jouw eigen rugzak. Reflecteer op privilege als startpunt voor bewustwording."},
+    {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 10 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
+    {color:"#EAB308",sc:"#a16207",icon:"🧭",num:"02",label:"Het Kompas",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten van jouw moreel kompas."},
+    {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op zes realistische dilemma's en ontdek of je keuzes overeenkomen met jouw kompas."},
+    {color:"#6366f1",sc:"#4f46e5",icon:"🌍",num:"04",label:"De Vreemde Ander",tag:"De Ontmoeting",desc:"Reflecteer op verschil en inclusie: de spiegel, de tussenruimte en insluiting in de praktijk."},
+    {color:"#22C55E",sc:"#15803d",icon:"✨",num:"05",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
+    {color:"#0f172a",sc:"#334155",icon:"📖",num:"06",label:"Socialisatieverslag",tag:"Wortels",desc:"Reflecteer op de drie lagen van jouw socialisatie en ontdek waar jouw waarden vandaan komen."},
+  ];
+
+  return(
+    <div style={{minHeight:"100vh",fontFamily:FONT,background:"#0f172a"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes floatPhone{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(-3deg)}}@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}.phone{animation:floatPhone 5s ease-in-out infinite}.shimmer{animation:shimmer 2.5s ease-in-out infinite}`}</style>
+
+      {/* HERO */}
+      <section style={{background:"linear-gradient(160deg,#0a0f1e,#0f172a 40%,#111827)",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",width:400,height:400,borderRadius:"50%",background:`radial-gradient(circle,${TEAL}30,transparent 70%)`,top:-100,left:-100,pointerEvents:"none"}}/>
+        <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 24px 56px",display:"grid",gridTemplateColumns:"1fr auto",gap:40,alignItems:"start",position:"relative",zIndex:1}}>
+
+          {/* Left */}
+          <div style={{maxWidth:480}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:`${TEAL}20`,border:`1px solid ${TEAL}50`,borderRadius:99,padding:"5px 14px",fontSize:11,color:"#6ee7c8",fontWeight:600,marginBottom:24,letterSpacing:.5}}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",display:"inline-block"}} className="shimmer"/>
+              GEÏNSPIREERD DOOR CALUWÉ & VERMAAK
+            </div>
+            <h1 style={{fontSize:"clamp(38px,6vw,64px)",fontWeight:900,lineHeight:1.0,letterSpacing:-2,marginBottom:16,color:"#fff"}}>Moral<br/><span style={{color:TEAL,textShadow:`0 0 60px ${TEAL}80`}}>Maps</span></h1>
+            <p style={{color:"#94a3b8",fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:380}}>Navigeer door morele dilemma's en ontdek welke waarden jouw professionele koers bepalen.</p>
+
+            {/* START FORM */}
+            <div style={{background:"rgba(255,255,255,.04)",borderRadius:20,border:"1px solid rgba(255,255,255,.08)",padding:24}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+                <div style={{width:32,height:32,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
+                <div><p style={{color:"#e2e8f0",fontWeight:800,fontSize:15,margin:0}}>Startpunt van je Reis</p><p style={{color:"#64748b",fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
+              </div>
+              <div style={{marginBottom:14}}>
+                <label style={{color:"#64748b",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
+                <input value={gc} onChange={e=>setGc(e.target.value)} placeholder="bijv. HBO25A"
+                  style={{width:"100%",padding:"11px 15px",borderRadius:12,border:`1.5px solid ${gc.trim()?TEAL:"rgba(255,255,255,.1)"}`,background:"rgba(0,0,0,.3)",color:"#e2e8f0",fontSize:14,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1.5,transition:"border .2s"}}/>
+              </div>
+              <div style={{marginBottom:18}}>
+                <label style={{color:"#64748b",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:8}}>Leeftijdscategorie</label>
+                <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                  {AGE_CATS.map(a=>(
+                    <button key={a} onClick={()=>setAge(a)} style={{padding:"7px 14px",borderRadius:99,border:`1.5px solid ${age===a?TEAL:"rgba(255,255,255,.12)"}`,background:age===a?TEAL:"rgba(255,255,255,.04)",color:age===a?"#fff":"#94a3b8",fontWeight:700,fontSize:12,cursor:"pointer",transition:"all .15s",fontFamily:FONT}}>{a}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{background:"rgba(0,0,0,.2)",borderRadius:10,padding:"9px 12px",marginBottom:16,border:"1px solid rgba(255,255,255,.05)"}}>
+                <p style={{color:"#475569",fontSize:11,lineHeight:1.6,margin:0}}>🔒 <strong style={{color:"#64748b"}}>Anoniem:</strong> Alleen groepscode en leeftijd worden opgeslagen. Geen naam, geen login.</p>
+              </div>
+              <button onClick={()=>{if(gc.trim()&&age)onStart(gc.trim().toUpperCase(),age,null);}} disabled={!gc.trim()||!age}
+                style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?TEAL:"rgba(255,255,255,.06)",color:gc.trim()&&age?"#fff":"#475569",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?`0 4px 24px ${TEAL_GLOW}`:"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                Start je Reis →
+              </button>
+            </div>
+          </div>
+
+          {/* Right: smartphone mockup */}
+          <div style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8}}>
+            <div className="phone" style={{width:220,height:440,background:"linear-gradient(170deg,#1e293b,#0f172a)",borderRadius:36,border:"2px solid #2d3f55",boxShadow:"0 40px 100px #00000090,inset 0 1px 0 rgba(255,255,255,.08)",padding:10,flexShrink:0}}>
+              <div style={{width:70,height:18,background:"#0a0f1e",borderRadius:99,margin:"0 auto 8px",border:"1px solid #1e2d3d"}}/>
+              <div style={{background:"#f8fafc",borderRadius:24,height:378,overflow:"hidden",position:"relative"}}>
+                <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px)",backgroundSize:"18px 18px"}}/>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 55%,rgba(248,250,252,.98))"}}/>
+                <div style={{position:"relative",zIndex:2,background:"#fff",margin:"8px 8px 0",borderRadius:12,padding:"7px 10px",boxShadow:"0 2px 10px rgba(0,0,0,.12)",display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:11}}>🧭</span><span style={{fontSize:10,fontWeight:800,color:TEAL,flex:1}}>Moral Maps</span><span style={{fontSize:9,color:"#94a3b8",fontWeight:600}}>7 stops</span>
+                </div>
+                <div style={{position:"relative",zIndex:2,padding:"8px 10px 0"}}>
+                  {[{icon:"🌸",label:"Privilege Wiel",color:TEAL,time:"5 min"},{icon:"🗺",label:"De Kaart",color:"#3B82F6",time:"5 min"},{icon:"🧭",label:"Het Kompas",color:"#EAB308",time:"3 min"},{icon:"🛣",label:"De Route",color:"#F43F5E",time:"8 min"},{icon:"🌍",label:"De Ander",color:"#6366f1",time:"7 min"},{icon:"✨",label:"STARR",color:"#22C55E",time:"8 min"},{icon:"📖",label:"Socialisatie",color:"#334155",time:"8 min"}].map((s,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:7}}>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+                        <div style={{width:22,height:22,borderRadius:"50%",background:s.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,flexShrink:0}}>{s.icon}</div>
+                        {i<6&&<div style={{width:2,height:11,background:`${s.color}60`,margin:"1px 0"}}/>}
+                      </div>
+                      <div style={{paddingTop:3}}><p style={{fontSize:9,fontWeight:700,color:"#1e293b",margin:0}}>{s.label}</p><p style={{fontSize:8,color:"#94a3b8",margin:"1px 0 0"}}>{s.time}</p></div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{position:"absolute",bottom:8,left:8,right:8,background:`linear-gradient(135deg,${TEAL},${TEAL_DARK})`,borderRadius:12,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{color:"#fff",fontSize:10,fontWeight:800}}>Jouw morele route</span>
+                  <span style={{color:"rgba(255,255,255,.7)",fontSize:9,fontWeight:600}}>~46 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ROUTE STEPS */}
+      <section style={{background:"#f8fafc",padding:"56px 24px"}}>
+        <div style={{maxWidth:720,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:44}}>
+            <p style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:2.5,marginBottom:10}}>Jouw Routebeschrijving</p>
+            <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>7 Stops, 1 Bestemming</h2>
+          </div>
+          <div style={{position:"relative"}}>
+            <div style={{position:"absolute",left:31,top:32,bottom:32,width:3,background:`linear-gradient(to bottom,${TEAL},#3B82F6,#EAB308,#F43F5E,#6366f1,#22C55E,#334155)`,borderRadius:99,zIndex:0}}/>
+            {STEPS.map((s,i)=>(
+              <div key={i} style={{display:"flex",gap:20,marginBottom:i<STEPS.length-1?28:0,position:"relative",zIndex:1}}>
+                <div style={{width:64,flexShrink:0,display:"flex",justifyContent:"center"}}>
+                  <div style={{width:64,height:64,borderRadius:"50%",background:`linear-gradient(135deg,${s.color},${s.sc})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,boxShadow:`0 6px 20px ${s.color}50`,border:"3px solid #f8fafc"}}>{s.icon}</div>
+                </div>
+                <div style={{flex:1,background:"#fff",borderRadius:18,border:"1px solid #e2e8f0",padding:"18px 22px",boxShadow:"0 2px 12px rgba(0,0,0,.06)",marginTop:7}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                    <span style={{fontSize:10,fontWeight:800,color:s.color,textTransform:"uppercase",letterSpacing:1.5}}>{s.tag}</span>
+                    <span style={{fontSize:10,color:"#cbd5e1"}}>·</span>
+                    <span style={{fontSize:10,fontWeight:600,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{s.num}</span>
+                  </div>
+                  <h3 style={{fontSize:18,fontWeight:900,color:"#0f172a",marginBottom:8,letterSpacing:-.3}}>{s.label}</h3>
+                  <p style={{fontSize:13,color:"#64748b",lineHeight:1.75,margin:0}}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* KLEUREN */}
+      <section style={{background:"#fff",padding:"48px 24px",borderTop:"1px solid #f1f5f9"}}>
+        <div style={{maxWidth:720,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:28}}>
+            <p style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:2.5,marginBottom:8}}>De Vijf Kleuren</p>
+            <h2 style={{fontSize:24,fontWeight:900,color:"#0f172a",letterSpacing:-.5}}>Caluwé's Veranderkleuren</h2>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+            {Object.entries(CM).map(([key,c])=>(
+              <div key={key} style={{background:c.bg,borderRadius:14,border:`1.5px solid ${c.border}`,padding:"14px 16px",display:"flex",alignItems:"flex-start",gap:10}}>
+                <div style={{width:13,height:13,borderRadius:"50%",background:c.solid,flexShrink:0,marginTop:2}}/>
+                <div><p style={{fontWeight:800,fontSize:13,color:c.text}}>{c.label}</p><p style={{fontSize:11,color:"#64748b",lineHeight:1.5,marginTop:2}}>{c.desc}</p></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD */}
+      <section style={{background:"#0f172a",padding:"36px 24px"}}>
+        <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
+          <p style={{color:"#94a3b8",fontSize:13,marginBottom:16}}>📊 <strong style={{color:"#e2e8f0"}}>Begeleider?</strong> Bekijk het groepsdashboard</p>
+          <div style={{display:"flex",gap:8}}>
+            <input value={dash} onChange={e=>setDash(e.target.value)} placeholder="Voer groepscode in…"
+              style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid #334155",background:"#1e293b",color:"#e2e8f0",fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+            <button onClick={()=>dash.trim()&&onStart(null,null,dash.trim().toUpperCase())}
+              style={{padding:"10px 20px",borderRadius:10,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────────
+
+export default function MoralMaps(){
+  const [screen,setScreen]=useState("landing");
+  const [groupCode,setGroupCode]=useState("");
+  const [age,setAge]=useState("");
+  const [dashCode,setDashCode]=useState("");
+  const [phase,setPhase]=useState(0); // 0=privilege, 1=kaart, 2=kompas, 3=dilemma's, 4=vreemde ander, 5=starr, 6=socialisatie, 7=verslag
+  const [selVals,setSelVals]=useState([]);
+  const [coreVals,setCoreVals]=useState([]);
+  const [dilResp,setDilResp]=useState([]);
+  const [curDil,setCurDil]=useState(0);
+  const [pending,setPending]=useState(null);
+  const [insight,setInsight]=useState(false);
+  const [filter,setFilter]=useState(null);
+  const [vreemd,setVreemd]=useState({spiegel:"",tussenruimte:"",insluiting:""});
+  const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",tertiair:"",koppeling:""});
+  const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+  const [saving,setSaving]=useState(false);
+  const [saved,setSaved]=useState(false);
+  const [saveErr,setSaveErr]=useState(null);
+
+  const pct=useMemo(()=>{
+    if(phase===0)return 2;
+    if(phase===1)return 8+(selVals.length/10)*8;
+    if(phase===2)return 18+(coreVals.length/3)*8;
+    if(phase===3)return 30+(curDil/DILEMMAS.length)*14;
+    if(phase===4)return 50;
+    if(phase===5)return 63;
+    if(phase===6)return 78;
+    return 100;
+  },[phase,selVals.length,coreVals.length,curDil]);
+
+  const domColor=useMemo(()=>{
+    const c={geel:0,blauw:0,rood:0,groen:0,wit:0};
+    [...coreVals,...dilResp].forEach(x=>{if(x.color)c[x.color]++;});
+    return Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
+  },[coreVals,dilResp]);
+
+  function start(gc,ag,dc){if(dc){setDashCode(dc);setScreen("dashboard");return;}setGroupCode(gc);setAge(ag);setScreen("app");setPhase(0);}
+  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setVreemd({spiegel:"",tussenruimte:"",insluiting:""});setSocialisatie({primair:"",secundair:"",tertiair:"",koppeling:""});setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaving(false);setSaved(false);setSaveErr(null);}
+  async function saveAndFinish(){setSaving(true);setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});setSaving(false);if(ok){setSaved(true);setPhase(7);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
+
+  const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
+
+  if(screen==="landing")return <Landing onStart={start}/>;
+  if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("landing")}/></div>;
+
+  // ── APP ──
+  return(
+    <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box}textarea,input{font-family:inherit}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div style={{maxWidth:680,margin:"0 auto",padding:"20px 16px 60px"}}>
+
+        {/* Header */}
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:38,height:38,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🧭</div>
+            <div><div style={{fontWeight:800,fontSize:16}}>Moral Maps</div><div style={{fontSize:10,color:"#94a3b8"}}>Groep: {groupCode} · {age}</div></div>
+          </div>
+          <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
+        </div>
+
+        <PBar step={phase} pct={pct}/>
+
+        {/* P0 — Privilege Wiel */}
+        {phase===0 && <PrivilegeWheel onComplete={()=>setPhase(1)}/>}
+
+        {/* P1 — De Kaart */}
+        {phase===1&&(
+          <div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"16px 20px",marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div><h2 style={{fontWeight:800,fontSize:17,margin:0}}>🗺 De Grote Kaart</h2><p style={{fontSize:12,color:"#64748b",margin:"4px 0 0"}}>Kies <strong>10 waarden</strong> die bij jou passen.</p></div>
+                <div style={{width:48,height:48,borderRadius:"50%",background:TEAL_LIGHT,border:`2px solid ${TEAL}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:TEAL}}>{selVals.length}<span style={{fontSize:10,color:"#94a3b8"}}>/10</span></div>
+              </div>
+            </div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:12,marginBottom:16,display:"flex",flexWrap:"wrap",gap:8}}>
+              <button onClick={()=>setFilter(null)} style={{padding:"6px 14px",borderRadius:99,border:`1.5px solid ${!filter?TEAL:"#e2e8f0"}`,background:!filter?TEAL:"#fff",color:!filter?"#fff":"#64748b",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Alle</button>
+              {Object.entries(CM).map(([k,c])=>(
+                <button key={k} onClick={()=>setFilter(filter===k?null:k)} style={{padding:"6px 14px",borderRadius:99,border:`1.5px solid ${filter===k?c.border:"#e2e8f0"}`,background:filter===k?c.solid:"#fff",color:filter===k?(k==="geel"?"#451A03":"#fff"):c.text,fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,fontFamily:FONT}}>
+                  <Dot color={k} size={7}/>{c.label}
+                </button>
+              ))}
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginBottom:16}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))",gap:8}}>
+                {filtered.map(v=>{const sel=selVals.some(s=>s.id===v.id);const c=CM[v.color];return(
+                  <button key={v.id} disabled={!sel&&selVals.length>=10}
+                    onClick={()=>{if(sel)setSelVals(selVals.filter(s=>s.id!==v.id));else if(selVals.length<10)setSelVals([...selVals,v]);}}
+                    style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${sel?c.border:c.border+"60"}`,background:sel?c.solid:c.bg,color:sel?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:600,fontSize:12.5,cursor:!sel&&selVals.length>=10?"not-allowed":"pointer",opacity:!sel&&selVals.length>=10?0.35:1,display:"flex",alignItems:"center",gap:6,transition:"all .15s",boxShadow:sel?`0 0 0 2px ${c.border}44`:"none",fontFamily:FONT}}>
+                    {sel?"✓ ":<Dot color={v.color}/>}{v.name}
+                  </button>
+                );})}
+              </div>
+            </div>
+            {selVals.length>0&&(
+              <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:16}}>
+                <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Jouw selectie</p>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{selVals.map(v=>{const c=CM[v.color];return<button key={v.id} onClick={()=>setSelVals(selVals.filter(s=>s.id!==v.id))} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:99,border:`1px solid ${c.border}`,background:c.bg,color:c.text,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:FONT}}>{v.name} ×</button>;})}</div>
+              </div>
+            )}
+            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end"}}><button onClick={()=>setPhase(2)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Smeed je Kompas →</button></div>}
+          </div>
+        )}
+
+        {/* P2 — Kompas */}
+        {phase===2&&(
+          <div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px",marginBottom:16,textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:8}}>🧭</div>
+              <h2 style={{fontWeight:800,fontSize:17,margin:0}}>Het Kompas</h2>
+              <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Kies <strong>3 kernwaarden</strong> als ankerpunten van jouw moreel kompas.</p>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+              <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center"}}>
+                {selVals.map(v=>{const isC=coreVals.some(c=>c.id===v.id);const c=CM[v.color];return(
+                  <button key={v.id} disabled={!isC&&coreVals.length>=3}
+                    onClick={()=>{if(isC)setCoreVals(coreVals.filter(c=>c.id!==v.id));else if(coreVals.length<3)setCoreVals([...coreVals,v]);}}
+                    style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 16px",borderRadius:999,border:`2px solid ${c.border}`,background:isC?c.solid:c.bg,color:isC?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:700,fontSize:13,cursor:!isC&&coreVals.length>=3?"not-allowed":"pointer",opacity:!isC&&coreVals.length>=3?0.35:1,boxShadow:isC?`0 0 0 3px ${c.border}44`:"none",transition:"all .15s",fontFamily:FONT}}>
+                    {!isC&&<Dot color={v.color}/>}{v.name}
+                  </button>
+                );})}
+              </div>
+            </div>
+            {coreVals.length>0&&(
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+                <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,textAlign:"center",marginBottom:14}}>Jouw moreel kompas</p>
+                <div style={{display:"flex",justifyContent:"center",gap:14,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{textAlign:"center",padding:"16px 20px",borderRadius:16,border:`2px solid ${c.border}`,background:c.bg}}><div style={{fontSize:24,marginBottom:4}}>🧭</div><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginTop:2}}>{c.label}</p></div>;})}</div>
+              </div>
+            )}
+            <div style={{textAlign:"center"}}>
+              <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}><strong style={{color:TEAL}}>{coreVals.length}</strong> / 3 kernwaarden</p>
+              {coreVals.length===3&&<button onClick={()=>setPhase(3)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>}
+            </div>
+          </div>
+        )}
+
+        {/* P3 — Dilemma's */}
+        {phase===3&&(
+          <div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {DILEMMAS.length}</span>
+              <div style={{display:"flex",gap:6}}>{DILEMMAS.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
+            </div>
+            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:16}}>
+              <div style={{background:"#0f172a",padding:"20px 20px 18px"}}>
+                <h3 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📍 {DILEMMAS[curDil].title}</h3>
+                <p style={{color:"#94a3b8",fontSize:13,marginTop:8,lineHeight:1.6}}>{DILEMMAS[curDil].scenario}</p>
+              </div>
+              <div style={{background:"#fff",padding:18}}>
+                <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Wat doe jij?</p>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {DILEMMAS[curDil].options.map((opt,i)=>{const c=CM[opt.color];const isSel=pending?.text===opt.text;return(
+                    <button key={i} disabled={insight}
+                      onClick={()=>{setPending(opt);setInsight(true);}}
+                      style={{textAlign:"left",padding:"13px 16px",borderRadius:12,border:`2px solid ${isSel?c.border:c.border+"60"}`,background:isSel?c.bg:"#fff",color:c.text,fontWeight:500,fontSize:13,cursor:insight?"not-allowed":"pointer",opacity:insight&&!isSel?0.4:1,display:"flex",alignItems:"flex-start",gap:10,lineHeight:1.5,boxShadow:isSel?`0 0 0 3px ${c.border}30`:"none",fontFamily:FONT}}>
+                      <Dot color={opt.color} size={9}/>{opt.text}
+                    </button>
+                  );})}
+                </div>
+              </div>
+            </div>
+            {insight&&pending&&(()=>{
+              const isM=coreVals.some(cv=>cv.color===pending.color);
+              const match=coreVals.find(cv=>cv.color===pending.color);
+              const c=CM[pending.color];
+              return(
+                <div style={{borderRadius:16,border:`2px solid ${isM?TEAL:"#EAB308"}`,background:"#fff",overflow:"hidden",marginBottom:16}}>
+                  <div style={{background:isM?TEAL_LIGHT:"#fefce8",padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:32,height:32,borderRadius:"50%",background:isM?TEAL:"#EAB308",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{isM?"✓":"!"}</div>
+                    <strong style={{color:isM?TEAL_DARK:"#854d0e",fontSize:14}}>{isM?"Koersvast!":"Interessant!"}</strong>
+                  </div>
+                  <div style={{padding:"14px 18px"}}>
+                    {isM?<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Deze keuze sluit aan bij jouw kernwaarde <strong style={{color:c.text}}>{match.name}</strong>. Je handelt vanuit je kompas.</p>:<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Je kiest hier voor <strong style={{color:c.text}}>{c.label}</strong>, terwijl je kompas op andere waarden staat. Wat gaf dit de doorslag?</p>}
+                    <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                      <span style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase"}}>Kompas:</span>
+                      {coreVals.map(cv=>{const cc=CM[cv.color];const act=cv.color===pending.color;return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${act?cc.border:"#e2e8f0"}`,background:act?cc.bg:"#f8fafc",color:act?cc.text:"#64748b"}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
+                    </div>
+                    <button onClick={()=>{const nr=[...dilResp,pending];setDilResp(nr);setPending(null);setInsight(false);if(curDil<DILEMMAS.length-1)setCurDil(curDil+1);else setPhase(4);}}
+                      style={{marginTop:14,width:"100%",padding:"11px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
+                      {curDil<DILEMMAS.length-1?"Volgende dilemma →":"Naar De Vreemde Ander →"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+            {!insight&&(
+              <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"10px 16px",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                <span style={{fontSize:11,color:"#94a3b8"}}>🧭 Jouw kompas:</span>
+                {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* P4 — De Vreemde Ander */}
+        {phase===4 && <VreemdeAnder coreVals={coreVals} onComplete={(v)=>{setVreemd(v);setPhase(5);}}/>}
+
+        {/* P5 — STARR */}
+        {phase===5&&(
+          <div>
+            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20}}>
+              <div style={{background:TEAL,padding:"20px 22px"}}>
+                <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>✨ STARR Reflectie</h2>
+                <p style={{color:"rgba(255,255,255,.85)",fontSize:13,marginTop:8,lineHeight:1.6}}>Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Gebruik de STARR-methode om deze situatie te beschrijven.</p>
+              </div>
+              <div style={{background:"#fff",padding:20,display:"flex",flexDirection:"column",gap:18}}>
+                <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:14}}>
+                  <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Jouw kernwaarden</p>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:99,border:`1.5px solid ${c.border}`,background:c.bg,color:c.text,fontWeight:700,fontSize:12}}><Dot color={cv.color}/>{cv.name}</span>;})}</div>
+                </div>
+                <div style={{background:TEAL_LIGHT,borderRadius:10,border:`1px solid ${TEAL}40`,padding:"12px 16px",display:"flex",gap:10}}>
+                  <span style={{fontSize:16,flexShrink:0}}>✏️</span>
+                  <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}><strong>Opdracht:</strong> Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Beschrijf een situatie in je studie, werk of privéleven waar die waarde zichtbaar werd in jouw keuze of handelen.</p>
+                </div>
+                {[{key:"situatie",label:"Situatie",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,hint})=>(
+                  <div key={key}>
+                    <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>{label}</label>
+                    <p style={{fontSize:11,color:"#94a3b8",marginBottom:6}}>{hint}</p>
+                    <textarea value={starr[key]} onChange={e=>setStarr({...starr,[key]:e.target.value})} placeholder={`Beschrijf de ${label.toLowerCase()}…`} rows={3}
+                      style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}
+                      onFocus={e=>e.target.style.borderColor=TEAL} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                  </div>
+                ))}
+                {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
+                <button onClick={()=>setPhase(6)}
+                  style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  Naar Socialisatieverslag →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* P6 — Socialisatieverslag */}
+        {phase===6 && <Socialisatieverslag coreVals={coreVals} onComplete={(s)=>{setSocialisatie(s);saveAndFinish();}}/>}
+
+        {/* P7 — Verslag */}
+        {phase===7&&(
+          <div>
+            <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
+              <div style={{fontSize:44,marginBottom:8}}>🏆</div>
+              <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
+              <p style={{color:"#64748b",fontSize:12,marginTop:6}}>Een overzicht van je morele reis door Moral Maps</p>
+              {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Jouw Kernwaarden</p>
+              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"14px 20px",borderRadius:12,border:`2px solid ${c.border}`,background:c.bg,textAlign:"center"}}><p style={{fontWeight:700,fontSize:14,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#94a3b8",textTransform:"uppercase",marginTop:2}}>{c.label}</p></div>;})}</div>
+            </div>
+            <div style={{borderRadius:16,border:`2px solid ${CM[domColor].border}`,background:CM[domColor].bg,padding:20,textAlign:"center",marginBottom:16}}>
+              <p style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Jouw dominante veranderkleur</p>
+              <p style={{fontSize:28,fontWeight:900,color:CM[domColor].text,margin:"6px 0 2px"}}>{CM[domColor].label}</p>
+              <p style={{fontSize:12,color:"#64748b"}}>{CM[domColor].desc}</p>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🛣 Dilemma-keuzes</p>
+              {DILEMMAS.map((d,i)=>{const r=dilResp[i];const c=r?CM[r.color]:null;return<div key={i} style={{display:"flex",gap:12,marginBottom:12,paddingBottom:12,borderBottom:i<DILEMMAS.length-1?"1px solid #f1f5f9":"none"}}><div style={{width:28,height:28,borderRadius:"50%",background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#64748b",flexShrink:0}}>{i+1}</div><div><p style={{fontWeight:700,fontSize:13,margin:0}}>{d.title}</p>{r&&c&&<p style={{fontSize:12,color:c.text,marginTop:3,lineHeight:1.5}}>{r.text}<span style={{fontSize:10,padding:"2px 7px",borderRadius:99,border:`1px solid ${c.border}`,background:c.bg,marginLeft:4}}>{c.label}</span></p>}</div></div>;})}
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
+              <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"16px 20px"}}>
+                <p style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.6)",textTransform:"uppercase",letterSpacing:1,margin:0}}>📖 Socialisatieverslag</p>
+              </div>
+              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
+                {[{key:"primair",label:"Primaire socialisatie",kleur:"#f43f5e"},{key:"secundair",label:"Secundaire socialisatie",kleur:"#f59e0b"},{key:"tertiair",label:"Tertiaire socialisatie",kleur:TEAL},{key:"koppeling",label:"Koppeling aan kompas",kleur:"#6366f1"}].map(({key,label,kleur})=>(
+                  <div key={key}>
+                    <span style={{fontSize:10,fontWeight:800,color:kleur,textTransform:"uppercase",letterSpacing:1}}>{label}</span>
+                    <p style={{fontSize:13,color:socialisatie[key]?"#334155":"#cbd5e1",marginTop:4,lineHeight:1.7}}>{socialisatie[key]||"Niet ingevuld"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
+              <div style={{background:"linear-gradient(135deg,#6366f112,#6366f108)",borderBottom:"1px solid #e0e7ff",padding:"16px 20px"}}>
+                <p style={{fontSize:11,fontWeight:700,color:"#6366f1",textTransform:"uppercase",letterSpacing:1,margin:0}}>🌍 De Vreemde Ander</p>
+              </div>
+              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
+                {[{key:"spiegel",label:"De Spiegel",kleur:"#6366f1"},{key:"tussenruimte",label:"De Tussenruimte",kleur:"#d97706"},{key:"insluiting",label:"Insluiting",kleur:TEAL}].map(({key,label,kleur})=>(
+                  <div key={key}>
+                    <span style={{fontSize:10,fontWeight:800,color:kleur,textTransform:"uppercase",letterSpacing:1}}>{label}</span>
+                    <p style={{fontSize:13,color:vreemd[key]?"#334155":"#cbd5e1",marginTop:4,lineHeight:1.7}}>{vreemd[key]||"Niet ingevuld"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>✨ STARR Reflectie</p>
+              {Object.entries(starr).map(([key,val])=><div key={key} style={{marginBottom:12}}><span style={{fontSize:10,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1}}>{key.charAt(0).toUpperCase()+key.slice(1)}</span><p style={{fontSize:13,color:val?"#334155":"#cbd5e1",marginTop:2,lineHeight:1.6}}>{val||"Niet ingevuld"}</p></div>)}
+            </div>
+            <div style={{display:"flex",gap:12}}>
+              <button onClick={()=>exportPDF(coreVals,dilResp,starr,vreemd,socialisatie,domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
+              <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
