@@ -1,6 +1,6 @@
 :root {
-  /* De exacte Google Maps achtergrondkleur (lichtgrijs) */
-  --bg: #f1f3f4;            
+  /* Google Maps Kleurenpalet */
+  --bg: #f1f3f4;            /* De lichtgrijze kaart-achtergrond */
   --text: #3c4043;          
   --text-h: #202124;        
   --border: #dadce0;        
@@ -10,135 +10,53 @@
   --accent-bg: #e0f2f1;     
   --accent-border: rgba(0, 137, 123, 0.4);
   
-  /* Wit voor de kaarten zelf, zodat ze 'loskomen' van de grijze achtergrond */
+  /* Wit voor de kaarten/boxen */
   --card-bg: #ffffff;       
   
   --shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
-  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  --sans: 'Google Sans', Roboto, Arial, sans-serif;
 }
 
+/* Basis instellingen voor de hele pagina */
 body {
   margin: 0;
-  background-color: var(--bg); /* Dit vult de hele pagina met de Maps-kleur */
+  padding: 0;
+  background-color: var(--bg);
   color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* De container waar je app in leeft */
 #root {
-  max-width: 100%;
+  width: 100%;
+  max-width: 1126px; /* Zorgt voor de breedte uit je eerdere code */
   margin: 0 auto;
   min-height: 100vh;
-  /* Haal hier eventueel de background-color weg als je de grijze bg overal wilt */
-}
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-:root {
-  /* Google Maps Kleurenpalet */
-  --bg: #ffffff;            /* Wit zoals de basis van de kaart */
-  --text: #3c4043;          /* Donkergrijs voor leesbaarheid */
-  --text-h: #202124;        /* Bijna zwart voor de koppen */
-  --border: #dadce0;        /* De zachte grijze lijnen */
-  --code-bg: #f8f9fa;       /* Iets grijzer voor contrastvlakken */
-  
-  /* De Teal kleur uit je voorbeeld */
-  --accent: #00897b;        /* Het prachtige diepe Teal */
-  --accent-bg: #e0f2f1;     /* Heel licht teal voor hover-effecten */
-  --accent-border: rgba(0, 137, 123, 0.4);
-  
-  --shadow: 0 1px 3px 0 rgba(60,64,67,.30), 0 4px 8px 3px rgba(60,64,67,.15);
-  
-  --sans: 'Google Sans', Roboto, Arial, sans-serif;
-  font: 18px/145% var(--sans);
-}
-
-/* De rest van je body en layout instellingen */
-body {
-  margin: 0;
   background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
-#root {
-  max-width: 1126px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: var(--bg);
+/* Standaard opmaak voor titels */
+h1, h2, h3 {
+  color: var(--text-h);
+  margin-top: 0;
 }
 
-/* Voor de kaarten/boxen in je app */
+/* Hulp-classes die je waarschijnlijk in je App.jsx gebruikt */
 .card {
-  background: white;
+  background-color: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
+  padding: 20px;
   box-shadow: var(--shadow);
-  padding: 16px;
-  margin: 10px;
-}
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+  margin-bottom: 16px;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+button {
+  cursor: pointer;
+  font-family: inherit;
 }
