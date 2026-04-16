@@ -54,18 +54,47 @@ body {
   margin: 0;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+:root {
+  /* Google Maps Kleurenpalet */
+  --bg: #ffffff;            /* Wit zoals de basis van de kaart */
+  --text: #3c4043;          /* Donkergrijs voor leesbaarheid */
+  --text-h: #202124;        /* Bijna zwart voor de koppen */
+  --border: #dadce0;        /* De zachte grijze lijnen */
+  --code-bg: #f8f9fa;       /* Iets grijzer voor contrastvlakken */
+  
+  /* De Teal kleur uit je voorbeeld */
+  --accent: #00897b;        /* Het prachtige diepe Teal */
+  --accent-bg: #e0f2f1;     /* Heel licht teal voor hover-effecten */
+  --accent-border: rgba(0, 137, 123, 0.4);
+  
+  --shadow: 0 1px 3px 0 rgba(60,64,67,.30), 0 4px 8px 3px rgba(60,64,67,.15);
+  
+  --sans: 'Google Sans', Roboto, Arial, sans-serif;
+  font: 18px/145% var(--sans);
 }
 
+/* De rest van je body en layout instellingen */
+body {
+  margin: 0;
+  background-color: var(--bg);
+}
+
+#root {
+  max-width: 1126px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg);
+}
+
+/* Voor de kaarten/boxen in je app */
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin: 10px;
+}
 h1,
 h2 {
   font-family: var(--heading);
