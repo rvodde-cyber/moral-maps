@@ -8,19 +8,25 @@
 //  3. Voer supabase_setup.sql uit in de Supabase SQL Editor
 // ============================================================
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// ── 🔧 VERANDER DEZE TWEE WAARDEN ────────────────────────────
-const SUPABASE_URL      = "https://JOUW-PROJECT-ID.supabase.co";
-const SUPABASE_ANON_KEY = "JOUW-ANON-KEY";
+// ── Supabase via Vite env vars (Vercel friendly) ─────────────
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const supabase = hasSupabaseConfig
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 // ─────────────────────────────────────────────────────────────
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Database functies ──────────────────────────────────────────
 
 async function dbSave(entry) {
+  if (!supabase) {
+    console.error("Supabase save: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
+    return false;
+  }
   const { error } = await supabase
     .from("moralmaps_results")
     .insert({
@@ -36,6 +42,10 @@ async function dbSave(entry) {
 }
 
 async function dbLoad(groupCode) {
+  if (!supabase) {
+    console.error("Supabase load: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
+    return [];
+  }
   const { data, error } = await supabase
     .from("moralmaps_results")
     .select("*")
@@ -470,7 +480,7 @@ function VreemdeAnder({coreVals, onComplete}){
             <span style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>Jouw kompas:</span>
             {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
           </div>
-          {vragen.map(({key,icon,label,kleur,lichtkleur,borderkleur,uitleg,hint})=>(
+          {vragen.map(({key,icon,label,kleur,borderkleur,uitleg,hint})=>(
             <div key={key} style={{borderRadius:14,border:`1.5px solid ${borderkleur}`,overflow:"hidden"}}>
               <div style={{background:`${kleur}12`,borderBottom:`1px solid ${borderkleur}`,padding:"14px 18px",display:"flex",gap:12,alignItems:"flex-start"}}>
                 <div style={{width:36,height:36,borderRadius:10,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
@@ -605,7 +615,7 @@ function Socialisatieverslag({coreVals, onComplete}){
             {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
           </div>
 
-          {lagen.map(({key,icon,label,kleur,lichtkleur,borderkleur,uitleg,hint})=>(
+          {lagen.map(({key,icon,label,kleur,borderkleur,uitleg,hint})=>(
             <div key={key} style={{borderRadius:14,border:`1.5px solid ${borderkleur}`,overflow:"hidden"}}>
               <div style={{background:`${kleur}10`,borderBottom:`1px solid ${borderkleur}50`,padding:"14px 18px",display:"flex",gap:12,alignItems:"flex-start"}}>
                 <div style={{width:36,height:36,borderRadius:10,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
@@ -734,13 +744,13 @@ function Dashboard({groupCode,onBack}){
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(null);
 
-  async function fetchData(){
+  const fetchData = useCallback(async ()=>{
     setLoading(true);setError(null);
     try{setResults(await dbLoad(groupCode));}
     catch{setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");}
     finally{setLoading(false);}
-  }
-  useEffect(()=>{fetchData();},[groupCode]);
+  },[groupCode]);
+  useEffect(()=>{fetchData();},[fetchData]);
 
   const byAge=useMemo(()=>{const m={};AGE_CATS.forEach(a=>{m[a]=[];});results.forEach(r=>{if(m[r.age])m[r.age].push(r);});return m;},[results]);
   function top3(es){const c={};es.forEach(r=>(r.coreValues||[]).forEach(v=>{if(!c[v.name])c[v.name]={count:0,color:v.color};c[v.name].count++;}));return Object.entries(c).sort(([,a],[,b])=>b.count-a.count).slice(0,3).map(([n,{color}])=>({name:n,color}));}
@@ -970,7 +980,6 @@ export default function MoralMaps(){
   const [vreemd,setVreemd]=useState({spiegel:"",tussenruimte:"",insluiting:""});
   const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",tertiair:"",koppeling:""});
   const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
-  const [saving,setSaving]=useState(false);
   const [saved,setSaved]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
 
@@ -992,8 +1001,8 @@ export default function MoralMaps(){
   },[coreVals,dilResp]);
 
   function start(gc,ag,dc){if(dc){setDashCode(dc);setScreen("dashboard");return;}setGroupCode(gc);setAge(ag);setScreen("app");setPhase(0);}
-  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setVreemd({spiegel:"",tussenruimte:"",insluiting:""});setSocialisatie({primair:"",secundair:"",tertiair:"",koppeling:""});setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaving(false);setSaved(false);setSaveErr(null);}
-  async function saveAndFinish(){setSaving(true);setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});setSaving(false);if(ok){setSaved(true);setPhase(7);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
+  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setVreemd({spiegel:"",tussenruimte:"",insluiting:""});setSocialisatie({primair:"",secundair:"",tertiair:"",koppeling:""});setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaved(false);setSaveErr(null);}
+  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});if(ok){setSaved(true);setPhase(7);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
@@ -1252,3 +1261,4 @@ export default function MoralMaps(){
     </div>
   );
 }
+export default MoralMaps;
