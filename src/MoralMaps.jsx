@@ -1,6 +1,5 @@
 // ============================================================
-//  //  MORAL MAPS — v4
-
+//  MORAL MAPS — v4
 //  Bijgewerkt: Socialisatieverslag als fase 6 toegevoegd
 //
 //  SETUP:
@@ -13,8 +12,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ── 🔧 VERANDER DEZE TWEE WAARDEN ────────────────────────────
-const SUPABASE_URL      = "https://zkiavxldremirlvcmoef.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc2MiOiJzdXBhYmFzZSIsInJlZiI6InpraWF2eGxkcmVtaXJsdmNtb2VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5MjU5OSwiZXhwIjoyMDk0NTA1OTk5fQ.oxBclzSe1n19pQVnqVfHPkQ55BogpJh0vF39PdU0v0Y";
+const SUPABASE_URL      = "https://JOUW-PROJECT-ID.supabase.co";
+const SUPABASE_ANON_KEY = "JOUW-ANON-KEY";
 // ─────────────────────────────────────────────────────────────
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -955,7 +954,7 @@ function Landing({onStart}){
 
 // ── Main App ───────────────────────────────────────────────────
 
-function MoralMaps() {
+export default function MoralMaps(){
   const [screen,setScreen]=useState("landing");
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
@@ -1252,4 +1251,4 @@ function MoralMaps() {
       </div>
     </div>
   );
-export default MoralMaps;
+}
