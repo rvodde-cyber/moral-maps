@@ -221,7 +221,7 @@ function PBar({step,pct}){
 // ── Privilege Wiel Component ───────────────────────────────────
 
 function PrivilegeWheel({onComplete}){
-  const [selected, setSelected] = useState({}); // id -> "inside" | "outside" | null
+  const [selected, setSelected] = useState({}); // id -> "inside" | "middle" | "outside" | null
   const [activeInfo, setActiveInfo] = useState(null);
   const [showIntro, setShowIntro] = useState(true);
 
@@ -314,8 +314,9 @@ function PrivilegeWheel({onComplete}){
               const sel = selected[seg.id];
               const isActive = activeInfo === seg.id;
               let fill = "#f1f5f9";
-              if(sel==="outside") fill = TEAL;
-              else if(sel==="inside") fill = "#f59e0b";
+              if(sel==="inside") fill = TEAL;        // Binnenste ring: meest geprivilegieerd
+              else if(sel==="middle") fill = "#64748b"; // Middelste ring: tussenzone
+              else if(sel==="outside") fill = "#f59e0b"; // Buitenste ring: meest gemarginaliseerd
               return(
                 <g key={seg.id} style={{cursor:"pointer"}} onClick={()=>setActiveInfo(seg.id)}>
                   <path d={segmentPath(i)} fill={fill} stroke="#fff" strokeWidth="2.5"
@@ -349,10 +350,13 @@ function PrivilegeWheel({onComplete}){
           {/* Legenda */}
           <div style={{display:"flex",gap:16,marginTop:8}}>
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
-              <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege
+              <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege (binnenkant)
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
-              <div style={{width:14,height:14,borderRadius:4,background:"#f59e0b"}}/>Minder privilege
+              <div style={{width:14,height:14,borderRadius:4,background:"#64748b"}}/>Tussenpositie (midden)
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
+              <div style={{width:14,height:14,borderRadius:4,background:"#f59e0b"}}/>Minder privilege (buitenkant)
             </div>
           </div>
         </div>
@@ -367,14 +371,19 @@ function PrivilegeWheel({onComplete}){
                 <p style={{fontSize:12,color:"#334155",lineHeight:1.7,margin:0}}>{activeSegment.desc}</p>
               </div>
               <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
-              <button onClick={()=>toggle(activeSegment.id,"outside")}
-                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?TEAL:"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?TEAL:"#fff",color:selected[activeSegment.id]==="outside"?"#fff":"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant → Meer privilege</div>
+              <button onClick={()=>toggle(activeSegment.id,"inside")}
+                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="inside"?TEAL:"#e2e8f0"}`,background:selected[activeSegment.id]==="inside"?TEAL:"#fff",color:selected[activeSegment.id]==="inside"?"#fff":"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
+                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant → Meer privilege</div>
                 <div style={{opacity:.75,fontSize:11}}>{activeSegment.outside}</div>
               </button>
-              <button onClick={()=>toggle(activeSegment.id,"inside")}
-                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="inside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="inside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant → Minder privilege</div>
+              <button onClick={()=>toggle(activeSegment.id,"middle")}
+                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="middle"?"#64748b":"#e2e8f0"}`,background:selected[activeSegment.id]==="middle"?"#e2e8f0":"#fff",color:"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
+                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Tussenpositie</div>
+                <div style={{opacity:.75,fontSize:11}}>Contextafhankelijk / gemengd privilege</div>
+              </button>
+              <button onClick={()=>toggle(activeSegment.id,"outside")}
+                style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
+                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant → Minder privilege</div>
                 <div style={{opacity:.75,fontSize:11}}>{activeSegment.inside}</div>
               </button>
             </>
@@ -810,6 +819,19 @@ function Landing({onStart}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [dash,setDash]=useState("");
+  const GM_BLUE = "#1a73e8";
+  const GM_BG = "#f1f3f4";
+  const GM_TEXT = "#202124";
+  const GM_MUTED = "#5f6368";
+  const GM_BORDER = "#dadce0";
+
+  function MiniIcon({type}){
+    const common = {width:14,height:14,viewBox:"0 0 24 24",fill:"none",stroke:"#3c4043",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"};
+    if(type==="heart") return <svg {...common}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>;
+    if(type==="work") return <svg {...common}><path d="M3 7h18v12H3z"/><path d="M8 7V5h8v2"/><path d="M3 12h18"/></svg>;
+    if(type==="drive") return <svg {...common}><path d="M3 12l9-9 9 9-9 9-9-9z"/><path d="M12 7v5h5"/></svg>;
+    return <svg {...common}><polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.8 5.5 21 7.5 13.5 2 9 9 9"/></svg>;
+  }
 
   const STEPS=[
     {color:TEAL,sc:TEAL_DARK,icon:"🌸",num:"00",label:"Privilege Wiel",tag:"Bewustwording",desc:"Verken jouw eigen rugzak. Reflecteer op privilege als startpunt voor bewustwording."},
@@ -822,48 +844,48 @@ function Landing({onStart}){
   ];
 
   return(
-    <div style={{minHeight:"100vh",fontFamily:FONT,background:"#0f172a"}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes floatPhone{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(-3deg)}}@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}.phone{animation:floatPhone 5s ease-in-out infinite}.shimmer{animation:shimmer 2.5s ease-in-out infinite}`}</style>
+    <div style={{minHeight:"100vh",fontFamily:FONT,background:GM_BG}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes floatPhone{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(-3deg)}}@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulsePin{0%{box-shadow:0 0 0 0 rgba(26,115,232,.45)}100%{box-shadow:0 0 0 16px rgba(26,115,232,0)}}.phone{animation:floatPhone 5s ease-in-out infinite}.shimmer{animation:shimmer 2.5s ease-in-out infinite}`}</style>
 
       {/* HERO */}
-      <section style={{background:"linear-gradient(160deg,#0a0f1e,#0f172a 40%,#111827)",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",width:400,height:400,borderRadius:"50%",background:`radial-gradient(circle,${TEAL}30,transparent 70%)`,top:-100,left:-100,pointerEvents:"none"}}/>
+      <section style={{background:"linear-gradient(180deg,#e8f0fe,#f1f3f4 60%,#f8f9fa)",position:"relative",overflow:"hidden",borderBottom:`1px solid ${GM_BORDER}`}}>
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(95,99,104,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(95,99,104,.08) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",width:420,height:420,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,115,232,.25),transparent 70%)",top:-120,left:-90,pointerEvents:"none"}}/>
         <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 24px 56px",display:"grid",gridTemplateColumns:"1fr auto",gap:40,alignItems:"start",position:"relative",zIndex:1}}>
 
           {/* Left */}
           <div style={{maxWidth:480}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:`${TEAL}20`,border:`1px solid ${TEAL}50`,borderRadius:99,padding:"5px 14px",fontSize:11,color:"#6ee7c8",fontWeight:600,marginBottom:24,letterSpacing:.5}}>
-              <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",display:"inline-block"}} className="shimmer"/>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(26,115,232,.12)",border:"1px solid rgba(26,115,232,.28)",borderRadius:99,padding:"5px 14px",fontSize:11,color:GM_BLUE,fontWeight:600,marginBottom:24,letterSpacing:.5}}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:GM_BLUE,display:"inline-block"}} className="shimmer"/>
               GEÏNSPIREERD DOOR CALUWÉ & VERMAAK
             </div>
-            <h1 style={{fontSize:"clamp(38px,6vw,64px)",fontWeight:900,lineHeight:1.0,letterSpacing:-2,marginBottom:16,color:"#fff"}}>Moral<br/><span style={{color:TEAL,textShadow:`0 0 60px ${TEAL}80`}}>Maps</span></h1>
-            <p style={{color:"#94a3b8",fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:380}}>Navigeer door morele dilemma's en ontdek welke waarden jouw professionele koers bepalen.</p>
+            <h1 style={{fontSize:"clamp(38px,6vw,64px)",fontWeight:900,lineHeight:1.0,letterSpacing:-2,marginBottom:16,color:GM_TEXT}}>Moral<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>Maps</span></h1>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:380}}>Navigeer door morele dilemma's en ontdek welke waarden jouw professionele koers bepalen.</p>
 
             {/* START FORM */}
-            <div style={{background:"rgba(255,255,255,.04)",borderRadius:20,border:"1px solid rgba(255,255,255,.08)",padding:24}}>
+            <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
-                <div style={{width:32,height:32,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
-                <div><p style={{color:"#e2e8f0",fontWeight:800,fontSize:15,margin:0}}>Startpunt van je Reis</p><p style={{color:"#64748b",fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
+                <div style={{width:32,height:32,borderRadius:10,background:GM_BLUE,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
+                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Startpunt van je Reis</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
               </div>
               <div style={{marginBottom:14}}>
-                <label style={{color:"#64748b",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
+                <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
                 <input value={gc} onChange={e=>setGc(e.target.value)} placeholder="bijv. HBO25A"
-                  style={{width:"100%",padding:"11px 15px",borderRadius:12,border:`1.5px solid ${gc.trim()?TEAL:"rgba(255,255,255,.1)"}`,background:"rgba(0,0,0,.3)",color:"#e2e8f0",fontSize:14,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1.5,transition:"border .2s"}}/>
+                  style={{width:"100%",padding:"11px 15px",borderRadius:12,border:`1.5px solid ${gc.trim()?GM_BLUE:GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:14,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1.5,transition:"border .2s"}}/>
               </div>
               <div style={{marginBottom:18}}>
-                <label style={{color:"#64748b",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:8}}>Leeftijdscategorie</label>
+                <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:8}}>Leeftijdscategorie</label>
                 <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                   {AGE_CATS.map(a=>(
-                    <button key={a} onClick={()=>setAge(a)} style={{padding:"7px 14px",borderRadius:99,border:`1.5px solid ${age===a?TEAL:"rgba(255,255,255,.12)"}`,background:age===a?TEAL:"rgba(255,255,255,.04)",color:age===a?"#fff":"#94a3b8",fontWeight:700,fontSize:12,cursor:"pointer",transition:"all .15s",fontFamily:FONT}}>{a}</button>
+                    <button key={a} onClick={()=>setAge(a)} style={{padding:"7px 14px",borderRadius:99,border:`1.5px solid ${age===a?GM_BLUE:GM_BORDER}`,background:age===a?GM_BLUE:"#fff",color:age===a?"#fff":GM_MUTED,fontWeight:700,fontSize:12,cursor:"pointer",transition:"all .15s",fontFamily:FONT}}>{a}</button>
                   ))}
                 </div>
               </div>
-              <div style={{background:"rgba(0,0,0,.2)",borderRadius:10,padding:"9px 12px",marginBottom:16,border:"1px solid rgba(255,255,255,.05)"}}>
-                <p style={{color:"#475569",fontSize:11,lineHeight:1.6,margin:0}}>🔒 <strong style={{color:"#64748b"}}>Anoniem:</strong> Alleen groepscode en leeftijd worden opgeslagen. Geen naam, geen login.</p>
+              <div style={{background:"#f8f9fa",borderRadius:10,padding:"9px 12px",marginBottom:16,border:`1px solid ${GM_BORDER}`}}>
+                <p style={{color:GM_MUTED,fontSize:11,lineHeight:1.6,margin:0}}>🔒 <strong style={{color:GM_TEXT}}>Anoniem:</strong> Alleen groepscode en leeftijd worden opgeslagen. Geen naam, geen login.</p>
               </div>
               <button onClick={()=>{if(gc.trim()&&age)onStart(gc.trim().toUpperCase(),age,null);}} disabled={!gc.trim()||!age}
-                style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?TEAL:"rgba(255,255,255,.06)",color:gc.trim()&&age?"#fff":"#475569",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?`0 4px 24px ${TEAL_GLOW}`:"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                 Start je Reis →
               </button>
             </div>
@@ -871,28 +893,40 @@ function Landing({onStart}){
 
           {/* Right: smartphone mockup */}
           <div style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8}}>
-            <div className="phone" style={{width:220,height:440,background:"linear-gradient(170deg,#1e293b,#0f172a)",borderRadius:36,border:"2px solid #2d3f55",boxShadow:"0 40px 100px #00000090,inset 0 1px 0 rgba(255,255,255,.08)",padding:10,flexShrink:0}}>
-              <div style={{width:70,height:18,background:"#0a0f1e",borderRadius:99,margin:"0 auto 8px",border:"1px solid #1e2d3d"}}/>
-              <div style={{background:"#f8fafc",borderRadius:24,height:378,overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px)",backgroundSize:"18px 18px"}}/>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 55%,rgba(248,250,252,.98))"}}/>
-                <div style={{position:"relative",zIndex:2,background:"#fff",margin:"8px 8px 0",borderRadius:12,padding:"7px 10px",boxShadow:"0 2px 10px rgba(0,0,0,.12)",display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:11}}>🧭</span><span style={{fontSize:10,fontWeight:800,color:TEAL,flex:1}}>Moral Maps</span><span style={{fontSize:9,color:"#94a3b8",fontWeight:600}}>7 stops</span>
+            <div className="phone" style={{width:242,height:472,background:"linear-gradient(170deg,#2a2f3b,#111827)",borderRadius:42,border:"2px solid #424a57",boxShadow:"0 38px 92px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.25)",padding:11,flexShrink:0}}>
+              <div style={{width:72,height:18,background:"#0f172a",borderRadius:99,margin:"0 auto 8px",border:"1px solid #273142"}}/>
+              <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative"}}>
+                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 18%,#bbdfbd 0 22%,transparent 23%),radial-gradient(circle at 80% 78%,#bad9bb 0 20%,transparent 22%),linear-gradient(135deg,#e7ece7,#d6ddd7)"}}/>
+                <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(25deg,rgba(255,255,255,.8) 2px,transparent 2px),linear-gradient(-25deg,rgba(255,255,255,.7) 2px,transparent 2px)",backgroundSize:"42px 42px",opacity:.35}}/>
+                <div style={{position:"absolute",left:10,right:10,top:58,height:4,borderRadius:99,background:"#8ab4f8",transform:"rotate(-18deg)",transformOrigin:"left center"}}/>
+                <div style={{position:"absolute",left:80,right:24,top:82,height:4,borderRadius:99,background:"#8ab4f8",transform:"rotate(28deg)",transformOrigin:"left center"}}/>
+                <div style={{position:"absolute",left:56,top:74,width:10,height:10,borderRadius:"50%",background:"#1a73e8",border:"2px solid #fff"}}/>
+                <div style={{position:"absolute",left:104,top:58,width:24,height:24,borderRadius:"50%",background:"#1a73e8",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:11,animation:"pulsePin 1.8s ease-out infinite"}}>📍</div>
+                <div style={{position:"absolute",left:160,top:116,width:12,height:12,borderRadius:"50%",background:"#1a73e8",border:"2px solid #fff"}}/>
+
+                <div style={{position:"relative",zIndex:2,background:"#1f2937",margin:"8px 8px 0",borderRadius:12,padding:"8px 10px",display:"flex",alignItems:"center",gap:8,color:"#fff"}}>
+                  <span style={{fontSize:14}}>←</span><span style={{fontSize:11,fontWeight:800,flex:1,textAlign:"center",letterSpacing:.25}}>Moral Maps</span><span style={{fontSize:10,opacity:.75}}>⌕</span>
                 </div>
-                <div style={{position:"relative",zIndex:2,padding:"8px 10px 0"}}>
-                  {[{icon:"🌸",label:"Privilege Wiel",color:TEAL,time:"5 min"},{icon:"🗺",label:"De Kaart",color:"#3B82F6",time:"5 min"},{icon:"🧭",label:"Het Kompas",color:"#EAB308",time:"3 min"},{icon:"🛣",label:"De Route",color:"#F43F5E",time:"8 min"},{icon:"🌍",label:"De Ander",color:"#6366f1",time:"7 min"},{icon:"✨",label:"STARR",color:"#22C55E",time:"8 min"},{icon:"📖",label:"Socialisatie",color:"#334155",time:"8 min"}].map((s,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:7}}>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-                        <div style={{width:22,height:22,borderRadius:"50%",background:s.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,flexShrink:0}}>{s.icon}</div>
-                        {i<6&&<div style={{width:2,height:11,background:`${s.color}60`,margin:"1px 0"}}/>}
-                      </div>
-                      <div style={{paddingTop:3}}><p style={{fontSize:9,fontWeight:700,color:"#1e293b",margin:0}}>{s.label}</p><p style={{fontSize:8,color:"#94a3b8",margin:"1px 0 0"}}>{s.time}</p></div>
+
+                <div style={{position:"absolute",left:12,right:12,top:194,zIndex:2,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                  {[
+                    {icon:"heart",label:"Persoonlijke\nwaarden"},
+                    {icon:"work",label:"Werkwaarden"},
+                    {icon:"drive",label:"Drijfveren"},
+                    {icon:"star",label:"Levensdoel"},
+                  ].map((item)=>(
+                    <div key={item.label} style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:12,padding:"9px 10px",boxShadow:"0 1px 3px rgba(60,64,67,.24)",display:"flex",alignItems:"center",gap:8}}>
+                      <MiniIcon type={item.icon}/>
+                      <span style={{fontSize:9.5,fontWeight:700,color:"#3c4043",lineHeight:1.18,whiteSpace:"pre-line"}}>{item.label}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{position:"absolute",bottom:8,left:8,right:8,background:`linear-gradient(135deg,${TEAL},${TEAL_DARK})`,borderRadius:12,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{color:"#fff",fontSize:10,fontWeight:800}}>Jouw morele route</span>
-                  <span style={{color:"rgba(255,255,255,.7)",fontSize:9,fontWeight:600}}>~46 min</span>
+
+                <div style={{position:"absolute",bottom:10,left:10,right:10,display:"flex",justifyContent:"space-between",alignItems:"center",zIndex:2}}>
+                  <div style={{display:"flex",gap:6}}>
+                    {[0,1,2].map(i=><span key={i} style={{width:8,height:8,borderRadius:"50%",background:i===1?GM_BLUE:"#9aa0a6"}}/>)}
+                  </div>
+                  <div style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:99,padding:"5px 10px",fontSize:9,fontWeight:700,color:"#3c4043",boxShadow:"0 1px 3px rgba(60,64,67,.25)"}}>GPS actief</div>
                 </div>
               </div>
             </div>
@@ -901,10 +935,10 @@ function Landing({onStart}){
       </section>
 
       {/* ROUTE STEPS */}
-      <section style={{background:"#f8fafc",padding:"56px 24px"}}>
+      <section style={{background:"#f8f9fa",padding:"56px 24px"}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:44}}>
-            <p style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:2.5,marginBottom:10}}>Jouw Routebeschrijving</p>
+            <p style={{fontSize:11,fontWeight:700,color:GM_BLUE,textTransform:"uppercase",letterSpacing:2.5,marginBottom:10}}>Jouw Routebeschrijving</p>
             <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>7 Stops, 1 Bestemming</h2>
           </div>
           <div style={{position:"relative"}}>
@@ -930,10 +964,10 @@ function Landing({onStart}){
       </section>
 
       {/* KLEUREN */}
-      <section style={{background:"#fff",padding:"48px 24px",borderTop:"1px solid #f1f5f9"}}>
+      <section style={{background:"#fff",padding:"48px 24px",borderTop:`1px solid ${GM_BORDER}`}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:28}}>
-            <p style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:2.5,marginBottom:8}}>De Vijf Kleuren</p>
+            <p style={{fontSize:11,fontWeight:700,color:GM_BLUE,textTransform:"uppercase",letterSpacing:2.5,marginBottom:8}}>De Vijf Kleuren</p>
             <h2 style={{fontSize:24,fontWeight:900,color:"#0f172a",letterSpacing:-.5}}>Caluwé's Veranderkleuren</h2>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
@@ -948,14 +982,14 @@ function Landing({onStart}){
       </section>
 
       {/* DASHBOARD */}
-      <section style={{background:"#0f172a",padding:"36px 24px"}}>
+      <section style={{background:"#f8f9fa",padding:"36px 24px",borderTop:`1px solid ${GM_BORDER}`}}>
         <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
-          <p style={{color:"#94a3b8",fontSize:13,marginBottom:16}}>📊 <strong style={{color:"#e2e8f0"}}>Begeleider?</strong> Bekijk het groepsdashboard</p>
+          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Begeleider?</strong> Bekijk het groepsdashboard</p>
           <div style={{display:"flex",gap:8}}>
             <input value={dash} onChange={e=>setDash(e.target.value)} placeholder="Voer groepscode in…"
-              style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid #334155",background:"#1e293b",color:"#e2e8f0",fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+              style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
             <button onClick={()=>dash.trim()&&onStart(null,null,dash.trim().toUpperCase())}
-              style={{padding:"10px 20px",borderRadius:10,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
+              style={{padding:"10px 20px",borderRadius:10,border:"none",background:GM_BLUE,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
           </div>
         </div>
       </section>
