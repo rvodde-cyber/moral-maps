@@ -1,6 +1,6 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.jsx';
+import MoralMaps from './App.jsx'; // We importeren MoralMaps
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -8,9 +8,7 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
-      <App />
+      <MoralMaps /> {/* We gebruiken hier ook MoralMaps */}
     </StrictMode>
   );
-} else {
-  console.error("Fout: Kon het 'root' element niet vinden in de HTML.");
 }
