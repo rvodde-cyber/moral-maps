@@ -1251,4 +1251,4 @@ export default function MoralMaps(){
       </div>
     </div>
   );
-}
+}export default App;
