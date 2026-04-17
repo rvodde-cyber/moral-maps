@@ -915,9 +915,9 @@ function Landing({onStart}){
                     {icon:"drive",label:"Drijfveren"},
                     {icon:"star",label:"Levensdoel"},
                   ].map((item)=>(
-                    <div key={item.label} style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:12,padding:"9px 10px",boxShadow:"0 1px 3px rgba(60,64,67,.24)",display:"flex",alignItems:"center",gap:8}}>
+                    <div key={item.label} style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:9,padding:"10px 11px",minHeight:44,boxShadow:"0 1px 3px rgba(60,64,67,.24)",display:"flex",alignItems:"center",gap:9}}>
                       <MiniIcon type={item.icon}/>
-                      <span style={{fontSize:9.5,fontWeight:700,color:"#3c4043",lineHeight:1.18,whiteSpace:"pre-line"}}>{item.label}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:"#3c4043",lineHeight:1.18,whiteSpace:"pre-line"}}>{item.label}</span>
                     </div>
                   ))}
                 </div>
