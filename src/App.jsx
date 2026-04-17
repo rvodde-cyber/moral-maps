@@ -12,8 +12,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ── 🔧 VERANDER DEZE TWEE WAARDEN ────────────────────────────
-const SUPABASE_URL      = "https://zkiavxldremirlvcmoef.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWF2eGxkcmVtaXJsdmNtb2VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjM3ODcsImV4cCI6MjA5MTIzOTc4N30.oxBclzSe1nl9pQVnqVfHPkQ55BogpJh0vF39PdU0v0Y";
+const SUPABASE_URL      = "https://JOUW-PROJECT-ID.supabase.co";
+const SUPABASE_ANON_KEY = "JOUW-ANON-KEY";
 // ─────────────────────────────────────────────────────────────
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
