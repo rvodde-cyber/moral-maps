@@ -1,14 +1,10 @@
-import React, { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import MoralMaps from './MoralMaps.jsx';
-import './index.css';
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import MoralMaps from './MoralMaps.jsx'
 
-const rootElement = document.getElementById('root');
-
-if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <MoralMaps />
-    </StrictMode>
-  );
-}
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <MoralMaps />
+  </StrictMode>,
+)
