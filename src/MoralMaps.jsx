@@ -954,7 +954,7 @@ function Landing({onStart}){
 
 // ── Main App ───────────────────────────────────────────────────
 
-function MoralMaps() {(){
+function MoralMaps() {
   const [screen,setScreen]=useState("landing");
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
