@@ -1,13 +1,15 @@
 {
-  "name": "moral-maps",
+  "name": "moral-aps",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run dev",
+    "dev:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run dev",
+    "build:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run build",
+    "build:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run build",
+    "lint:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run lint",
+    "lint:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run lint"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.2",

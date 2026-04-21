@@ -1,16 +1,68 @@
-# React + Vite
+# Morele Lakmoesproef Apps
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Deze repository bevat nu twee gescheiden productie-apps:
 
-Currently, two official plugins are available:
+- `apps/persoonlijke-integriteitsmeting`
+- `apps/organisatie-lakmoesproef`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Beide apps zijn gebouwd met:
 
-## React Compiler
+- React + Vite
+- TypeScript
+- Tailwind CSS (via `@tailwindcss/vite`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Lokale ontwikkeling
 
-## Expanding the ESLint configuration
+Installeer dependencies per app (eenmalig):
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd apps/persoonlijke-integriteitsmeting && npm install
+cd ../organisatie-lakmoesproef && npm install
+```
+
+Starten:
+
+```bash
+# Persoonlijke integriteitsmeting
+npm run dev:persoonlijk
+
+# Organisatie lakmoesproef
+npm run dev:organisatie
+```
+
+Builden:
+
+```bash
+npm run build:persoonlijk
+npm run build:organisatie
+```
+
+Linten:
+
+```bash
+npm run lint:persoonlijk
+npm run lint:organisatie
+```
+
+## Vercel deployment
+
+Deploy elke app als apart Vercel-project.
+
+### Project 1: Persoonlijke integriteitsmeting
+- **Root Directory**: `apps/persoonlijke-integriteitsmeting`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+
+### Project 2: Organisatie lakmoesproef
+- **Root Directory**: `apps/organisatie-lakmoesproef`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+
+## Inhoud
+
+- De individuele app is hernoemd naar **Persoonlijke integriteitsmeting**.
+- De organisatie-app bevat de **complete 21-vragen Organisatie lakmoesproef** met:
+  - professionele vraagformulering,
+  - ondertitel per vraag,
+  - heldere uitlegtekst per vraag,
+  - 1-5 scoremodel en totaalscore.
