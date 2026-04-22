@@ -1,6 +1,6 @@
 // ============================================================
-//  MORAL MAPS — v4
-//  Bijgewerkt: Socialisatieverslag als fase 6 toegevoegd
+//  MORAL APS — v1
+//  Bijgewerkt: Deel 1 (Vertrek) flow met neutrale terminologie
 //
 //  SETUP:
 //  1. npm install @supabase/supabase-js
@@ -97,10 +97,10 @@ const VALUES = [
 const DILEMMAS = [
   {
     title:"De Meelifter",
-    scenario:"Een medestudent doet weinig in de projectgroep, maar krijgt wel hetzelfde cijfer. De deadline nadert en het werk is nog niet af.",
+    scenario:"Een collega doet weinig in de projectgroep, maar krijgt wel dezelfde beoordeling. De deadline nadert en het werk is nog niet af.",
     options:[
-      {text:"Ik meld dit bij de docent.",color:"blauw"},
-      {text:"Ik ga het gesprek aan met de medestudent.",color:"groen"},
+      {text:"Ik meld dit bij de leidinggevende.",color:"blauw"},
+      {text:"Ik ga het gesprek aan met de collega.",color:"groen"},
       {text:"Ik accepteer het en doe het werk zelf.",color:"rood"}
     ]
   },
@@ -115,9 +115,9 @@ const DILEMMAS = [
   },
   {
     title:"De Fout in het Rapport",
-    scenario:"Je ontdekt een dag na inlevering een fout in je stage-rapport. Het is al beoordeeld en je hebt een voldoende. De fout is inhoudelijk maar niet cruciaal.",
+    scenario:"Je ontdekt een dag na oplevering een fout in je werkrapport. Het is al beoordeeld en je hebt een voldoende. De fout is inhoudelijk maar niet cruciaal.",
     options:[
-      {text:"Ik meld de fout alsnog aan de begeleider.",color:"blauw"},
+      {text:"Ik meld de fout alsnog aan de leidinggevende.",color:"blauw"},
       {text:"Ik laat het — de beoordeling is al gedaan.",color:"geel"},
       {text:"Ik verwerk de correctie in een volgende versie zonder het te melden.",color:"wit"}
     ]
@@ -133,26 +133,50 @@ const DILEMMAS = [
   },
   {
     title:"De Grens van de Opdracht",
-    scenario:"Je stagebegeleider vraagt je iets te doen wat buiten je takenpakket valt en wat je ongemakkelijk maakt — het is niet onethisch, maar voelt niet goed.",
+    scenario:"Je leidinggevende vraagt je iets te doen wat buiten je takenpakket valt en wat je ongemakkelijk maakt — het is niet onethisch, maar voelt niet goed.",
     options:[
-      {text:"Ik doe het toch, het is mijn stagebegeleider.",color:"rood"},
+      {text:"Ik doe het toch, het is mijn leidinggevende.",color:"rood"},
       {text:"Ik geef aan dat ik me hier niet prettig bij voel en vraag om overleg.",color:"groen"},
-      {text:"Ik verwijs naar mijn stageovereenkomst en weiger vriendelijk.",color:"blauw"}
+      {text:"Ik verwijs naar mijn taakafspraken en weiger vriendelijk.",color:"blauw"}
     ]
   },
   {
     title:"De Sociale Media Post",
-    scenario:"Een klasgenoot plaatst een provocerende post op sociale media over een kwetsbare groep. Enkele studenten liken het bericht. Jij bent getuige.",
+    scenario:"Een collega plaatst een provocerende post op sociale media over een kwetsbare groep. Enkele collega's liken het bericht. Jij bent getuige.",
     options:[
       {text:"Ik reageer publiekelijk en spreek de post tegen.",color:"wit"},
-      {text:"Ik stuur de klasgenoot een privébericht.",color:"rood"},
-      {text:"Ik meld het bij een docent of vertrouwenspersoon.",color:"blauw"}
+      {text:"Ik stuur de collega een privébericht.",color:"rood"},
+      {text:"Ik meld het bij een leidinggevende of vertrouwenspersoon.",color:"blauw"}
     ]
   },
 ];
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
 const FONT = "'DM Sans',system-ui,sans-serif";
+
+const ORG_QUESTIONS = [
+  { id: 1, title: "Ethische visie", subtitle: "Richting en betekenis", explanation: "In welke mate is de missie van de organisatie expliciet gekoppeld aan maatschappelijke waarde en verantwoord handelen?" },
+  { id: 2, title: "Voorbeeldgedrag leiderschap", subtitle: "Walk the talk", explanation: "In welke mate laten leidinggevenden in keuzes en gedrag zien wat zij van anderen verwachten?" },
+  { id: 3, title: "Psychologische veiligheid", subtitle: "Ruimte om te spreken", explanation: "In welke mate ervaren medewerkers veiligheid om dilemma's, fouten en zorgen bespreekbaar te maken?" },
+  { id: 4, title: "Waarden in besluitvorming", subtitle: "Niet alleen op papier", explanation: "In welke mate worden waarden zichtbaar meegewogen naast rendement, tijd en risico?" },
+  { id: 5, title: "Transparantie", subtitle: "Uitlegbaar handelen", explanation: "In welke mate worden belangrijke beslissingen helder onderbouwd en gedeeld?" },
+  { id: 6, title: "Aanspreekcultuur", subtitle: "Professionele feedback", explanation: "In welke mate spreken collega's en leidinggevenden elkaar constructief aan op gedrag?" },
+  { id: 7, title: "Leren van fouten", subtitle: "Van incident naar verbetering", explanation: "In welke mate worden fouten systematisch benut om processen en gedrag te verbeteren?" },
+  { id: 8, title: "Rechtvaardigheid", subtitle: "Eerlijk en consistent", explanation: "In welke mate worden mensen en teams gelijkwaardig behandeld in kansen, beoordeling en beloning?" },
+  { id: 9, title: "Inclusie", subtitle: "Iedere stem telt", explanation: "In welke mate wordt actief ruimte gecreeerd voor verschillende perspectieven en achtergronden?" },
+  { id: 10, title: "Verantwoordelijkheid", subtitle: "Eigenaarschap op elk niveau", explanation: "In welke mate voelen professionals zich eigenaar van ethische kwaliteit in hun dagelijkse werk?" },
+  { id: 11, title: "Stakeholderbewustzijn", subtitle: "Brede impact meenemen", explanation: "In welke mate wordt de impact op klanten, burgers, partners en samenleving meegewogen?" },
+  { id: 12, title: "Korte vs lange termijn", subtitle: "Duurzame afwegingen", explanation: "In welke mate wordt structureel gekozen voor duurzame oplossingen boven snelle winst?" },
+  { id: 13, title: "Integrale samenwerking", subtitle: "Silo's doorbreken", explanation: "In welke mate werken afdelingen samen aan gedeelde ethische en organisatorische doelen?" },
+  { id: 14, title: "Signalering en opvolging", subtitle: "Melden heeft effect", explanation: "In welke mate worden signalen over risico's of misstanden serieus opgepakt en opgevolgd?" },
+  { id: 15, title: "Professionele reflectie", subtitle: "Tijd voor moreel beraad", explanation: "In welke mate is er structurele ruimte voor reflectie op complexe casuistiek?" },
+  { id: 16, title: "Kennis en competenties", subtitle: "Ethisch vakmanschap", explanation: "In welke mate worden medewerkers getraind in morele oordeelsvorming en professioneel handelen?" },
+  { id: 17, title: "Grenzen en normen", subtitle: "Heldere kaders", explanation: "In welke mate zijn normen, grensoverschrijdend gedrag en consequenties eenduidig geformuleerd?" },
+  { id: 18, title: "Datagedreven verbeteren", subtitle: "Meten is leren", explanation: "In welke mate gebruikt de organisatie data en feedback om ethisch werken te versterken?" },
+  { id: 19, title: "Mensen boven systemen", subtitle: "Menselijke maat", explanation: "In welke mate blijft de menselijke maat leidend in beleid, processen en klantcontact?" },
+  { id: 20, title: "Externe verantwoording", subtitle: "Open naar buiten", explanation: "In welke mate legt de organisatie actief verantwoording af over maatschappelijke en ethische keuzes?" },
+  { id: 21, title: "Continue verbetering", subtitle: "Van scan naar actie", explanation: "In welke mate vertaalt de organisatie inzichten uit metingen naar een concreet verbeterplan?" },
+];
 
 // ── Privilege Wiel Data ────────────────────────────────────────
 
@@ -199,7 +223,7 @@ function Spinner(){
 }
 
 function PBar({step,pct}){
-  const L=["Bewustwording","Waarden","Kompas","Dilemma's","De Ander","STARR","Socialisatie","Verslag"];
+  const L=["Bewustwording","Waarden","Kompas","Dilemma's","STARR"];
   return(
     <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
@@ -559,8 +583,8 @@ function Socialisatieverslag({coreVals, onComplete}){
       kleur: TEAL,
       lichtkleur: TEAL_LIGHT,
       borderkleur: TEAL,
-      uitleg: "Tertiaire socialisatie vindt plaats in je professionele context: stage, werk, studie, beroepsgroep. Je leert de normen en waarden van een specifiek werkveld of organisatie.",
-      hint: "Hoe heeft je studie of stage jouw professionele waarden gevormd of uitgedaagd? Zijn er waarden die je bewust hebt overgenomen — of juist afgewezen — in jouw beroepsidentiteit?",
+      uitleg: "Tertiaire socialisatie vindt plaats in je professionele context: werk, team en beroepsgroep. Je leert de normen en waarden van een specifiek werkveld of organisatie.",
+      hint: "Hoe heeft je werkomgeving jouw professionele waarden gevormd of uitgedaagd? Zijn er waarden die je bewust hebt overgenomen — of juist afgewezen — in jouw beroepsidentiteit?",
     },
     {
       key: "koppeling",
@@ -589,7 +613,7 @@ function Socialisatieverslag({coreVals, onComplete}){
               {[
                 {icon:"🏠",label:"Primaire socialisatie",sub:"Gezin en vroege jeugd",kleur:"#f43f5e"},
                 {icon:"🏫",label:"Secundaire socialisatie",sub:"School, vrienden, media",kleur:"#f59e0b"},
-                {icon:"💼",label:"Tertiaire socialisatie",sub:"Studie, stage en werk",kleur:TEAL},
+                {icon:"💼",label:"Tertiaire socialisatie",sub:"Werk en beroepsomgeving",kleur:TEAL},
                 {icon:"🧭",label:"Koppeling aan jouw kompas",sub:"Alles samen",kleur:"#6366f1"},
               ].map(({icon,label,sub,kleur})=>(
                 <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:12,border:`1px solid ${kleur}30`,background:`${kleur}08`}}>
@@ -664,10 +688,10 @@ function Socialisatieverslag({coreVals, onComplete}){
 
 // ── PDF Export ─────────────────────────────────────────────────
 
-function exportPDF(coreVals, dilResp, starr, vreemd, socialisatie, domColor, groupCode, age){
+function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age){
   const c = CM[domColor];
   const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-    <title>Moral Maps – Reisverslag</title>
+    <title>Moral APS – Deel 1 Verslag</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
       *{box-sizing:border-box;margin:0;padding:0}
@@ -692,7 +716,7 @@ function exportPDF(coreVals, dilResp, starr, vreemd, socialisatie, domColor, gro
     </style></head><body>
     <div class="header">
       <div style="font-size:36px;margin-bottom:12px">🏆</div>
-      <h1>Moral Maps — Reisverslag</h1>
+      <h1>Moral APS — Deel 1 Verslag</h1>
       <p>Groep: ${groupCode} · Leeftijd: ${age} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
     </div>
     <div class="section">
@@ -709,18 +733,18 @@ function exportPDF(coreVals, dilResp, starr, vreemd, socialisatie, domColor, gro
       ${DILEMMAS.map((d,i)=>{const r=dilResp[i];const cc=r?CM[r.color]:null;return`<div class="ditem"><div class="num">${i+1}</div><div><div style="font-weight:700;font-size:13px">${d.title}</div>${r&&cc?`<div style="font-size:12px;color:${cc.text};margin-top:3px">${r.text}</div>`:""}</div></div>`;}).join("")}
     </div>
     <div class="section">
-      <div class="section-title">📖 Socialisatieverslag</div>
-      ${[{key:"primair",label:"Primaire socialisatie",bg:"#ffe4e6",border:"#f43f5e",kleur:"#f43f5e"},{key:"secundair",label:"Secundaire socialisatie",bg:"#fffbeb",border:"#fcd34d",kleur:"#d97706"},{key:"tertiair",label:"Tertiaire socialisatie",bg:TEAL_LIGHT,border:TEAL,kleur:TEAL},{key:"koppeling",label:"Koppeling aan kompas",bg:"#eef2ff",border:"#a5b4fc",kleur:"#6366f1"}].map(({key,label,bg,border,kleur})=>`<div class="vblock" style="background:${bg};border:1px solid ${border}"><div style="font-weight:800;font-size:13px;color:${kleur};margin-bottom:6px">${label}</div><div style="font-size:13px;color:#334155;line-height:1.7">${(socialisatie&&socialisatie[key])||"Niet ingevuld"}</div></div>`).join("")}
-    </div>
-    <div class="section">
-      <div class="section-title">🌍 De Vreemde Ander</div>
-      ${[{key:"spiegel",label:"De Spiegel",bg:"#eef2ff",border:"#a5b4fc",kleur:"#6366f1"},{key:"tussenruimte",label:"De Tussenruimte",bg:"#fffbeb",border:"#fcd34d",kleur:"#d97706"},{key:"insluiting",label:"Insluiting",bg:TEAL_LIGHT,border:TEAL,kleur:TEAL}].map(({key,label,bg,border,kleur})=>`<div class="vblock" style="background:${bg};border:1px solid ${border}"><div style="font-weight:800;font-size:13px;color:${kleur};margin-bottom:6px">${label}</div><div style="font-size:13px;color:#334155;line-height:1.7">${(vreemd&&vreemd[key])||"Niet ingevuld"}</div></div>`).join("")}
-    </div>
-    <div class="section">
       <div class="section-title">✨ STARR Reflectie</div>
       ${Object.entries(starr).map(([key,val])=>`<div class="key" style="color:${TEAL}">${key.charAt(0).toUpperCase()+key.slice(1)}</div><div class="val">${val||"Niet ingevuld"}</div>`).join("")}
     </div>
-    <div class="footer">Gegenereerd door Moral Maps · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
+    ${smsDilemma?.smsChoice ? `
+    <div class="section">
+      <div class="section-title">📩 Einddilemma — SMS uit Roosendaal</div>
+      <div class="key" style="color:${TEAL}">Gekozen reactie</div>
+      <div class="val">${smsDilemma.smsChoice}</div>
+      <div class="key" style="color:${TEAL}">Waardenafweging</div>
+      <div class="val">${smsDilemma.smsReflection || "Niet ingevuld"}</div>
+    </div>` : ""}
+    <div class="footer">Gegenereerd door Moral APS · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
     </body></html>`;
 
   const blob = new Blob([html], {type:"text/html"});
@@ -813,6 +837,78 @@ function Dashboard({groupCode,onBack}){
   );
 }
 
+function OrganizationLakmoesproef({ onBack }) {
+  const [orgName, setOrgName] = useState("");
+  const [role, setRole] = useState("");
+  const [answers, setAnswers] = useState({});
+  const [notes, setNotes] = useState("");
+
+  const completed = Object.keys(answers).length;
+  const allDone = completed === ORG_QUESTIONS.length;
+  const score = allDone
+    ? Math.round(
+        (Object.values(answers).reduce((sum, val) => sum + val, 0) /
+          (ORG_QUESTIONS.length * 5)) *
+          100
+      )
+    : 0;
+
+  return (
+    <div style={{ background: "#f8fafc", minHeight: "100vh", fontFamily: FONT }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 60px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900, letterSpacing: -0.4 }}>Organisatie lakmoesproef</h2>
+          <button onClick={onBack} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontWeight: 700, color: "#334155" }}>← Terug</button>
+        </div>
+
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 18, marginBottom: 14 }}>
+          <p style={{ margin: "0 0 10px", color: "#475569", lineHeight: 1.7, fontSize: 14 }}>
+            Een professionele organisatiescan op basis van 21 vragen over voorbeeldig organiseren. Beoordeel per vraag de huidige praktijk op een schaal van 1 (zwak) tot 5 (sterk).
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Organisatie (optioneel)" style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #cbd5e1", fontFamily: FONT }} />
+            <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Jouw rol/functie (optioneel)" style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #cbd5e1", fontFamily: FONT }} />
+          </div>
+          <p style={{ margin: "10px 0 0", fontSize: 12, color: "#64748b" }}>{completed}/{ORG_QUESTIONS.length} vragen ingevuld</p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {ORG_QUESTIONS.map((q) => (
+            <div key={q.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 16 }}>
+              <p style={{ margin: 0, fontSize: 11, color: "#94a3b8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>Vraag {q.id}</p>
+              <h3 style={{ margin: "4px 0 2px", fontSize: 18, fontWeight: 800 }}>{q.title}</h3>
+              <p style={{ margin: "0 0 8px", fontSize: 12, color: TEAL, fontWeight: 700 }}>{q.subtitle}</p>
+              <p style={{ margin: "0 0 12px", fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{q.explanation}</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: n }))} style={{ minWidth: 42, padding: "8px 12px", borderRadius: 10, border: `1.5px solid ${answers[q.id] === n ? TEAL : "#cbd5e1"}`, background: answers[q.id] === n ? TEAL : "#fff", color: answers[q.id] === n ? "#fff" : "#334155", fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 14, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 16 }}>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>Kernobservaties en verbetersporen (optioneel)</label>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Welke 2-3 thema's verdienen direct aandacht? Welke acties zijn kansrijk?" style={{ width: "100%", borderRadius: 10, border: "1px solid #cbd5e1", padding: 12, fontFamily: FONT, resize: "vertical" }} />
+          <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <p style={{ margin: 0, fontSize: 13, color: allDone ? TEAL : "#64748b", fontWeight: 700 }}>
+              {allDone ? `Integriteitsscore organisatie: ${score}%` : "Vul alle vragen in voor een totaalscore"}
+            </p>
+          </div>
+          {allDone && (
+            <p style={{ margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.6 }}>
+              {score >= 80 ? "Sterk fundament: borg de werkwijze en houd focus op continue verbetering." : score >= 60 ? "Goede basis: prioriteer 3 verbeterpunten met duidelijke eigenaarschap en planning." : "Versterking nodig: start met leiderschap, aanspreekcultuur en veilige dialoog als eerste interventies."}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Landing ────────────────────────────────────────────────────
 
 function Landing({onStart}){
@@ -838,9 +934,7 @@ function Landing({onStart}){
     {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 10 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
     {color:"#EAB308",sc:"#a16207",icon:"🧭",num:"02",label:"Het Kompas",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten van jouw moreel kompas."},
     {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op zes realistische dilemma's en ontdek of je keuzes overeenkomen met jouw kompas."},
-    {color:"#6366f1",sc:"#4f46e5",icon:"🌍",num:"04",label:"De Vreemde Ander",tag:"De Ontmoeting",desc:"Reflecteer op verschil en inclusie: de spiegel, de tussenruimte en insluiting in de praktijk."},
-    {color:"#22C55E",sc:"#15803d",icon:"✨",num:"05",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
-    {color:"#0f172a",sc:"#334155",icon:"📖",num:"06",label:"Socialisatieverslag",tag:"Wortels",desc:"Reflecteer op de drie lagen van jouw socialisatie en ontdek waar jouw waarden vandaan komen."},
+    {color:"#22C55E",sc:"#15803d",icon:"✨",num:"04",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
   ];
 
   return(
@@ -859,14 +953,14 @@ function Landing({onStart}){
               <span style={{width:7,height:7,borderRadius:"50%",background:GM_BLUE,display:"inline-block"}} className="shimmer"/>
               GEÏNSPIREERD DOOR CALUWÉ & VERMAAK
             </div>
-            <h1 style={{fontSize:"clamp(38px,6vw,64px)",fontWeight:900,lineHeight:1.0,letterSpacing:-2,marginBottom:16,color:GM_TEXT}}>Moral<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>Maps</span></h1>
-            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:380}}>Navigeer door morele dilemma's en ontdek welke waarden jouw professionele koers bepalen.</p>
+            <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Persoonlijke<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>integriteitsmeting</span></h1>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Doorloop een professionele reflectie op waarden, dilemma's en professioneel handelen. Of kies direct voor de organisatie lakmoesproef.</p>
 
             {/* START FORM */}
             <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
                 <div style={{width:32,height:32,borderRadius:10,background:GM_BLUE,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
-                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Startpunt van je Reis</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
+                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Start Persoonlijke integriteitsmeting</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
               </div>
               <div style={{marginBottom:14}}>
                 <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
@@ -886,48 +980,23 @@ function Landing({onStart}){
               </div>
               <button onClick={()=>{if(gc.trim()&&age)onStart(gc.trim().toUpperCase(),age,null);}} disabled={!gc.trim()||!age}
                 style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                Start je Reis →
+                Start persoonlijke meting →
               </button>
             </div>
           </div>
 
           {/* Right: smartphone mockup */}
-          <div style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8}}>
-            <div className="phone" style={{width:242,height:472,background:"linear-gradient(170deg,#2a2f3b,#111827)",borderRadius:42,border:"2px solid #424a57",boxShadow:"0 38px 92px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.25)",padding:11,flexShrink:0}}>
-              <div style={{width:72,height:18,background:"#0f172a",borderRadius:99,margin:"0 auto 8px",border:"1px solid #273142"}}/>
-              <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 18%,#bbdfbd 0 22%,transparent 23%),radial-gradient(circle at 80% 78%,#bad9bb 0 20%,transparent 22%),linear-gradient(135deg,#e7ece7,#d6ddd7)"}}/>
-                <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(25deg,rgba(255,255,255,.8) 2px,transparent 2px),linear-gradient(-25deg,rgba(255,255,255,.7) 2px,transparent 2px)",backgroundSize:"42px 42px",opacity:.35}}/>
-                <div style={{position:"absolute",left:10,right:10,top:58,height:4,borderRadius:99,background:"#8ab4f8",transform:"rotate(-18deg)",transformOrigin:"left center"}}/>
-                <div style={{position:"absolute",left:80,right:24,top:82,height:4,borderRadius:99,background:"#8ab4f8",transform:"rotate(28deg)",transformOrigin:"left center"}}/>
-                <div style={{position:"absolute",left:56,top:74,width:10,height:10,borderRadius:"50%",background:"#1a73e8",border:"2px solid #fff"}}/>
-                <div style={{position:"absolute",left:104,top:58,width:24,height:24,borderRadius:"50%",background:"#1a73e8",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:900,fontSize:11,animation:"pulsePin 1.8s ease-out infinite"}}>📍</div>
-                <div style={{position:"absolute",left:160,top:116,width:12,height:12,borderRadius:"50%",background:"#1a73e8",border:"2px solid #fff"}}/>
-
-                <div style={{position:"relative",zIndex:2,background:"#1f2937",margin:"8px 8px 0",borderRadius:12,padding:"8px 10px",display:"flex",alignItems:"center",gap:8,color:"#fff"}}>
-                  <span style={{fontSize:14}}>←</span><span style={{fontSize:11,fontWeight:800,flex:1,textAlign:"center",letterSpacing:.25}}>Moral Maps</span><span style={{fontSize:10,opacity:.75}}>⌕</span>
-                </div>
-
-                <div style={{position:"absolute",left:12,right:12,top:194,zIndex:2,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                  {[
-                    {icon:"heart",label:"Persoonlijke\nwaarden"},
-                    {icon:"work",label:"Werkwaarden"},
-                    {icon:"drive",label:"Drijfveren"},
-                    {icon:"star",label:"Levensdoel"},
-                  ].map((item)=>(
-                    <div key={item.label} style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:9,padding:"10px 11px",minHeight:44,boxShadow:"0 1px 3px rgba(60,64,67,.24)",display:"flex",alignItems:"center",gap:9}}>
-                      <MiniIcon type={item.icon}/>
-                      <span style={{fontSize:10,fontWeight:700,color:"#3c4043",lineHeight:1.18,whiteSpace:"pre-line"}}>{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{position:"absolute",bottom:10,left:10,right:10,display:"flex",justifyContent:"space-between",alignItems:"center",zIndex:2}}>
-                  <div style={{display:"flex",gap:6}}>
-                    {[0,1,2].map(i=><span key={i} style={{width:8,height:8,borderRadius:"50%",background:i===1?GM_BLUE:"#9aa0a6"}}/>)}
-                  </div>
-                  <div style={{background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:99,padding:"5px 10px",fontSize:9,fontWeight:700,color:"#3c4043",boxShadow:"0 1px 3px rgba(60,64,67,.25)"}}>GPS actief</div>
-                </div>
+          <div style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8,perspective:900}}>
+            <div className="phone" style={{width:242,height:472,background:"linear-gradient(170deg,#232a36,#0c1119)",borderRadius:42,border:"2px solid #3b4350",boxShadow:"0 42px 95px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.22)",padding:11,flexShrink:0,transform:"rotate(-2deg)",transition:"transform .25s ease"}}>
+              <div style={{width:72,height:18,background:"#0b1119",borderRadius:99,margin:"0 auto 8px",border:"1px solid #263142"}}/>
+              <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.22), inset 0 -20px 35px rgba(0,0,0,.08)"}}>
+                <img
+                  src="/moral-maps-phone=art.jpg"
+                  alt="Moral Maps mobiele preview"
+                  style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%",display:"block",filter:"saturate(1.05) contrast(1.03)"}}
+                />
+                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 40%, transparent 60%, rgba(0,0,0,.13) 100%)",pointerEvents:"none"}}/>
+                <div style={{position:"absolute",left:"8%",right:"8%",top:6,height:24,borderRadius:999,background:"linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0))",pointerEvents:"none"}}/>
               </div>
             </div>
           </div>
@@ -939,10 +1008,10 @@ function Landing({onStart}){
         <div style={{maxWidth:720,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:44}}>
             <p style={{fontSize:11,fontWeight:700,color:GM_BLUE,textTransform:"uppercase",letterSpacing:2.5,marginBottom:10}}>Jouw Routebeschrijving</p>
-            <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>7 Stops, 1 Bestemming</h2>
+            <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>5 Stops, Deel 1: Vertrek</h2>
           </div>
           <div style={{position:"relative"}}>
-            <div style={{position:"absolute",left:31,top:32,bottom:32,width:3,background:`linear-gradient(to bottom,${TEAL},#3B82F6,#EAB308,#F43F5E,#6366f1,#22C55E,#334155)`,borderRadius:99,zIndex:0}}/>
+            <div style={{position:"absolute",left:31,top:32,bottom:32,width:3,background:`linear-gradient(to bottom,${TEAL},#3B82F6,#EAB308,#F43F5E,#22C55E)`,borderRadius:99,zIndex:0}}/>
             {STEPS.map((s,i)=>(
               <div key={i} style={{display:"flex",gap:20,marginBottom:i<STEPS.length-1?28:0,position:"relative",zIndex:1}}>
                 <div style={{width:64,flexShrink:0,display:"flex",justifyContent:"center"}}>
@@ -984,13 +1053,16 @@ function Landing({onStart}){
       {/* DASHBOARD */}
       <section style={{background:"#f8f9fa",padding:"36px 24px",borderTop:`1px solid ${GM_BORDER}`}}>
         <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
-          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Begeleider?</strong> Bekijk het groepsdashboard</p>
+          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Leidinggevende?</strong> Bekijk het groepsdashboard of start de organisatie lakmoesproef</p>
           <div style={{display:"flex",gap:8}}>
             <input value={dash} onChange={e=>setDash(e.target.value)} placeholder="Voer groepscode in…"
               style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
             <button onClick={()=>dash.trim()&&onStart(null,null,dash.trim().toUpperCase())}
               style={{padding:"10px 20px",borderRadius:10,border:"none",background:GM_BLUE,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
           </div>
+          <button onClick={()=>onStart(null,null,null,true)} style={{marginTop:10,padding:"10px 16px",borderRadius:10,border:"1px solid #cbd5e1",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
+            Start Organisatie lakmoesproef →
+          </button>
         </div>
       </section>
     </div>
@@ -1004,7 +1076,7 @@ export default function MoralMaps(){
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
   const [dashCode,setDashCode]=useState("");
-  const [phase,setPhase]=useState(0); // 0=privilege, 1=kaart, 2=kompas, 3=dilemma's, 4=vreemde ander, 5=starr, 6=socialisatie, 7=verslag
+  const [phase,setPhase]=useState(0); // 0=privilege, 1=kaart, 2=kompas, 3=dilemma's, 4=starr
   const [selVals,setSelVals]=useState([]);
   const [coreVals,setCoreVals]=useState([]);
   const [dilResp,setDilResp]=useState([]);
@@ -1012,20 +1084,18 @@ export default function MoralMaps(){
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
-  const [vreemd,setVreemd]=useState({spiegel:"",tussenruimte:"",insluiting:""});
-  const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",tertiair:"",koppeling:""});
   const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
   const [saved,setSaved]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
+  const [showSmsDilemma, setShowSmsDilemma] = useState(false);
+  const [smsChoice, setSmsChoice] = useState("");
+  const [smsReflection, setSmsReflection] = useState("");
 
   const pct=useMemo(()=>{
     if(phase===0)return 2;
     if(phase===1)return 8+(selVals.length/10)*8;
     if(phase===2)return 18+(coreVals.length/3)*8;
-    if(phase===3)return 30+(curDil/DILEMMAS.length)*14;
-    if(phase===4)return 50;
-    if(phase===5)return 63;
-    if(phase===6)return 78;
+    if(phase===3)return 30+(curDil/DILEMMAS.length)*60;
     return 100;
   },[phase,selVals.length,coreVals.length,curDil]);
 
@@ -1035,14 +1105,76 @@ export default function MoralMaps(){
     return Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
   },[coreVals,dilResp]);
 
-  function start(gc,ag,dc){if(dc){setDashCode(dc);setScreen("dashboard");return;}setGroupCode(gc);setAge(ag);setScreen("app");setPhase(0);}
-  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setVreemd({spiegel:"",tussenruimte:"",insluiting:""});setSocialisatie({primair:"",secundair:"",tertiair:"",koppeling:""});setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaved(false);setSaveErr(null);}
-  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});if(ok){setSaved(true);setPhase(7);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
+  function start(gc,ag,dc,org=false){
+    if(org){setScreen("org");return;}
+    if(dc){setDashCode(dc);setScreen("dashboard");return;}
+    setGroupCode(gc);setAge(ag);setScreen("app");setPhase(0);
+  }
+  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaved(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");}
+  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});if(ok){setSaved(true);setScreen("done");}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
   if(screen==="landing")return <Landing onStart={start}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("landing")}/></div>;
+  if(screen==="org") return <OrganizationLakmoesproef onBack={()=>setScreen("landing")} />;
+  if(screen==="done"){
+    return(
+      <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
+        <div style={{maxWidth:680,margin:"0 auto",padding:"40px 16px 60px"}}>
+          <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:44,marginBottom:8}}>🏁</div>
+            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Persoonlijke integriteitsmeting afgerond</h2>
+            <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Je bent klaar voor Deel 2: Onderweg (Crossroads)</p>
+            {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
+          </div>
+          {!showSmsDilemma && (
+            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📩 Laatste morele check</p>
+              <div style={{marginBottom:10,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 4px 16px rgba(15,23,42,.08)"}}>
+                <img
+                  src="/moral-maps-sms-dilemma.jp.png"
+                  alt="Nachtelijke keuze op kruispunt"
+                  style={{width:"100%",height:"auto",display:"block",objectFit:"cover",maxHeight:260}}
+                />
+              </div>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:0}}>
+                Vlak voor je het verslag downloadt ontvang je een bericht van een goede vriend uit het verleden:
+                <strong> “Kun je me helpen? Ik sta zonder geld op station Roosendaal. Het is nat, koud, 01:00 uur en ik heb alleen zomerkleren.”</strong>
+                Tegelijk heb je je partner beloofd om om 05:00 op te staan voor jullie reis. Wat weegt nu zwaarder?
+              </p>
+              <button onClick={()=>setShowSmsDilemma(true)} style={{marginTop:12,padding:"10px 18px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                Beantwoord dit einddilemma →
+              </button>
+            </div>
+          )}
+
+          {showSmsDilemma && (
+            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
+              <p style={{fontSize:12,fontWeight:800,color:"#0f172a",marginBottom:8}}>SMS uit Roosendaal — wat doe je?</p>
+              <div style={{display:"grid",gap:8}}>
+                {[
+                  "Ik ga direct helpen en haal mijn vriend op.",
+                  "Ik regel direct hulp op afstand (taxi/hotel/geld) en blijf mijn afspraak met mijn partner nakomen.",
+                  "Ik kies nu voor mijn partner en help mijn vriend pas later."
+                ].map((opt)=>(
+                  <button key={opt} onClick={()=>setSmsChoice(opt)} style={{textAlign:"left",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${smsChoice===opt?TEAL:"#e2e8f0"}`,background:smsChoice===opt?TEAL_LIGHT:"#fff",color:"#334155",fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <textarea value={smsReflection} onChange={e=>setSmsReflection(e.target.value)} rows={3} placeholder="Welke waarden vind je hier belangrijker en waarom?" style={{width:"100%",marginTop:10,padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+            </div>
+          )}
+
+          <div style={{display:"flex",gap:12}}>
+            <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
+            <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── APP ──
   return(
@@ -1054,7 +1186,7 @@ export default function MoralMaps(){
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:38,height:38,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🧭</div>
-            <div><div style={{fontWeight:800,fontSize:16}}>Moral Maps</div><div style={{fontSize:10,color:"#94a3b8"}}>Groep: {groupCode} · {age}</div></div>
+            <div><div style={{fontWeight:800,fontSize:16}}>Persoonlijke integriteitsmeting</div><div style={{fontSize:10,color:"#94a3b8"}}>Groep: {groupCode} · {age}</div></div>
           </div>
           <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
         </div>
@@ -1175,9 +1307,15 @@ export default function MoralMaps(){
                       <span style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase"}}>Kompas:</span>
                       {coreVals.map(cv=>{const cc=CM[cv.color];const act=cv.color===pending.color;return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${act?cc.border:"#e2e8f0"}`,background:act?cc.bg:"#f8fafc",color:act?cc.text:"#64748b"}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
                     </div>
-                    <button onClick={()=>{const nr=[...dilResp,pending];setDilResp(nr);setPending(null);setInsight(false);if(curDil<DILEMMAS.length-1)setCurDil(curDil+1);else setPhase(4);}}
+                    <button onClick={()=>{
+                      setDilResp(prev=>[...prev,pending]);
+                      setPending(null);
+                      setInsight(false);
+                      if(curDil < DILEMMAS.length - 1) setCurDil(prev=>prev + 1);
+                      else setPhase(4);
+                    }}
                       style={{marginTop:14,width:"100%",padding:"11px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
-                      {curDil<DILEMMAS.length-1?"Volgende dilemma →":"Naar De Vreemde Ander →"}
+                      {curDil<DILEMMAS.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
                     </button>
                   </div>
                 </div>
@@ -1192,11 +1330,8 @@ export default function MoralMaps(){
           </div>
         )}
 
-        {/* P4 — De Vreemde Ander */}
-        {phase===4 && <VreemdeAnder coreVals={coreVals} onComplete={(v)=>{setVreemd(v);setPhase(5);}}/>}
-
-        {/* P5 — STARR */}
-        {phase===5&&(
+        {/* P4 — STARR */}
+        {phase===4&&(
           <div>
             <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20}}>
               <div style={{background:TEAL,padding:"20px 22px"}}>
@@ -1210,7 +1345,7 @@ export default function MoralMaps(){
                 </div>
                 <div style={{background:TEAL_LIGHT,borderRadius:10,border:`1px solid ${TEAL}40`,padding:"12px 16px",display:"flex",gap:10}}>
                   <span style={{fontSize:16,flexShrink:0}}>✏️</span>
-                  <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}><strong>Opdracht:</strong> Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Beschrijf een situatie in je studie, werk of privéleven waar die waarde zichtbaar werd in jouw keuze of handelen.</p>
+                  <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}><strong>Opdracht:</strong> Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Beschrijf een situatie in je werk of privéleven waar die waarde zichtbaar werd in jouw keuze of handelen.</p>
                 </div>
                 {[{key:"situatie",label:"Situatie",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,hint})=>(
                   <div key={key}>
@@ -1222,76 +1357,15 @@ export default function MoralMaps(){
                   </div>
                 ))}
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
-                <button onClick={()=>setPhase(6)}
+                <button onClick={saveAndFinish}
                   style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  Naar Socialisatieverslag →
+                  Rond Deel 1 af →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* P6 — Socialisatieverslag */}
-        {phase===6 && <Socialisatieverslag coreVals={coreVals} onComplete={(s)=>{setSocialisatie(s);saveAndFinish();}}/>}
-
-        {/* P7 — Verslag */}
-        {phase===7&&(
-          <div>
-            <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
-              <div style={{fontSize:44,marginBottom:8}}>🏆</div>
-              <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
-              <p style={{color:"#64748b",fontSize:12,marginTop:6}}>Een overzicht van je morele reis door Moral Maps</p>
-              {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
-            </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Jouw Kernwaarden</p>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"14px 20px",borderRadius:12,border:`2px solid ${c.border}`,background:c.bg,textAlign:"center"}}><p style={{fontWeight:700,fontSize:14,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#94a3b8",textTransform:"uppercase",marginTop:2}}>{c.label}</p></div>;})}</div>
-            </div>
-            <div style={{borderRadius:16,border:`2px solid ${CM[domColor].border}`,background:CM[domColor].bg,padding:20,textAlign:"center",marginBottom:16}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Jouw dominante veranderkleur</p>
-              <p style={{fontSize:28,fontWeight:900,color:CM[domColor].text,margin:"6px 0 2px"}}>{CM[domColor].label}</p>
-              <p style={{fontSize:12,color:"#64748b"}}>{CM[domColor].desc}</p>
-            </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🛣 Dilemma-keuzes</p>
-              {DILEMMAS.map((d,i)=>{const r=dilResp[i];const c=r?CM[r.color]:null;return<div key={i} style={{display:"flex",gap:12,marginBottom:12,paddingBottom:12,borderBottom:i<DILEMMAS.length-1?"1px solid #f1f5f9":"none"}}><div style={{width:28,height:28,borderRadius:"50%",background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#64748b",flexShrink:0}}>{i+1}</div><div><p style={{fontWeight:700,fontSize:13,margin:0}}>{d.title}</p>{r&&c&&<p style={{fontSize:12,color:c.text,marginTop:3,lineHeight:1.5}}>{r.text}<span style={{fontSize:10,padding:"2px 7px",borderRadius:99,border:`1px solid ${c.border}`,background:c.bg,marginLeft:4}}>{c.label}</span></p>}</div></div>;})}
-            </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
-              <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"16px 20px"}}>
-                <p style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.6)",textTransform:"uppercase",letterSpacing:1,margin:0}}>📖 Socialisatieverslag</p>
-              </div>
-              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
-                {[{key:"primair",label:"Primaire socialisatie",kleur:"#f43f5e"},{key:"secundair",label:"Secundaire socialisatie",kleur:"#f59e0b"},{key:"tertiair",label:"Tertiaire socialisatie",kleur:TEAL},{key:"koppeling",label:"Koppeling aan kompas",kleur:"#6366f1"}].map(({key,label,kleur})=>(
-                  <div key={key}>
-                    <span style={{fontSize:10,fontWeight:800,color:kleur,textTransform:"uppercase",letterSpacing:1}}>{label}</span>
-                    <p style={{fontSize:13,color:socialisatie[key]?"#334155":"#cbd5e1",marginTop:4,lineHeight:1.7}}>{socialisatie[key]||"Niet ingevuld"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
-              <div style={{background:"linear-gradient(135deg,#6366f112,#6366f108)",borderBottom:"1px solid #e0e7ff",padding:"16px 20px"}}>
-                <p style={{fontSize:11,fontWeight:700,color:"#6366f1",textTransform:"uppercase",letterSpacing:1,margin:0}}>🌍 De Vreemde Ander</p>
-              </div>
-              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
-                {[{key:"spiegel",label:"De Spiegel",kleur:"#6366f1"},{key:"tussenruimte",label:"De Tussenruimte",kleur:"#d97706"},{key:"insluiting",label:"Insluiting",kleur:TEAL}].map(({key,label,kleur})=>(
-                  <div key={key}>
-                    <span style={{fontSize:10,fontWeight:800,color:kleur,textTransform:"uppercase",letterSpacing:1}}>{label}</span>
-                    <p style={{fontSize:13,color:vreemd[key]?"#334155":"#cbd5e1",marginTop:4,lineHeight:1.7}}>{vreemd[key]||"Niet ingevuld"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>✨ STARR Reflectie</p>
-              {Object.entries(starr).map(([key,val])=><div key={key} style={{marginBottom:12}}><span style={{fontSize:10,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1}}>{key.charAt(0).toUpperCase()+key.slice(1)}</span><p style={{fontSize:13,color:val?"#334155":"#cbd5e1",marginTop:2,lineHeight:1.6}}>{val||"Niet ingevuld"}</p></div>)}
-            </div>
-            <div style={{display:"flex",gap:12}}>
-              <button onClick={()=>exportPDF(coreVals,dilResp,starr,vreemd,socialisatie,domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
-              <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
