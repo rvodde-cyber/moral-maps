@@ -951,16 +951,16 @@ function Landing({onStart}){
           <div style={{maxWidth:480}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(26,115,232,.12)",border:"1px solid rgba(26,115,232,.28)",borderRadius:99,padding:"5px 14px",fontSize:11,color:GM_BLUE,fontWeight:600,marginBottom:24,letterSpacing:.5}}>
               <span style={{width:7,height:7,borderRadius:"50%",background:GM_BLUE,display:"inline-block"}} className="shimmer"/>
-              GEÏNSPIREERD DOOR CALUWÉ & VERMAAK
+              MORAL MAPS PLATFORM
             </div>
-            <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Persoonlijke<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>integriteitsmeting</span></h1>
-            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Doorloop een professionele reflectie op waarden, dilemma's en professioneel handelen. Of kies direct voor de organisatie lakmoesproef.</p>
+            <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Moral Maps<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>; The beginning</span></h1>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Start hier jouw traject: begin met Deel 1 (persoonlijke integriteitsmeting) of ga direct naar de organisatie lakmoesproef.</p>
 
             {/* START FORM */}
             <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
                 <div style={{width:32,height:32,borderRadius:10,background:GM_BLUE,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
-                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Start Persoonlijke integriteitsmeting</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
+                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Start Deel 1: Persoonlijke integriteitsmeting</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
               </div>
               <div style={{marginBottom:14}}>
                 <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
