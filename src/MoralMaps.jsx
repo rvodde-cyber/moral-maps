@@ -991,7 +991,7 @@ function Landing({onStart}){
               <div style={{width:72,height:18,background:"#0b1119",borderRadius:99,margin:"0 auto 8px",border:"1px solid #263142"}}/>
               <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.22), inset 0 -20px 35px rgba(0,0,0,.08)"}}>
                 <img
-                  src="/moral-maps-phone=art.jpg"
+                  src="/moral-maps-phone-crossroads.jpg"
                   alt="Moral Maps mobiele preview"
                   style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%",display:"block",filter:"saturate(1.05) contrast(1.03)"}}
                 />
