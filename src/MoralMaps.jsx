@@ -31,12 +31,15 @@ async function dbSave(entry) {
   const { error } = await supabase
     .from("moralmaps_results")
     .insert({
+      participant_code:  entry.participantCode,
+      current_stage:     entry.currentStage,
       group_code:        entry.groupCode,
       age:               entry.age,
       core_values:       entry.coreValues,
       dilemma_responses: entry.dilemmaResponses,
       starr:             entry.starr,
       dominant_color:    entry.dominantColor,
+      socialisatie:      entry.socialisatie,
     });
   if (error) { console.error("Supabase save:", error.message); return false; }
   return true;
@@ -54,14 +57,44 @@ async function dbLoad(groupCode) {
     .order("created_at", { ascending: false });
   if (error) { console.error("Supabase load:", error.message); return []; }
   return (data || []).map(r => ({
+    participantCode:    r.participant_code,
+    currentStage:       r.current_stage,
     groupCode:         r.group_code,
     age:               r.age,
     coreValues:        r.core_values,
     dilemmaResponses:  r.dilemma_responses,
     starr:             r.starr,
     dominantColor:     r.dominant_color,
+    socialisatie:      r.socialisatie,
     ts:                new Date(r.created_at).getTime(),
   }));
+}
+
+async function dbLoadByParticipantCode(participantCode) {
+  if (!supabase) {
+    console.error("Supabase load: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
+    return null;
+  }
+  const { data, error } = await supabase
+    .from("moralmaps_results")
+    .select("*")
+    .eq("participant_code", participantCode.toUpperCase())
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) { console.error("Supabase load by participant:", error.message); return null; }
+  if (!data) return null;
+  return {
+    participantCode: data.participant_code,
+    currentStage: data.current_stage,
+    groupCode: data.group_code,
+    age: data.age,
+    coreValues: data.core_values || [],
+    dilemmaResponses: data.dilemma_responses || [],
+    starr: data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""},
+    dominantColor: data.dominant_color,
+    socialisatie: data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""},
+  };
 }
 
 // ── Constants ──────────────────────────────────────────────────
@@ -114,45 +147,67 @@ const DILEMMAS = [
     ]
   },
   {
-    title:"De Fout in het Rapport",
-    scenario:"Je ontdekt een dag na oplevering een fout in je werkrapport. Het is al beoordeeld en je hebt een voldoende. De fout is inhoudelijk maar niet cruciaal.",
+    title:"De Fout in het Systeem",
+    scenario:"Je ontdekt dat een procedure in jouw organisatie structureel nadelig uitpakt voor een kwetsbare groep cliënten. Je leidinggevende weet het, maar wil het 'niet groter maken'.",
     options:[
-      {text:"Ik meld de fout alsnog aan de leidinggevende.",color:"blauw"},
-      {text:"Ik laat het — de beoordeling is al gedaan.",color:"geel"},
-      {text:"Ik verwerk de correctie in een volgende versie zonder het te melden.",color:"wit"}
+      {text:"Ik volg de procedure — regels zijn er niet voor niets.",color:"blauw"},
+      {text:"Ik zoek intern naar medestanders en maak het bespreekbaar.",color:"groen"},
+      {text:"Ik maak een uitzondering voor de betrokkenen, stil.",color:"rood"}
     ]
   },
   {
-    title:"De Ongelijke Behandeling",
-    scenario:"Je ziet dat een leidinggevende een collega structureel meer kansen geeft dan anderen in het team. Jij bent één van de mensen die minder kansen krijgt.",
+    title:"De Burn-out Collega",
+    scenario:"Een collega functioneert al weken slecht. Jij weet dat ze thuis veel problemen heeft. De teamleider vraagt jou om eerlijk te zijn over haar functioneren in een evaluatiegesprek.",
     options:[
-      {text:"Ik bespreek dit rechtstreeks met de leidinggevende.",color:"groen"},
-      {text:"Ik zoek steun bij collega's en kaart het collectief aan.",color:"rood"},
-      {text:"Ik focus op mijn eigen prestaties en zorg dat ik opval.",color:"geel"}
+      {text:"Ik ben volledig eerlijk — ook over de problemen.",color:"blauw"},
+      {text:"Ik nuanceer en bescherm haar privacy zoveel mogelijk.",color:"rood"},
+      {text:"Ik stel voor om eerst met haar zelf in gesprek te gaan.",color:"groen"}
     ]
   },
   {
-    title:"De Grens van de Opdracht",
-    scenario:"Je leidinggevende vraagt je iets te doen wat buiten je takenpakket valt en wat je ongemakkelijk maakt — het is niet onethisch, maar voelt niet goed.",
+    title:"De Promotie die Voorbijgaat",
+    scenario:"Jij solliciteert intern op een hogere functie. Een minder gekwalificeerde collega krijgt de baan, volgens geruchten vanwege persoonlijke relaties met de directie.",
     options:[
-      {text:"Ik doe het toch, het is mijn leidinggevende.",color:"rood"},
-      {text:"Ik geef aan dat ik me hier niet prettig bij voel en vraag om overleg.",color:"groen"},
-      {text:"Ik verwijs naar mijn taakafspraken en weiger vriendelijk.",color:"blauw"}
+      {text:"Ik leg het neer en ga door — politiek hoort erbij.",color:"geel"},
+      {text:"Ik vraag om een eerlijk gesprek en transparantie.",color:"blauw"},
+      {text:"Ik reflecteer op wat ik hiervan kan leren.",color:"groen"}
     ]
   },
   {
-    title:"De Sociale Media Post",
-    scenario:"Een collega plaatst een provocerende post op sociale media over een kwetsbare groep. Enkele collega's liken het bericht. Jij bent getuige.",
+    title:"De Ethische Grens",
+    scenario:"Je wordt gevraagd een rapport iets 'positiever' te formuleren dan de feiten rechtvaardigen. Je leidinggevende benadrukt dat er veel belangen op het spel staan.",
     options:[
-      {text:"Ik reageer publiekelijk en spreek de post tegen.",color:"wit"},
-      {text:"Ik stuur de collega een privébericht.",color:"rood"},
-      {text:"Ik meld het bij een leidinggevende of vertrouwenspersoon.",color:"blauw"}
+      {text:"Ik weiger — mijn naam staat eronder.",color:"wit"},
+      {text:"Ik zoek een formulering die eerlijk én constructief is.",color:"groen"},
+      {text:"Ik doe het — de verantwoordelijkheid ligt bij mijn leidinggevende.",color:"geel"}
     ]
   },
 ];
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
 const FONT = "'DM Sans',system-ui,sans-serif";
+// Centrale plek voor alle visuele assets per deel/signature-event.
+const ASSET_IMAGES = {
+  deel1: {
+    phoneMockup: "/moral-maps-phone=art.jpg",
+    smsEvent: "/images/sms-koud-station.jpg",
+  },
+  deel2: {
+    phoneMockup: "/moral-maps-phone-crossroads.jpg",
+    crossroadsEvent: "/images/crossroads-omleiding.jpg",
+  },
+  deel3: {
+    bridgeEvent: "/images/brug-in-de-mist.jpg",
+    phoneMockup: "/images/mockup-deel3-bridge.jpg",
+  },
+};
+
+function generateParticipantCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "MM-";
+  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
 
 const ORG_QUESTIONS = [
   { id: 1, title: "Ethische visie", subtitle: "Richting en betekenis", explanation: "In welke mate is de missie van de organisatie expliciet gekoppeld aan maatschappelijke waarde en verantwoord handelen?" },
@@ -223,7 +278,7 @@ function Spinner(){
 }
 
 function PBar({step,pct}){
-  const L=["Bewustwording","Waarden","Kompas","Dilemma's","STARR"];
+  const L=["Positie","Waarden","Kompas","Dilemma's","STARR","Rugzak","Verslag"];
   return(
     <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
@@ -486,7 +541,7 @@ function VreemdeAnder({coreVals, onComplete}){
             <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Een reflectie op ontmoeting, verschil en inclusie.</p>
           </div>
           <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Je hebt net zes dilemma's doorlopen vanuit jouw eigen kompas. Nu richt je de blik op de ander — op iemand die buiten jouw cirkel valt.</p>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Je hebt net vier dilemma's doorlopen vanuit jouw eigen kompas. Nu richt je de blik op de ander — op iemand die buiten jouw cirkel valt.</p>
             <div style={{background:"#eef2ff",borderRadius:12,border:"1px solid #a5b4fc",padding:"14px 18px",marginBottom:16}}>
               <p style={{fontSize:13,color:"#3730a3",lineHeight:1.7,margin:0}}><strong>Drie stappen:</strong> De Spiegel (wie is de ander voor jou?), De Tussenruimte (wat gebeurt er tussen jullie?) en Insluiting (wat kun jij doen?).</p>
             </div>
@@ -753,6 +808,89 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
   if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
 }
 
+function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, vreemdeAnderResult, profile, groupCode, age}){
+  const html = `<!DOCTYPE html><html lang="${profile.locale || "nl"}"><head><meta charset="UTF-8">
+    <title>Moral APS - Deel 2 Onderweg</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'DM Sans',sans-serif;color:#0f172a;padding:38px;max-width:760px;margin:0 auto;background:#fff}
+      .header{background:linear-gradient(135deg,#1b9e77,#147a5c);color:#fff;border-radius:14px;padding:26px;margin-bottom:20px}
+      .section{border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin-bottom:14px}
+      .label{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+      .value{font-size:13px;color:#334155;line-height:1.7}
+      .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-right:6px}
+      .footer{margin-top:24px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8;text-align:center}
+    </style></head><body>
+    <div class="header">
+      <h1 style="font-size:26px;font-weight:900;letter-spacing:-.6px;margin:0">Moral APS - Deel 2 (Onderweg)</h1>
+      <p style="opacity:.9;font-size:12px;margin-top:6px">Groep: ${groupCode || "-"} · Leeftijd: ${age || "-"} · Context: ${profile.workContext || "algemeen"} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
+    </div>
+    <div class="section">
+      <div class="label">Kernwaarden (mee uit Deel 1)</div>
+      <div>${(coreVals||[]).map(cv=>{const c=CM[cv.color]||CM.blauw;return `<span class="chip" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${cv.name}</span>`;}).join("") || "<span class='value'>Niet ingevuld</span>"}</div>
+    </div>
+    <div class="section">
+      <div class="label">Crossroads keuze</div>
+      <div class="value">${crossroadsChoice || "Niet ingevuld"}</div>
+    </div>
+    <div class="section">
+      <div class="label">Waardenafweging</div>
+      <div class="value">${crossroadsReflectie || "Niet ingevuld"}</div>
+    </div>
+    <div class="section">
+      <div class="label">De Vreemde Ander - samenvatting</div>
+      <div class="value"><strong>De Spiegel:</strong><br/>${vreemdeAnderResult?.spiegel || "Niet ingevuld"}</div>
+      <div class="value" style="margin-top:10px"><strong>De Tussenruimte:</strong><br/>${vreemdeAnderResult?.tussenruimte || "Niet ingevuld"}</div>
+      <div class="value" style="margin-top:10px"><strong>Insluiting:</strong><br/>${vreemdeAnderResult?.insluiting || "Niet ingevuld"}</div>
+    </div>
+    ${profile.extraAssignment ? `<div class="section"><div class="label">Extra opdracht</div><div class="value">${profile.extraAssignment}</div></div>` : ""}
+    <div class="footer">Gegenereerd voor Deel 2 - printbaar portfolio-fragment</div>
+    </body></html>`;
+
+  const blob = new Blob([html], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url,"_blank");
+  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+}
+
+function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, domColor, socialisatie, profile, groupCode, age}){
+  const c = CM[domColor];
+  const html = `<!DOCTYPE html><html lang="${profile.locale || "nl"}"><head><meta charset="UTF-8">
+    <title>Moral APS - Portfolio Deel 3</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'DM Sans',sans-serif;color:#0f172a;padding:34px;max-width:800px;margin:0 auto;background:#fff}
+      .header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:14px;padding:24px;margin-bottom:18px}
+      .section{border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin-bottom:14px}
+      .label{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+      .value{font-size:13px;color:#334155;line-height:1.7}
+      .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-right:6px}
+      .dominant{background:${c.bg};border:1.5px solid ${c.border};border-radius:10px;padding:10px 12px}
+      .footer{margin-top:20px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8;text-align:center}
+    </style></head><body>
+    <div class="header">
+      <h1 style="font-size:24px;font-weight:900;letter-spacing:-.5px;margin:0">Moral APS - Portfolio (tot en met Deel 3)</h1>
+      <p style="opacity:.85;font-size:12px;margin-top:6px">Groep: ${groupCode || "-"} · Leeftijd: ${age || "-"} · Context: ${profile.workContext || "algemeen"} · Taal: ${profile.locale || "nl"}</p>
+    </div>
+    <div class="section"><div class="label">Kernwaarden</div><div>${(coreVals||[]).map(cv=>{const cc=CM[cv.color];return `<span class="chip" style="background:${cc.bg};border:1px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("") || "<span class='value'>Niet ingevuld</span>"}</div></div>
+    <div class="section"><div class="label">Dominante veranderkleur</div><div class="dominant"><div class="value" style="font-weight:800;color:${c.text}">${c.label}</div><div class="value">${c.desc}</div></div></div>
+    <div class="section"><div class="label">Dilemma-keuzes Deel 1</div>${DILEMMAS.map((d,i)=>{const r=dilResp?.[i];return `<div class="value" style="margin-bottom:8px"><strong>${i+1}. ${d.title}</strong><br/>${r?.text || "Niet ingevuld"}</div>`;}).join("")}</div>
+    <div class="section"><div class="label">STARR</div>${Object.entries(starr||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
+    <div class="section"><div class="label">Socialisatie / Rugzak</div>${Object.entries(socialisatie||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
+    <div class="section"><div class="label">SMS-einddilemma</div><div class="value"><strong>Keuze:</strong> ${smsDilemma?.smsChoice || "Niet ingevuld"}</div><div class="value"><strong>Reflectie:</strong> ${smsDilemma?.smsReflection || "Niet ingevuld"}</div></div>
+    <div class="section"><div class="label">De Brug in de Mist (Deel 3 signature)</div><div class="value"><strong>Ballast:</strong> ${bridge?.ballast || "Niet ingevuld"}</div><div class="value"><strong>Meenemen:</strong> ${bridge?.meenemen || "Niet ingevuld"}</div><div class="value"><strong>Hoop te vinden:</strong> ${bridge?.vinden || "Niet ingevuld"}</div><div class="value"><strong>Kernwaarde:</strong> ${bridge?.kompas || "Niet ingevuld"}</div></div>
+    ${profile.extraAssignment ? `<div class="section"><div class="label">Extra opdracht</div><div class="value">${profile.extraAssignment}</div></div>` : ""}
+    <div class="footer">Portfolio-export - bruikbaar voor presentatie of persoonlijk verhaal</div>
+    </body></html>`;
+
+  const blob = new Blob([html], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url,"_blank");
+  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+}
+
 // ── Dashboard ──────────────────────────────────────────────────
 
 function WordCloud({results}){
@@ -911,10 +1049,11 @@ function OrganizationLakmoesproef({ onBack }) {
 
 // ── Landing ────────────────────────────────────────────────────
 
-function Landing({onStart}){
+function Landing({onStart, onResume}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [dash,setDash]=useState("");
+  const [resumeCode,setResumeCode]=useState("");
   const GM_BLUE = "#1a73e8";
   const GM_BG = "#f1f3f4";
   const GM_TEXT = "#202124";
@@ -933,7 +1072,7 @@ function Landing({onStart}){
     {color:TEAL,sc:TEAL_DARK,icon:"🌸",num:"00",label:"Privilege Wiel",tag:"Bewustwording",desc:"Verken jouw eigen rugzak. Reflecteer op privilege als startpunt voor bewustwording."},
     {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 10 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
     {color:"#EAB308",sc:"#a16207",icon:"🧭",num:"02",label:"Het Kompas",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten van jouw moreel kompas."},
-    {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op zes realistische dilemma's en ontdek of je keuzes overeenkomen met jouw kompas."},
+    {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op vier realistische dilemma's en ontdek of je keuzes overeenkomen met jouw kompas."},
     {color:"#22C55E",sc:"#15803d",icon:"✨",num:"04",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
   ];
 
@@ -982,6 +1121,17 @@ function Landing({onStart}){
                 style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                 Start Deel 1 →
               </button>
+              <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${GM_BORDER}`}}>
+                <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Verder met code</label>
+                <div style={{display:"flex",gap:8}}>
+                  <input value={resumeCode} onChange={e=>setResumeCode(e.target.value.toUpperCase())} placeholder="bijv. MM-8K4P2X"
+                    style={{flex:1,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+                  <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())}
+                    style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                    Hervat →
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -991,8 +1141,8 @@ function Landing({onStart}){
               <div style={{width:72,height:18,background:"#0b1119",borderRadius:99,margin:"0 auto 8px",border:"1px solid #263142"}}/>
               <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.22), inset 0 -20px 35px rgba(0,0,0,.08)"}}>
                 <img
-                  src="/moral-maps-phone-crossroads.jpg"
-                  alt="Moral Maps mobiele preview"
+                  src={ASSET_IMAGES.deel1.phoneMockup}
+                  alt="Moral Maps mobiele preview Deel 1"
                   style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%",display:"block",filter:"saturate(1.05) contrast(1.03)"}}
                 />
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 40%, transparent 60%, rgba(0,0,0,.13) 100%)",pointerEvents:"none"}}/>
@@ -1073,6 +1223,7 @@ function Landing({onStart}){
 
 export default function MoralMaps(){
   const [screen,setScreen]=useState("landing");
+  const [participantCode,setParticipantCode]=useState("");
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
   const [dashCode,setDashCode]=useState("");
@@ -1085,17 +1236,30 @@ export default function MoralMaps(){
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
   const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+  const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
+  const [bridge,setBridge]=useState({ballast:"",meenemen:"",vinden:"",kompas:""});
   const [saved,setSaved]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
-  const [showSmsDilemma, setShowSmsDilemma] = useState(false);
-  const [smsChoice, setSmsChoice] = useState("");
-  const [smsReflection, setSmsReflection] = useState("");
+  const [showSmsDilemma,setShowSmsDilemma]=useState(false);
+  const [smsChoice,setSmsChoice]=useState("");
+  const [smsReflection,setSmsReflection]=useState("");
+  const [deel2Step,setDeel2Step]=useState(0);
+  const [crossroadsChoice,setCrossroadsChoice]=useState("");
+  const [crossroadsReflectie,setCrossroadsReflectie]=useState("");
+  const [vreemdeAnderResult,setVreemdeAnderResult]=useState(null);
+  const [contentProfile,setContentProfile]=useState({
+    locale:"nl",
+    workContext:"algemeen",
+    extraAssignment:"",
+  });
 
   const pct=useMemo(()=>{
     if(phase===0)return 2;
-    if(phase===1)return 8+(selVals.length/10)*8;
-    if(phase===2)return 18+(coreVals.length/3)*8;
-    if(phase===3)return 30+(curDil/DILEMMAS.length)*60;
+    if(phase===1)return 14+(selVals.length/10)*12;
+    if(phase===2)return 28+(coreVals.length/3)*12;
+    if(phase===3)return 42+(curDil/DILEMMAS.length)*14;
+    if(phase===4)return 58;
+    if(phase===5)return 76;
     return 100;
   },[phase,selVals.length,coreVals.length,curDil]);
 
@@ -1108,73 +1272,141 @@ export default function MoralMaps(){
   function start(gc,ag,dc,org=false){
     if(org){setScreen("org");return;}
     if(dc){setDashCode(dc);setScreen("dashboard");return;}
-    setGroupCode(gc);setAge(ag);setScreen("app");setPhase(0);
+    setParticipantCode(generateParticipantCode());
+    setGroupCode(gc);
+    setAge(ag);
+    setScreen("app");
+    setPhase(0);
   }
-  function reset(){setScreen("landing");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSaved(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");}
-  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor});if(ok){setSaved(true);setScreen("done");}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
+  async function resumeWithCode(code){
+    const data = await dbLoadByParticipantCode(code);
+    if(!data){ alert("Geen sessie gevonden voor deze code."); return; }
+    setParticipantCode(data.participantCode || code.toUpperCase());
+    setGroupCode(data.groupCode || "");
+    setAge(data.age || "");
+    setCoreVals(data.coreValues || []);
+    setDilResp(data.dilemmaResponses || []);
+    setStarr(data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+    setSocialisatie(data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
+    if((data.currentStage || "").startsWith("deel2")) {
+      setScreen("deel2");
+      setDeel2Step(0);
+      return;
+    }
+    setScreen("app");
+    setPhase(6);
+    setSaved(true);
+  }
+  function reset(){setScreen("landing");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  async function saveProgress(currentStage){
+    if(!participantCode || !groupCode) return;
+    await dbSave({
+      participantCode,
+      currentStage,
+      groupCode,
+      age,
+      coreValues: coreVals,
+      dilemmaResponses: dilResp,
+      starr,
+      dominantColor: domColor,
+      socialisatie,
+    });
+  }
+  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({participantCode,currentStage:"deel1_done",groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor,socialisatie});if(ok){setSaved(true);setPhase(6);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
-  if(screen==="landing")return <Landing onStart={start}/>;
+  if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("landing")}/></div>;
   if(screen==="org") return <OrganizationLakmoesproef onBack={()=>setScreen("landing")} />;
-  if(screen==="done"){
-    return(
+  if(screen==="deel2"){
+    const crossroadsOptions = [
+      "Snelle, saaie route naar je bestemming",
+      "Route naar je geboortedorp (herinneringen en oude vrienden)",
+      "Route via een hypermoderne stad (shoppen, casino, uitgaan)",
+      "Onbekende avontuurlijke route (vreemde mensen en uitdagingen)",
+    ];
+    return (
       <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
-        <div style={{maxWidth:680,margin:"0 auto",padding:"40px 16px 60px"}}>
-          <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
-            <div style={{fontSize:44,marginBottom:8}}>🏁</div>
-            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Persoonlijke integriteitsmeting afgerond</h2>
-            <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Je bent klaar voor Deel 2: Onderweg (Crossroads)</p>
-            {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
+        <div style={{maxWidth:760,margin:"0 auto",padding:"24px 16px 60px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+            <button onClick={()=>setScreen("landing")} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:999,padding:"8px 14px",cursor:"pointer",fontWeight:700,color:"#334155",fontFamily:FONT}}>← Terug</button>
+            <div>
+              <h2 style={{margin:0,fontSize:22,fontWeight:900,letterSpacing:-.4}}>Deel 2 — Onderweg</h2>
+              <p style={{margin:0,fontSize:12,color:"#64748b"}}>Crossroads en De Vreemde Ander · Code: {participantCode || "n.v.t."}</p>
+            </div>
           </div>
-          {!showSmsDilemma && (
-            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📩 Laatste morele check</p>
-              <div style={{marginBottom:10,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 4px 16px rgba(15,23,42,.08)"}}>
-                <img
-                  src="/moral-maps-sms-dilemma.jp.png"
-                  alt="Nachtelijke keuze op kruispunt"
-                  style={{width:"100%",height:"auto",display:"block",objectFit:"cover",maxHeight:260}}
-                />
+
+          {deel2Step===0&&(
+            <div>
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
+                <img src={ASSET_IMAGES.deel2.phoneMockup} alt="Deel 2 smartphone mockup" style={{width:"100%",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
               </div>
-              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:0}}>
-                Vlak voor je het verslag downloadt ontvang je een bericht van een goede vriend uit het verleden:
-                <strong> “Kun je me helpen? Ik sta zonder geld op station Roosendaal. Het is nat, koud, 01:00 uur en ik heb alleen zomerkleren.”</strong>
-                Tegelijk heb je je partner beloofd om om 05:00 op te staan voor jullie reis. Wat weegt nu zwaarder?
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
+                <img src={ASSET_IMAGES.deel2.crossroadsEvent} alt="Crossroads met vier afslagen" style={{width:"100%",display:"block",borderRadius:10,maxHeight:300,objectFit:"cover"}} />
+              </div>
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"18px 20px"}}>
+                <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Signature opdracht Deel 2</p>
+                <p style={{fontSize:13,color:"#334155",lineHeight:1.75,marginTop:0}}>
+                  Je bent onderweg als er een groot bord opduikt: omleiding. Na een lange tocht door dorre weilanden kom je op een kruispunt met vier afslagen.
+                </p>
+                <p style={{fontSize:12,color:"#64748b",fontWeight:700,marginBottom:8}}>Welke route kies je?</p>
+                <div style={{display:"grid",gap:8,marginBottom:10}}>
+                  {crossroadsOptions.map((opt)=>(
+                    <button key={opt} onClick={()=>setCrossroadsChoice(opt)} style={{textAlign:"left",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${crossroadsChoice===opt?TEAL:"#e2e8f0"}`,background:crossroadsChoice===opt?TEAL_LIGHT:"#fff",color:"#334155",fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                <textarea value={crossroadsReflectie} onChange={e=>setCrossroadsReflectie(e.target.value)} rows={3} placeholder="Waarom kies je deze route, en hoe past dit bij je kernwaarden?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:12}} />
+                <button onClick={()=>setDeel2Step(1)} disabled={!crossroadsChoice} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:crossroadsChoice?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:13,cursor:crossroadsChoice?"pointer":"not-allowed",fontFamily:FONT}}>
+                  Verder naar De Vreemde Ander →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {deel2Step===1&&(
+            <VreemdeAnder
+              coreVals={coreVals}
+              onComplete={(result)=>{
+                setVreemdeAnderResult(result);
+                setDeel2Step(2);
+              }}
+            />
+          )}
+
+          {deel2Step===2&&(
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px"}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Deel 2 afgerond</p>
+              <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:900,color:"#0f172a"}}>Onderweg vastgelegd</h3>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,marginTop:0}}>
+                Je crossroads-keuze is gemaakt en je reflectie op de vreemde ander is ingevuld.
               </p>
-              <button onClick={()=>setShowSmsDilemma(true)} style={{marginTop:12,padding:"10px 18px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>
-                Beantwoord dit einddilemma →
-              </button>
-            </div>
-          )}
-
-          {showSmsDilemma && (
-            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
-              <p style={{fontSize:12,fontWeight:800,color:"#0f172a",marginBottom:8}}>SMS uit Roosendaal — wat doe je?</p>
-              <div style={{display:"grid",gap:8}}>
-                {[
-                  "Ik ga direct helpen en haal mijn vriend op.",
-                  "Ik regel direct hulp op afstand (taxi/hotel/geld) en blijf mijn afspraak met mijn partner nakomen.",
-                  "Ik kies nu voor mijn partner en help mijn vriend pas later."
-                ].map((opt)=>(
-                  <button key={opt} onClick={()=>setSmsChoice(opt)} style={{textAlign:"left",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${smsChoice===opt?TEAL:"#e2e8f0"}`,background:smsChoice===opt?TEAL_LIGHT:"#fff",color:"#334155",fontSize:12,cursor:"pointer",fontFamily:FONT}}>
-                    {opt}
-                  </button>
-                ))}
+              <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 12px",marginBottom:10}}>
+                <p style={{fontSize:11,color:"#64748b",margin:"0 0 4px"}}>Jouw gekozen route:</p>
+                <p style={{fontSize:13,color:"#0f172a",fontWeight:700,margin:0}}>{crossroadsChoice || "Niet ingevuld"}</p>
               </div>
-              <textarea value={smsReflection} onChange={e=>setSmsReflection(e.target.value)} rows={3} placeholder="Welke waarden vind je hier belangrijker en waarom?" style={{width:"100%",marginTop:10,padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+                <select value={contentProfile.locale} onChange={(e)=>setContentProfile({...contentProfile,locale:e.target.value})} style={{padding:"9px 10px",borderRadius:10,border:"1.5px solid #e2e8f0",fontFamily:FONT,fontSize:12}}>
+                  <option value="nl">Taal: Nederlands</option>
+                  <option value="en">Language: English</option>
+                </select>
+                <input value={contentProfile.workContext} onChange={(e)=>setContentProfile({...contentProfile,workContext:e.target.value})} placeholder="Werkomgeving (bijv. onderwijs, zorg, IT)" style={{padding:"9px 10px",borderRadius:10,border:"1.5px solid #e2e8f0",fontFamily:FONT,fontSize:12}} />
+              </div>
+              <textarea value={contentProfile.extraAssignment} onChange={(e)=>setContentProfile({...contentProfile,extraAssignment:e.target.value})} rows={2} placeholder="Optionele vervolgopdracht (komt mee in PDF)" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:10}} />
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,vreemdeAnderResult,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
+                <button onClick={()=>setDeel2Step(0)} style={{flex:1,padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
+                <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("app");setPhase(6);}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
+              </div>
             </div>
           )}
-
-          <div style={{display:"flex",gap:12}}>
-            <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
-            <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
-          </div>
         </div>
       </div>
     );
   }
+  
 
   // ── APP ──
   return(
@@ -1186,7 +1418,7 @@ export default function MoralMaps(){
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:38,height:38,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🧭</div>
-            <div><div style={{fontWeight:800,fontSize:16}}>Persoonlijke integriteitsmeting</div><div style={{fontSize:10,color:"#94a3b8"}}>Groep: {groupCode} · {age}</div></div>
+            <div><div style={{fontWeight:800,fontSize:16}}>Persoonlijke integriteitsmeting</div><div style={{fontSize:10,color:"#94a3b8"}}>Code: {participantCode || "n.v.t."} · Groep: {groupCode} · {age}</div></div>
           </div>
           <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
         </div>
@@ -1269,6 +1501,12 @@ export default function MoralMaps(){
         {/* P3 — Dilemma's */}
         {phase===3&&(
           <div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
+              <img src={ASSET_IMAGES.deel2.phoneMockup} alt="Deel 2 smartphone mockup met kruispunt" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
+            </div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
+              <img src={ASSET_IMAGES.deel2.crossroadsEvent} alt="Crossroads omleiding met vier afslagen" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
+            </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {DILEMMAS.length}</span>
               <div style={{display:"flex",gap:6}}>{DILEMMAS.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
@@ -1357,11 +1595,119 @@ export default function MoralMaps(){
                   </div>
                 ))}
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
-                <button onClick={saveAndFinish}
+                <button onClick={()=>setPhase(5)}
                   style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  Rond Deel 1 af →
+                  🎒 Naar Jouw Rugzak →
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {phase===5&&(
+          <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20,background:"#fff"}}>
+            <div style={{background:"linear-gradient(135deg,#7c3aed,#8B5CF6)",padding:"20px 22px"}}>
+              <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🎒 Jouw Rugzak</h2>
+              <p style={{color:"#ddd6fe",fontSize:13,marginTop:8,lineHeight:1.6}}>Reflecteer op hoe socialisatie je waarden en professionele blik vormt.</p>
+            </div>
+            <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
+              {[{key:"primair",label:"Primaire socialisatie"},{key:"secundair",label:"Secundaire socialisatie"},{key:"transcultureel",label:"Transculturele aspecten"},{key:"professioneel",label:"Professionele identiteit"},{key:"reflectie",label:"Reflectie & koppeling aan Caluwe"}].map(({key,label})=>(
+                <div key={key}>
+                  <label style={{fontSize:11,fontWeight:800,color:"#7c3aed",textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>{label}</label>
+                  <textarea
+                    value={socialisatie[key]}
+                    onChange={e=>setSocialisatie({...socialisatie,[key]:e.target.value})}
+                    rows={3}
+                    placeholder={`Beschrijf ${label.toLowerCase()}...`}
+                    style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
+                  />
+                </div>
+              ))}
+              {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
+              <button onClick={saveAndFinish} style={{padding:"13px",borderRadius:99,border:"none",background:"#7c3aed",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:FONT}}>
+                🏁 Naar Reisverslag →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {phase===6&&(
+          <div>
+            <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
+              <div style={{fontSize:44,marginBottom:8}}>🏆</div>
+              <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
+              <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Overzicht van je volledige route in Moral Maps 1</p>
+              {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
+            </div>
+            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:8,marginBottom:14}}>
+              <img src={ASSET_IMAGES.deel3.phoneMockup} alt="Deel 3 smartphone mockup op hero" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:280,objectFit:"cover"}} />
+            </div>
+            {!showSmsDilemma&&(
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
+                <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📩 Afsluitende SMS-opdracht</p>
+                <div style={{marginBottom:10,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
+                  <img src={ASSET_IMAGES.deel1.smsEvent} alt="Onverwachte sms in slaapkamer om 5 uur" style={{width:"100%",height:"auto",display:"block",maxHeight:260,objectFit:"cover"}} />
+                </div>
+                <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:0}}>
+                  Vlak voor je afsluit ontvang je een bericht van een goede vriend uit het verleden:
+                  <strong> "Kun je me helpen? Ik sta zonder geld op station Roosendaal. Het is nat, koud, 01:00 uur en ik heb alleen zomerkleren."</strong>
+                  Tegelijk heb je je partner beloofd om om 05:00 op te staan voor jullie reis. Wat weegt nu zwaarder?
+                </p>
+                <button onClick={()=>setShowSmsDilemma(true)} style={{marginTop:12,padding:"10px 18px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                  Beantwoord dit einddilemma →
+                </button>
+              </div>
+            )}
+            {showSmsDilemma&&(
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
+                <p style={{fontSize:12,fontWeight:800,color:"#0f172a",marginBottom:8}}>SMS uit Roosendaal — wat doe je?</p>
+                <div style={{display:"grid",gap:8}}>
+                  {[
+                    "Ik ga direct helpen en haal mijn vriend op.",
+                    "Ik regel direct hulp op afstand (taxi/hotel/geld) en blijf mijn afspraak met mijn partner nakomen.",
+                    "Ik kies nu voor mijn partner en help mijn vriend pas later."
+                  ].map((opt)=>(
+                    <button key={opt} onClick={()=>setSmsChoice(opt)} style={{textAlign:"left",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${smsChoice===opt?TEAL:"#e2e8f0"}`,background:smsChoice===opt?TEAL_LIGHT:"#fff",color:"#334155",fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                <textarea value={smsReflection} onChange={e=>setSmsReflection(e.target.value)} rows={3} placeholder="Welke waarden vind je hier belangrijker en waarom?" style={{width:"100%",marginTop:10,padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              </div>
+            )}
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Kernwaarden</p>
+              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"10px 14px",borderRadius:12,border:`1.5px solid ${c.border}`,background:c.bg}}><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p></div>;})}</div>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🎒 Rugzak reflectie</p>
+              {Object.entries(socialisatie).map(([key,val])=>(
+                <div key={key} style={{marginBottom:10}}>
+                  <span style={{fontSize:10,fontWeight:800,color:"#7c3aed",textTransform:"uppercase",letterSpacing:1}}>{key}</span>
+                  <p style={{fontSize:13,color:val?"#334155":"#cbd5e1",marginTop:2,lineHeight:1.6}}>{val||"Niet ingevuld"}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🌫️ Signature opdracht Deel 3 — De Brug in de Mist</p>
+              <div style={{marginBottom:12,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
+                <img src={ASSET_IMAGES.deel3.bridgeEvent} alt="De brug in de mist met beperkte draagkracht" style={{width:"100%",height:"auto",display:"block",maxHeight:280,objectFit:"cover"}} />
+              </div>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:"0 0 10px"}}>
+                De brug heeft beperkte draagkracht. Je kunt niet alles meenemen naar je volgende bestemming.
+              </p>
+              <div style={{display:"grid",gap:10}}>
+                <textarea value={bridge.ballast} onChange={e=>setBridge({...bridge,ballast:e.target.value})} rows={2} placeholder="Wat laat je bewust achter als ballast?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <textarea value={bridge.meenemen} onChange={e=>setBridge({...bridge,meenemen:e.target.value})} rows={2} placeholder="Wat neem je absoluut mee?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <textarea value={bridge.vinden} onChange={e=>setBridge({...bridge,vinden:e.target.value})} rows={2} placeholder="Wat hoop je te vinden aan de overkant?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <textarea value={bridge.kompas} onChange={e=>setBridge({...bridge,kompas:e.target.value})} rows={2} placeholder="Welke kernwaarde stuurt deze keuze?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              </div>
+            </div>
+            <div style={{display:"flex",gap:12}}>
+              <button onClick={()=>setScreen("deel2")} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
+              <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
+              <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 3 Portfolio</button>
+              <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
           </div>
         )}
