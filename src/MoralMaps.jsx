@@ -28,19 +28,34 @@ async function dbSave(entry) {
     console.error("Supabase save: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
     return false;
   }
-  const { error } = await supabase
-    .from("moralmaps_results")
-    .insert({
-      participant_code:  entry.participantCode,
-      current_stage:     entry.currentStage,
-      group_code:        entry.groupCode,
-      age:               entry.age,
-      core_values:       entry.coreValues,
-      dilemma_responses: entry.dilemmaResponses,
-      starr:             entry.starr,
-      dominant_color:    entry.dominantColor,
-      socialisatie:      entry.socialisatie,
-    });
+  const basePayload = {
+    group_code:        entry.groupCode,
+    age:               entry.age,
+    core_values:       entry.coreValues,
+    dilemma_responses: entry.dilemmaResponses,
+    starr:             entry.starr,
+    dominant_color:    entry.dominantColor,
+    socialisatie:      entry.socialisatie,
+  };
+
+  // Eerst proberen met resumable velden; als de DB-migratie nog niet is gedaan,
+  // dan fallbacken we automatisch naar legacy save zodat deelnemers door kunnen.
+  const withResumePayload = {
+    ...basePayload,
+    participant_code: entry.participantCode,
+    current_stage: entry.currentStage,
+  };
+
+  let { error } = await supabase.from("moralmaps_results").insert(withResumePayload);
+  if (error) {
+    const msg = String(error.message || "").toLowerCase();
+    const missingResumeColumns =
+      msg.includes("participant_code") || msg.includes("current_stage") || msg.includes("column");
+    if (missingResumeColumns) {
+      const retry = await supabase.from("moralmaps_results").insert(basePayload);
+      error = retry.error;
+    }
+  }
   if (error) { console.error("Supabase save:", error.message); return false; }
   return true;
 }
@@ -164,24 +179,6 @@ const DILEMMAS = [
       {text:"Ik stel voor om eerst met haar zelf in gesprek te gaan.",color:"groen"}
     ]
   },
-  {
-    title:"De Promotie die Voorbijgaat",
-    scenario:"Jij solliciteert intern op een hogere functie. Een minder gekwalificeerde collega krijgt de baan, volgens geruchten vanwege persoonlijke relaties met de directie.",
-    options:[
-      {text:"Ik leg het neer en ga door — politiek hoort erbij.",color:"geel"},
-      {text:"Ik vraag om een eerlijk gesprek en transparantie.",color:"blauw"},
-      {text:"Ik reflecteer op wat ik hiervan kan leren.",color:"groen"}
-    ]
-  },
-  {
-    title:"De Ethische Grens",
-    scenario:"Je wordt gevraagd een rapport iets 'positiever' te formuleren dan de feiten rechtvaardigen. Je leidinggevende benadrukt dat er veel belangen op het spel staan.",
-    options:[
-      {text:"Ik weiger — mijn naam staat eronder.",color:"wit"},
-      {text:"Ik zoek een formulering die eerlijk én constructief is.",color:"groen"},
-      {text:"Ik doe het — de verantwoordelijkheid ligt bij mijn leidinggevende.",color:"geel"}
-    ]
-  },
 ];
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
@@ -190,15 +187,15 @@ const FONT = "'DM Sans',system-ui,sans-serif";
 const ASSET_IMAGES = {
   deel1: {
     phoneMockup: "/moral-maps-phone=art.jpg",
-    smsEvent: "/images/sms-koud-station.jpg",
+    smsEvent: "/sms-koud-station.jpg",
   },
   deel2: {
     phoneMockup: "/moral-maps-phone-crossroads.jpg",
-    crossroadsEvent: "/images/crossroads-omleiding.jpg",
+    crossroadsEvent: "/crossroads-omleiding.jpg",
   },
   deel3: {
-    bridgeEvent: "/images/brug-in-de-mist.jpg",
-    phoneMockup: "/images/mockup-deel3-bridge.jpg",
+    bridgeEvent: "/brug-in-de-mist.jpg",
+    phoneMockup: "/mockup-deel3-bridge.jpg",
   },
 };
 
@@ -1131,6 +1128,9 @@ function Landing({onStart, onResume}){
                     Hervat →
                   </button>
                 </div>
+                <p style={{marginTop:6,fontSize:10,color:GM_MUTED,lineHeight:1.5}}>
+                  Werkt zodra je sessie minimaal één keer is opgeslagen (bij afronding van Deel 1 of Deel 2).
+                </p>
               </div>
             </div>
           </div>
@@ -1280,7 +1280,10 @@ export default function MoralMaps(){
   }
   async function resumeWithCode(code){
     const data = await dbLoadByParticipantCode(code);
-    if(!data){ alert("Geen sessie gevonden voor deze code."); return; }
+    if(!data){
+      alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal Deel 1 of Deel 2 af en probeer daarna opnieuw.");
+      return;
+    }
     setParticipantCode(data.participantCode || code.toUpperCase());
     setGroupCode(data.groupCode || "");
     setAge(data.age || "");
@@ -1418,7 +1421,7 @@ export default function MoralMaps(){
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:38,height:38,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🧭</div>
-            <div><div style={{fontWeight:800,fontSize:16}}>Persoonlijke integriteitsmeting</div><div style={{fontSize:10,color:"#94a3b8"}}>Code: {participantCode || "n.v.t."} · Groep: {groupCode} · {age}</div></div>
+            <div><div style={{fontWeight:800,fontSize:16}}>Moral Maps Trilogie</div><div style={{fontSize:10,color:"#94a3b8"}}>Code: {participantCode || "n.v.t."} · Groep: {groupCode} · {age}</div></div>
           </div>
           <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
         </div>
@@ -1502,10 +1505,7 @@ export default function MoralMaps(){
         {phase===3&&(
           <div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
-              <img src={ASSET_IMAGES.deel2.phoneMockup} alt="Deel 2 smartphone mockup met kruispunt" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
-            </div>
-            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
-              <img src={ASSET_IMAGES.deel2.crossroadsEvent} alt="Crossroads omleiding met vier afslagen" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
+              <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Deel 1 smartphone mockup" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {DILEMMAS.length}</span>
@@ -1611,9 +1611,36 @@ export default function MoralMaps(){
               <p style={{color:"#ddd6fe",fontSize:13,marginTop:8,lineHeight:1.6}}>Reflecteer op hoe socialisatie je waarden en professionele blik vormt.</p>
             </div>
             <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
-              {[{key:"primair",label:"Primaire socialisatie"},{key:"secundair",label:"Secundaire socialisatie"},{key:"transcultureel",label:"Transculturele aspecten"},{key:"professioneel",label:"Professionele identiteit"},{key:"reflectie",label:"Reflectie & koppeling aan Caluwe"}].map(({key,label})=>(
+              {[
+                {
+                  key:"primair",
+                  label:"Primaire socialisatie",
+                  hint:"Van wie heb je als eerste jouw waarden en normen meegekregen (bijvoorbeeld thuis of in je gezin)?",
+                },
+                {
+                  key:"secundair",
+                  label:"Secundaire socialisatie",
+                  hint:"Welke invloed hadden school, vrienden, sport, media of je omgeving op hoe jij bent gaan denken?",
+                },
+                {
+                  key:"transcultureel",
+                  label:"Transculturele aspecten",
+                  hint:"Welke rol speelden cultuur, afkomst, taal of migratie in hoe jij naar jezelf en anderen kijkt?",
+                },
+                {
+                  key:"professioneel",
+                  label:"Professionele identiteit",
+                  hint:"Welke ervaringen in stage, werk of opleiding hebben jouw professionele houding gevormd?",
+                },
+                {
+                  key:"reflectie",
+                  label:"Reflectie & koppeling aan Caluwe",
+                  hint:"Welke veranderkleur herken je het meest in jezelf, en hoe zie je die terug in je keuzes en gedrag?",
+                }
+              ].map(({key,label,hint})=>(
                 <div key={key}>
                   <label style={{fontSize:11,fontWeight:800,color:"#7c3aed",textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>{label}</label>
+                  <p style={{fontSize:11,color:"#94a3b8",lineHeight:1.6,margin:"0 0 6px"}}>{hint}</p>
                   <textarea
                     value={socialisatie[key]}
                     onChange={e=>setSocialisatie({...socialisatie,[key]:e.target.value})}
