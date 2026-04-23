@@ -38,23 +38,24 @@ async function dbSave(entry) {
     socialisatie:      entry.socialisatie,
   };
 
-  // Eerst proberen met resumable velden; als de DB-migratie nog niet is gedaan,
-  // dan fallbacken we automatisch naar legacy save zodat deelnemers door kunnen.
-  const withResumePayload = {
+  // Eerst proberen met volledige payload.
+  // Daarna vallen we stapsgewijs terug naar oudere schema's zodat gebruikers
+  // niet vastlopen als sommige kolommen nog ontbreken.
+  const fullPayload = {
     ...basePayload,
     participant_code: entry.participantCode,
     current_stage: entry.currentStage,
   };
 
-  let { error } = await supabase.from("moralmaps_results").insert(withResumePayload);
+  let { error } = await supabase.from("moralmaps_results").insert(fullPayload);
   if (error) {
-    const msg = String(error.message || "").toLowerCase();
-    const missingResumeColumns =
-      msg.includes("participant_code") || msg.includes("current_stage") || msg.includes("column");
-    if (missingResumeColumns) {
-      const retry = await supabase.from("moralmaps_results").insert(basePayload);
-      error = retry.error;
-    }
+    const retryBase = await supabase.from("moralmaps_results").insert(basePayload);
+    error = retryBase.error;
+  }
+  if (error) {
+    const { socialisatie: _unused, ...minimalPayload } = basePayload;
+    const retryMinimal = await supabase.from("moralmaps_results").insert(minimalPayload);
+    error = retryMinimal.error;
   }
   if (error) { console.error("Supabase save:", error.message); return false; }
   return true;
@@ -428,8 +429,8 @@ function PrivilegeWheel({onComplete}){
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
               <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege (binnenkant)
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
-              <div style={{width:14,height:14,borderRadius:4,background:"#64748b"}}/>Tussenpositie (midden)
+              <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
+                <div style={{width:14,height:14,borderRadius:4,background:"#64748b"}}/>Tussenpositie (deels binnen, deels buiten)
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
               <div style={{width:14,height:14,borderRadius:4,background:"#f59e0b"}}/>Minder privilege (buitenkant)
@@ -454,7 +455,7 @@ function PrivilegeWheel({onComplete}){
               </button>
               <button onClick={()=>toggle(activeSegment.id,"middle")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="middle"?"#64748b":"#e2e8f0"}`,background:selected[activeSegment.id]==="middle"?"#e2e8f0":"#fff",color:"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Tussenpositie</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Gemengde positie</div>
                 <div style={{opacity:.75,fontSize:11}}>Contextafhankelijk / gemengd privilege</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"outside")}
@@ -1090,7 +1091,7 @@ function Landing({onStart, onResume}){
               MORAL MAPS PLATFORM
             </div>
             <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Moral Maps<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>The beginning</span></h1>
-            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Start hier jouw traject in het Moral Maps platform en kies je route: Deel 1 of direct de organisatie lakmoesproef.</p>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Start hier jouw traject in het Moral Maps platform en werk stap voor stap door Deel 1, Deel 2 en Deel 3.</p>
 
             {/* START FORM */}
             <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
@@ -1203,16 +1204,13 @@ function Landing({onStart, onResume}){
       {/* DASHBOARD */}
       <section style={{background:"#f8f9fa",padding:"36px 24px",borderTop:`1px solid ${GM_BORDER}`}}>
         <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
-          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Leidinggevende?</strong> Bekijk het groepsdashboard of start de organisatie lakmoesproef</p>
+          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Leidinggevende?</strong> Bekijk het groepsdashboard</p>
           <div style={{display:"flex",gap:8}}>
             <input value={dash} onChange={e=>setDash(e.target.value)} placeholder="Voer groepscode in…"
               style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
             <button onClick={()=>dash.trim()&&onStart(null,null,dash.trim().toUpperCase())}
               style={{padding:"10px 20px",borderRadius:10,border:"none",background:GM_BLUE,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
           </div>
-          <button onClick={()=>onStart(null,null,null,true)} style={{marginTop:10,padding:"10px 16px",borderRadius:10,border:"1px solid #cbd5e1",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
-            Start Organisatie lakmoesproef →
-          </button>
         </div>
       </section>
     </div>
@@ -1269,8 +1267,7 @@ export default function MoralMaps(){
     return Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
   },[coreVals,dilResp]);
 
-  function start(gc,ag,dc,org=false){
-    if(org){setScreen("org");return;}
+  function start(gc,ag,dc){
     if(dc){setDashCode(dc);setScreen("dashboard");return;}
     setParticipantCode(generateParticipantCode());
     setGroupCode(gc);
@@ -1321,7 +1318,6 @@ export default function MoralMaps(){
 
   if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("landing")}/></div>;
-  if(screen==="org") return <OrganizationLakmoesproef onBack={()=>setScreen("landing")} />;
   if(screen==="deel2"){
     const crossroadsOptions = [
       "Snelle, saaie route naar je bestemming",
