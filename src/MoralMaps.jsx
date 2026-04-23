@@ -39,26 +39,38 @@ async function dbSave(entry) {
   };
 
   // Eerst proberen met volledige payload.
-  // Daarna vallen we stapsgewijs terug naar oudere schema's zodat gebruikers
-  // niet vastlopen als sommige kolommen nog ontbreken.
+  // Daarna stapsgewijs terugvallen naar oudere schema-varianten.
   const fullPayload = {
     ...basePayload,
     participant_code: entry.participantCode,
     current_stage: entry.currentStage,
   };
 
-  let { error } = await supabase.from("moralmaps_results").insert(fullPayload);
-  if (error) {
-    const retryBase = await supabase.from("moralmaps_results").insert(basePayload);
-    error = retryBase.error;
+  const { socialisatie: _dropSocialisatie, ...payloadNoSocialisatie } = basePayload;
+  const payloadStringified = {
+    ...payloadNoSocialisatie,
+    starr: JSON.stringify(basePayload.starr || {}),
+    socialisatie: JSON.stringify(basePayload.socialisatie || {}),
+  };
+  const { socialisatie: _dropSocialisatie2, ...payloadStringifiedNoSocialisatie } = payloadStringified;
+
+  const attempts = [
+    fullPayload,                    // nieuwste schema
+    basePayload,                    // zonder resume-kolommen
+    payloadNoSocialisatie,          // zonder socialisatie-kolom
+    payloadStringified,             // voor tekstkolommen i.p.v. json/jsonb
+    payloadStringifiedNoSocialisatie, // minimale compatibiliteit
+  ];
+
+  let lastError = null;
+  for (const payload of attempts) {
+    const { error } = await supabase.from("moralmaps_results").insert(payload);
+    if (!error) return true;
+    lastError = error;
   }
-  if (error) {
-    const { socialisatie: _unused, ...minimalPayload } = basePayload;
-    const retryMinimal = await supabase.from("moralmaps_results").insert(minimalPayload);
-    error = retryMinimal.error;
-  }
-  if (error) { console.error("Supabase save:", error.message); return false; }
-  return true;
+
+  if (lastError) { console.error("Supabase save:", lastError.message); }
+  return false;
 }
 
 async function dbLoad(groupCode) {
@@ -430,7 +442,7 @@ function PrivilegeWheel({onComplete}){
               <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege (binnenkant)
             </div>
               <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
-                <div style={{width:14,height:14,borderRadius:4,background:"#64748b"}}/>Tussenpositie (deels binnen, deels buiten)
+                <div style={{width:14,height:14,borderRadius:4,background:"#64748b"}}/>Tussenpositie (combinatie van beide uitersten)
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
               <div style={{width:14,height:14,borderRadius:4,background:"#f59e0b"}}/>Minder privilege (buitenkant)
@@ -455,8 +467,8 @@ function PrivilegeWheel({onComplete}){
               </button>
               <button onClick={()=>toggle(activeSegment.id,"middle")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="middle"?"#64748b":"#e2e8f0"}`,background:selected[activeSegment.id]==="middle"?"#e2e8f0":"#fff",color:"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Gemengde positie</div>
-                <div style={{opacity:.75,fontSize:11}}>Contextafhankelijk / gemengd privilege</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Tussenvorm</div>
+                <div style={{opacity:.75,fontSize:11}}>Je ervaart kenmerken van zowel binnen- als buitenpositie.</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"outside")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
