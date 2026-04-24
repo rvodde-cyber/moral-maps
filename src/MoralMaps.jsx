@@ -1194,7 +1194,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#eef2ff,#f8fafc 38%)",fontFamily:FONT}}>
       <div style={{maxWidth:980,margin:"0 auto",padding:"32px 16px 56px"}}>
         <div style={{background:"#fff",borderRadius:24,border:"1px solid #e2e8f0",padding:"24px 24px 20px",marginBottom:16,boxShadow:"0 14px 38px rgba(15,23,42,.08)"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr",gap:18,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"center"}}>
             <div>
               <p style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,margin:"0 0 6px"}}>Moral Maps Trilogie</p>
               <h1 style={{margin:0,fontSize:32,fontWeight:900,letterSpacing:-.8,color:"#0f172a"}}>Welkom bij je morele reis</h1>
@@ -1202,25 +1202,20 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 Kies het deel waar je vandaag aan wilt werken. Je verslagen worden per deel opgebouwd en na Deel 3 gekoppeld tot een totaalportfolio.
               </p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
-                <button onClick={()=>runStart(onStartDeel1)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #c7d2fe",background:"#eef2ff",color:"#3730a3",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start I</button>
-                <button onClick={()=>runStart(onStartDeel2)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #bae6fd",background:"#ecfeff",color:"#155e75",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start II</button>
-                <button onClick={()=>runStart(onStartDeel3)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #bbf7d0",background:"#f0fdf4",color:"#166534",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start III</button>
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#eef2ff",color:"#3730a3",fontWeight:700}}>I: The Beginning</span>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#ecfeff",color:"#155e75",fontWeight:700}}>II: Crossroads</span>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>III: Final Destination</span>
               </div>
             </div>
             <div style={{background:"linear-gradient(160deg,#0f172a,#1e293b)",borderRadius:18,padding:10,border:"1px solid #334155"}}>
-              <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:210,padding:12}}>
+              <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:260,padding:12}}>
                 <img src="/trilogie-hero-map.svg" alt="Moral Maps trilogie kaart" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",opacity:.92}} />
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 82% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%)"}} />
                 <div style={{position:"absolute",left:0,right:0,bottom:56,height:18,backgroundImage:"radial-gradient(#475569 1.4px, transparent 1.4px)",backgroundSize:"11px 11px",opacity:.22}} />
 
-                <div style={{position:"relative",zIndex:2,width:106,height:196,marginLeft:10,background:"linear-gradient(175deg,#0f172a,#1e293b)",borderRadius:22,border:"1.5px solid #334155",padding:5,boxShadow:"0 14px 24px rgba(15,23,42,.35)"}}>
+                <div style={{position:"relative",zIndex:2,width:132,height:238,marginLeft:14,background:"linear-gradient(175deg,#0f172a,#1e293b)",borderRadius:24,border:"1.5px solid #334155",padding:6,boxShadow:"0 14px 24px rgba(15,23,42,.35)"}}>
                   <div style={{height:8,width:38,borderRadius:99,background:"#0b1220",margin:"2px auto 4px",border:"1px solid #1f2a3d"}} />
-                  <div style={{height:172,borderRadius:16,overflow:"hidden",position:"relative",background:"#e2e8f0"}}>
+                  <div style={{height:210,borderRadius:17,overflow:"hidden",position:"relative",background:"#e2e8f0"}}>
                     <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Moral Maps mobiele mockup" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%"}} />
                     <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(15,23,42,.08),rgba(15,23,42,.18))"}} />
                   </div>
@@ -1653,6 +1648,21 @@ export default function MoralMaps(){
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
                 <img src={ASSET_IMAGES.deel2.phoneMockup} alt="Deel 2 smartphone mockup" style={{width:"100%",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
               </div>
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"18px 20px"}}>
+                <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>II: Crossroads</p>
+                <h3 style={{margin:"0 0 8px",fontSize:20,fontWeight:900,color:"#0f172a"}}>Welkom in Deel 2</h3>
+                <p style={{fontSize:13,color:"#334155",lineHeight:1.75,marginTop:0}}>
+                  In dit deel sta je op een moreel kruispunt. Je onderzoekt eerst je routekeuze en verdiept daarna in De Vreemde Ander.
+                </p>
+                <button onClick={()=>setDeel2Step(1)} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
+                  Start Deel 2 →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {deel2Step===1&&(
+            <div>
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
                 <img src={ASSET_IMAGES.deel2.crossroadsEvent} alt="Crossroads met vier afslagen" style={{width:"100%",display:"block",borderRadius:10,maxHeight:300,objectFit:"cover"}} />
               </div>
@@ -1670,24 +1680,24 @@ export default function MoralMaps(){
                   ))}
                 </div>
                 <textarea value={crossroadsReflectie} onChange={e=>setCrossroadsReflectie(e.target.value)} rows={3} placeholder="Waarom kies je deze route, en hoe past dit bij je kernwaarden?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:12}} />
-                <button onClick={()=>setDeel2Step(1)} disabled={!crossroadsChoice} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:crossroadsChoice?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:13,cursor:crossroadsChoice?"pointer":"not-allowed",fontFamily:FONT}}>
+                <button onClick={()=>setDeel2Step(2)} disabled={!crossroadsChoice} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:crossroadsChoice?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:13,cursor:crossroadsChoice?"pointer":"not-allowed",fontFamily:FONT}}>
                   Verder naar De Vreemde Ander →
                 </button>
               </div>
             </div>
           )}
 
-          {deel2Step===1&&(
+          {deel2Step===2&&(
             <VreemdeAnder
               coreVals={coreVals}
               onComplete={(result)=>{
                 setVreemdeAnderResult(result);
-                setDeel2Step(2);
+                setDeel2Step(3);
               }}
             />
           )}
 
-          {deel2Step===2&&(
+          {deel2Step===3&&(
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px"}}>
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Deel 2 afgerond</p>
               <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:900,color:"#0f172a"}}>Onderweg vastgelegd</h3>
