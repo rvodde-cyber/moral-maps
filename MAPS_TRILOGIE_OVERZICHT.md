@@ -50,3 +50,28 @@ Smartphone mockups:
 - Deel 2 (crossroads): bovenaan de dilemma/kruispunt-sectie als visuele trigger.
 - Deel 3 (brug): in het reisverslag bij de signature-opdracht met ballast/essentieel/hoop.
 
+## Terugvindplek stappen (vervolg)
+
+Als je later verder wilt gaan, gebruik dit als startpunt:
+
+- Hoofddocument met plan en keuzes:
+  - `C:\Users\876409\moral aps\MAPS_TRILOGIE_OVERZICHT.md`
+- Hoofdcode van de app:
+  - `C:\Users\876409\moral aps\src\MoralMaps.jsx`
+- Afbeeldingen:
+  - `C:\Users\876409\moral aps\public\`
+
+### Wat al klaarstaat
+
+- Deel 1 flow + signature SMS.
+- Deel 2 eerste flow (Crossroads + De Vreemde Ander) + eigen PDF/print.
+- Deel 3 signature Brug in de Mist + portfolio PDF/print.
+- Hervatten met participant code (basis aanwezig).
+
+### Volgende stap na pauze
+
+1. Preview openen op branch `feat/maps-flow-update`.
+2. Volledige testrun: Deel 1 -> Deel 2 -> Deel 3.
+3. Eventuele laatste tekst/UX-fixes.
+4. Merge naar `main` wanneer preview akkoord is.
+
