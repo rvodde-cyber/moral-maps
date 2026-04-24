@@ -25,8 +25,9 @@ const supabase = hasSupabaseConfig
 
 async function dbSave(entry) {
   if (!supabase) {
-    console.error("Supabase save: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
-    return false;
+    const msg = "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY";
+    console.error("Supabase save:", msg);
+    return { ok: false, error: msg };
   }
   const basePayload = {
     group_code:        entry.groupCode,
@@ -65,12 +66,13 @@ async function dbSave(entry) {
   let lastError = null;
   for (const payload of attempts) {
     const { error } = await supabase.from("moralmaps_results").insert(payload);
-    if (!error) return true;
+    if (!error) return { ok: true, error: null };
     lastError = error;
   }
 
-  if (lastError) { console.error("Supabase save:", lastError.message); }
-  return false;
+  const message = lastError?.message || "Unknown Supabase save error";
+  if (lastError) { console.error("Supabase save:", message); }
+  return { ok: false, error: message };
 }
 
 async function dbLoad(groupCode) {
@@ -1312,7 +1314,7 @@ export default function MoralMaps(){
   function reset(){setScreen("landing");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
-    await dbSave({
+    const result = await dbSave({
       participantCode,
       currentStage,
       groupCode,
@@ -1323,8 +1325,28 @@ export default function MoralMaps(){
       dominantColor: domColor,
       socialisatie,
     });
+    if(!result.ok) console.error("Save progress failed:", result.error);
   }
-  async function saveAndFinish(){setSaveErr(null);const ok=await dbSave({participantCode,currentStage:"deel1_done",groupCode,age,coreValues:coreVals,dilemmaResponses:dilResp,starr,dominantColor:domColor,socialisatie});if(ok){setSaved(true);setPhase(6);}else setSaveErr("Opslaan mislukt. Controleer je Supabase-instellingen.");}
+  async function saveAndFinish(){
+    setSaveErr(null);
+    const result = await dbSave({
+      participantCode,
+      currentStage:"deel1_done",
+      groupCode,
+      age,
+      coreValues:coreVals,
+      dilemmaResponses:dilResp,
+      starr,
+      dominantColor:domColor,
+      socialisatie
+    });
+    if(result.ok){
+      setSaved(true);
+      setPhase(6);
+      return;
+    }
+    setSaveErr(`Opslaan mislukt: ${result.error}`);
+  }
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
