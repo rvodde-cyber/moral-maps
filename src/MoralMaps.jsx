@@ -1365,6 +1365,7 @@ export default function MoralMaps(){
   const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
   const [bridge,setBridge]=useState({ballast:"",meenemen:"",vinden:"",kompas:""});
   const [saved,setSaved]=useState(false);
+  const [savedLocal,setSavedLocal]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
   const [showSmsDilemma,setShowSmsDilemma]=useState(false);
   const [smsChoice,setSmsChoice]=useState("");
@@ -1425,7 +1426,7 @@ export default function MoralMaps(){
     setPhase(6);
     setSaved(true);
   }
-  function reset(){setScreen("landing");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("landing");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1443,7 +1444,8 @@ export default function MoralMaps(){
   }
   async function saveAndFinish(){
     setSaveErr(null);
-    const result = await dbSave({
+    setSavedLocal(false);
+    const payload = {
       participantCode,
       currentStage:"deel1_done",
       groupCode,
@@ -1453,13 +1455,26 @@ export default function MoralMaps(){
       starr,
       dominantColor:domColor,
       socialisatie
+    };
+    const result = await dbSave({
+      ...payload
     });
     if(result.ok){
       setSaved(true);
       setPhase(6);
       return;
     }
-    setSaveErr(`Opslaan mislukt: ${result.error}`);
+    try{
+      localStorage.setItem("moralmaps_pending_save", JSON.stringify({
+        ...payload,
+        savedAt: new Date().toISOString(),
+      }));
+      setSavedLocal(true);
+      setSaveErr(`Online opslaan mislukt (${result.error}). Je voortgang is lokaal bewaard en je kunt verder.`);
+      setPhase(6);
+    }catch{
+      setSaveErr(`Opslaan mislukt: ${result.error}`);
+    }
   }
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
@@ -1809,6 +1824,7 @@ export default function MoralMaps(){
               <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
               <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Overzicht van je volledige route in Moral Maps 1</p>
               {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
+              {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
             </div>
             <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:8,marginBottom:14}}>
               <img src={ASSET_IMAGES.deel3.phoneMockup} alt="Deel 3 smartphone mockup op hero" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:280,objectFit:"cover"}} />
