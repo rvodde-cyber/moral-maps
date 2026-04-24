@@ -1175,7 +1175,69 @@ function OrganizationLakmoesproef({ onBack }) {
 
 // ── Landing ────────────────────────────────────────────────────
 
-function Landing({onStart, onResume}){
+function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
+  const [gc,setGc]=useState("");
+  const [age,setAge]=useState("");
+  const [resumeCode,setResumeCode]=useState("");
+  const canStart = gc.trim() && age;
+
+  return(
+    <div style={{minHeight:"100vh",background:"#f8fafc",fontFamily:FONT}}>
+      <div style={{maxWidth:860,margin:"0 auto",padding:"36px 16px 56px"}}>
+        <div style={{background:"#fff",borderRadius:20,border:"1px solid #e2e8f0",padding:"24px 24px 20px",marginBottom:16}}>
+          <p style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,margin:"0 0 6px"}}>Moral Maps Trilogie</p>
+          <h1 style={{margin:0,fontSize:30,fontWeight:900,letterSpacing:-.8,color:"#0f172a"}}>Welkom terug</h1>
+          <p style={{margin:"8px 0 0",fontSize:14,color:"#475569",lineHeight:1.7}}>
+            Kies het deel waar je vandaag aan wilt werken. Je verslagen worden per deel opgebouwd en later gecombineerd tot een totaalportfolio.
+          </p>
+        </div>
+
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:18,marginBottom:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+            <div>
+              <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Groepscode</label>
+              <input value={gc} onChange={e=>setGc(e.target.value)} placeholder="bijv. HBO25A" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+            </div>
+            <div>
+              <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Leeftijdscategorie</label>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {AGE_CATS.map(a=>(
+                  <button key={a} onClick={()=>setAge(a)} style={{padding:"7px 11px",borderRadius:99,border:`1.5px solid ${age===a?TEAL:"#d1d5db"}`,background:age===a?TEAL:"#fff",color:age===a?"#fff":"#475569",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>{a}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <p style={{margin:0,fontSize:11,color:"#64748b"}}>Vul groepscode + leeftijd in om direct een deel te starten.</p>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3, minmax(0, 1fr))",gap:12,marginBottom:16}}>
+          <button onClick={()=>canStart&&onStartDeel1(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"14px 12px",borderRadius:14,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT}}>
+            <p style={{margin:0,fontSize:12,fontWeight:800,color:"#0f172a"}}>Start Deel 1</p>
+            <p style={{margin:"5px 0 0",fontSize:11,color:"#64748b"}}>Begin, waarden en eerste reisverslag.</p>
+          </button>
+          <button onClick={()=>canStart&&onStartDeel2(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"14px 12px",borderRadius:14,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT}}>
+            <p style={{margin:0,fontSize:12,fontWeight:800,color:"#0f172a"}}>Werk aan Deel 2</p>
+            <p style={{margin:"5px 0 0",fontSize:11,color:"#64748b"}}>Crossroads en De Vreemde Ander.</p>
+          </button>
+          <button onClick={()=>canStart&&onStartDeel3(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"14px 12px",borderRadius:14,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT}}>
+            <p style={{margin:0,fontSize:12,fontWeight:800,color:"#0f172a"}}>Werk aan Deel 3</p>
+            <p style={{margin:"5px 0 0",fontSize:11,color:"#64748b"}}>Brug in de Mist en totaalportfolio.</p>
+          </button>
+        </div>
+
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16}}>
+          <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Verder met code</label>
+          <div style={{display:"flex",gap:8}}>
+            <input value={resumeCode} onChange={e=>setResumeCode(e.target.value.toUpperCase())} placeholder="bijv. MM-8K4P2X" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+            <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Landing({onStart, onResume, onStartDeel2}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [dash,setDash]=useState("");
@@ -1247,6 +1309,15 @@ function Landing({onStart, onResume}){
                 style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                 Start Deel 1 →
               </button>
+              <button
+                onClick={()=>{if(gc.trim()&&age)onStartDeel2(gc.trim().toUpperCase(),age);}}
+                disabled={!gc.trim()||!age}
+                style={{width:"100%",marginTop:8,padding:"11px",borderRadius:99,border:`1.5px solid ${gc.trim()&&age?GM_BLUE:"#d1d5db"}`,background:"#fff",color:gc.trim()&&age?GM_BLUE:"#9ca3af",fontWeight:700,fontSize:13,cursor:gc.trim()&&age?"pointer":"not-allowed",transition:"all .2s",fontFamily:FONT}}>
+                Testmodus: start direct bij Deel 2
+              </button>
+              <p style={{marginTop:6,fontSize:10,color:GM_MUTED,lineHeight:1.5}}>
+                Handig voor checks. Je hoeft Deel 1 dan niet telkens opnieuw te doorlopen.
+              </p>
               <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${GM_BORDER}`}}>
                 <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Verder met code</label>
                 <div style={{display:"flex",gap:8}}>
@@ -1348,7 +1419,7 @@ function Landing({onStart, onResume}){
 // ── Main App ───────────────────────────────────────────────────
 
 export default function MoralMaps(){
-  const [screen,setScreen]=useState("landing");
+  const [screen,setScreen]=useState("trilogie-home");
   const [participantCode,setParticipantCode]=useState("");
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
@@ -1404,6 +1475,32 @@ export default function MoralMaps(){
     setScreen("app");
     setPhase(0);
   }
+  function startDeel2Direct(gc, ag){
+    setParticipantCode(generateParticipantCode());
+    setGroupCode(gc);
+    setAge(ag);
+    // Minimale demo-kernwaarden zodat Deel 2 context direct bruikbaar is.
+    setCoreVals([
+      { id: 12, name: "Integriteit", color: "blauw" },
+      { id: 16, name: "Empathie", color: "rood" },
+      { id: 24, name: "Reflectie", color: "groen" },
+    ]);
+    setScreen("deel2");
+    setDeel2Step(0);
+  }
+  function startDeel3Direct(gc, ag){
+    setParticipantCode(generateParticipantCode());
+    setGroupCode(gc);
+    setAge(ag);
+    if(coreVals.length===0){
+      setCoreVals([
+        { id: 12, name: "Integriteit", color: "blauw" },
+        { id: 16, name: "Empathie", color: "rood" },
+        { id: 24, name: "Reflectie", color: "groen" },
+      ]);
+    }
+    setScreen("deel3");
+  }
   async function resumeWithCode(code){
     const data = await dbLoadByParticipantCode(code);
     if(!data){
@@ -1417,7 +1514,12 @@ export default function MoralMaps(){
     setDilResp(data.dilemmaResponses || []);
     setStarr(data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
     setSocialisatie(data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
-    if((data.currentStage || "").startsWith("deel2")) {
+    const stage = (data.currentStage || "").toLowerCase();
+    if(stage.startsWith("deel3")) {
+      setScreen("deel3");
+      return;
+    }
+    if(stage.startsWith("deel2")) {
       setScreen("deel2");
       setDeel2Step(0);
       return;
@@ -1426,7 +1528,7 @@ export default function MoralMaps(){
     setPhase(6);
     setSaved(true);
   }
-  function reset(){setScreen("landing");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1479,8 +1581,9 @@ export default function MoralMaps(){
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
-  if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode}/>;
-  if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("landing")}/></div>;
+  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
+  if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
+  if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
   if(screen==="deel2"){
     const crossroadsOptions = [
       "Snelle, saaie route naar je bestemming",
@@ -1492,7 +1595,7 @@ export default function MoralMaps(){
       <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
         <div style={{maxWidth:760,margin:"0 auto",padding:"24px 16px 60px"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-            <button onClick={()=>setScreen("landing")} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:999,padding:"8px 14px",cursor:"pointer",fontWeight:700,color:"#334155",fontFamily:FONT}}>← Terug</button>
+            <button onClick={()=>setScreen("trilogie-home")} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:999,padding:"8px 14px",cursor:"pointer",fontWeight:700,color:"#334155",fontFamily:FONT}}>← Terug</button>
             <div>
               <h2 style={{margin:0,fontSize:22,fontWeight:900,letterSpacing:-.4}}>Deel 2 — Onderweg</h2>
               <p style={{margin:0,fontSize:12,color:"#64748b"}}>Crossroads en De Vreemde Ander · Code: {participantCode || "n.v.t."}</p>
@@ -1560,7 +1663,7 @@ export default function MoralMaps(){
               <div style={{display:"flex",gap:10}}>
                 <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,vreemdeAnderResult,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
                 <button onClick={()=>setDeel2Step(0)} style={{flex:1,padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
-                <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("app");setPhase(6);}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
+                <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("deel3");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
               </div>
             </div>
           )}
@@ -1568,7 +1671,46 @@ export default function MoralMaps(){
       </div>
     );
   }
-  
+
+  if(screen==="deel3"){
+    return (
+      <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
+        <div style={{maxWidth:760,margin:"0 auto",padding:"24px 16px 60px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+            <button onClick={()=>setScreen("trilogie-home")} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:999,padding:"8px 14px",cursor:"pointer",fontWeight:700,color:"#334155",fontFamily:FONT}}>← Terug</button>
+            <div>
+              <h2 style={{margin:0,fontSize:22,fontWeight:900,letterSpacing:-.4}}>Deel 3 — Bestemming</h2>
+              <p style={{margin:0,fontSize:12,color:"#64748b"}}>Brug in de Mist en totaalportfolio · Code: {participantCode || "n.v.t."}</p>
+            </div>
+          </div>
+
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
+            <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🌫️ Signature opdracht Deel 3 — De Brug in de Mist</p>
+            <div style={{marginBottom:12,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
+              <img src={ASSET_IMAGES.deel3.bridgeEvent} alt="De brug in de mist met beperkte draagkracht" style={{width:"100%",height:"auto",display:"block",maxHeight:280,objectFit:"cover"}} />
+            </div>
+            <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:"0 0 10px"}}>
+              De brug heeft beperkte draagkracht. Je kunt niet alles meenemen naar je volgende bestemming.
+            </p>
+            <div style={{display:"grid",gap:10}}>
+              <textarea value={bridge.ballast} onChange={e=>setBridge({...bridge,ballast:e.target.value})} rows={2} placeholder="Wat laat je bewust achter als ballast?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={bridge.meenemen} onChange={e=>setBridge({...bridge,meenemen:e.target.value})} rows={2} placeholder="Wat neem je absoluut mee?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={bridge.vinden} onChange={e=>setBridge({...bridge,vinden:e.target.value})} rows={2} placeholder="Wat hoop je te vinden aan de overkant?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={bridge.kompas} onChange={e=>setBridge({...bridge,kompas:e.target.value})} rows={2} placeholder="Welke kernwaarde stuurt deze keuze?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+            </div>
+          </div>
+
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16}}>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              <button onClick={async ()=>{await saveProgress("deel3_done");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Opslaan Deel 3</button>
+              <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Totaalportfolio</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   // ── APP ──
   return(
