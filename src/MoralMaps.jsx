@@ -248,31 +248,71 @@ const ORG_QUESTIONS = [
 // ── Privilege Wiel Data ────────────────────────────────────────
 
 const WHEEL_SEGMENTS = [
-  // Buitenste ring — maatschappelijke categorieën
-  { id:"ras", label:"Ras / Etniciteit", icon:"🌍", angle:0,
-    desc:"Witte mensen hebben in veel contexten meer onzichtbare voordelen op de arbeidsmarkt, in het onderwijs en in contact met instanties.",
-    inside:"Persoon van kleur / Niet-westers", outside:"Wit / Westers" },
-  { id:"gender", label:"Gender", icon:"⚧", angle:45,
-    desc:"Cisgender mannen hebben vaak meer toegang tot machtsposities. Vrouwen en non-binaire personen ervaren vaker structurele drempels.",
-    inside:"Vrouw / Non-binair", outside:"Cisgender man" },
-  { id:"klasse", label:"Sociale klasse", icon:"🏠", angle:90,
-    desc:"Klasse bepaalt toegang tot netwerken, onderwijs en kansen. Mensen uit hogere klassen starten met meer onzichtbaar kapitaal.",
-    inside:"Lagere / Middenklasse", outside:"Hogere klasse" },
-  { id:"seksualiteit", label:"Seksualiteit", icon:"🏳️‍🌈", angle:135,
-    desc:"Heteroseksualiteit wordt als norm gezien. LGBTQ+ personen navigeren regelmatig onveilige of uitsluitende omgevingen.",
-    inside:"LGBTQ+", outside:"Heteroseksueel" },
-  { id:"religie", label:"Religie / Levensbeschouwing", icon:"🕊", angle:180,
-    desc:"In Nederland heeft een christelijke of seculiere achtergrond historisch meer institutionele legitimiteit dan andere geloven.",
-    inside:"Niet-christelijk / Moslim / Anders", outside:"Christelijk / Seculier" },
-  { id:"taal", label:"Taal", icon:"💬", angle:225,
-    desc:"Moedertaalsprekers van het Nederlands hebben minder talige drempels in onderwijs, werk en communicatie met overheid.",
-    inside:"Andere moedertaal", outside:"Nederlands als moedertaal" },
-  { id:"beperking", label:"Beperking / Gezondheid", icon:"♿", angle:270,
-    desc:"Mensen zonder lichamelijke of psychische beperkingen hoeven minder aan te passen aan een wereld die voor hen is ontworpen.",
-    inside:"Beperking / Chronische ziekte", outside:"Geen beperking" },
-  { id:"leeftijd", label:"Leeftijd", icon:"📅", angle:315,
-    desc:"Zowel jongeren als ouderen ervaren leeftijdsdiscriminatie. Op de arbeidsmarkt geldt een smalle 'ideale' leeftijdsband.",
-    inside:"Te jong / Te oud", outside:"Middelbare leeftijd" },
+  { id:"opleiding", label:"Opleiding (V)", icon:"🎓",
+    desc:"Deze as gaat over opleidingskapitaal en toegang tot formele kansen.",
+    inside:"Universiteit / HBO+",
+    middle:"MBO / HAVO",
+    outside:"Basisonderwijs / VSO" },
+  { id:"huisvesting", label:"Huisvesting", icon:"🏘️",
+    desc:"Deze as kijkt naar woonzekerheid, woonkwaliteit en eigendom.",
+    inside:"Koopwoning (Vrijstaand/Stad)",
+    middle:"Huurwoning (Sector)",
+    outside:"Sociale huur / Onzeker" },
+  { id:"sociaal_milieu", label:"Sociaal Milieu (V)", icon:"👥",
+    desc:"Deze as gaat over netwerkpositie, culturele codes en sociaal kapitaal.",
+    inside:"Gevestigde Bovenlaag",
+    middle:"Middenklasse",
+    outside:"Arbeidersmilieu" },
+  { id:"huidskleur", label:"Huidskleur (V)", icon:"🌍",
+    desc:"Deze as gaat over hoe huidskleur iemands behandeling in systemen kan beïnvloeden.",
+    inside:"Wit",
+    middle:"Lichte tinten",
+    outside:"Bruin / Donker" },
+  { id:"gender", label:"Gender (V)", icon:"⚧",
+    desc:"Deze as gaat over gendernormen en hoe die toegang en veiligheid beïnvloeden.",
+    inside:"Cis-Man",
+    middle:"Cis-Vrouw",
+    outside:"Trans / Non-binair" },
+  { id:"seksualiteit", label:"Seksualiteit (V)", icon:"🏳️‍🌈",
+    desc:"Deze as gaat over heteronormativiteit en sociale acceptatie.",
+    inside:"Heteroseksueel",
+    middle:"Homo / Lesbisch",
+    outside:"LHBTQ+ Overig" },
+  { id:"immigratie", label:"Immigratie (V)", icon:"🧳",
+    desc:"Deze as gaat over migratieachtergrond en ervaren institutionele drempels.",
+    inside:"In NL geboren (ouders ook)",
+    middle:"2e Generatie",
+    outside:"Nieuwkomer / Expats" },
+  { id:"taal", label:"Taal (V)", icon:"💬",
+    desc:"Deze as gaat over taalvoorsprong in onderwijs, werk en instanties.",
+    inside:"NL / Engels (Moedertaal)",
+    middle:"NL als tweede taal",
+    outside:"Anderstalig" },
+  { id:"woonregio", label:"Woonregio", icon:"🗺️",
+    desc:"Deze as kijkt naar regionale toegang tot voorzieningen en kansen.",
+    inside:"Stedelijk / Grote stad",
+    middle:"Middelgrote stad",
+    outside:"Platteland / Krimp" },
+  { id:"neurodiversiteit", label:"Neurodiversiteit", icon:"🧠",
+    desc:"Deze as gaat over aansluiting tussen neuroprofiel en maatschappelijke normen.",
+    inside:"Neurotypisch",
+    middle:"Enige divergentie",
+    outside:"Ernstige divergentie" },
+  { id:"beperking", label:"Beperking", icon:"♿",
+    desc:"Deze as gaat over fysieke/mentale toegankelijkheid en meedoen.",
+    inside:"Geen beperking",
+    middle:"Lichte beperking",
+    outside:"Ernstige beperking" },
+  { id:"vermogen", label:"Vermogen", icon:"💶",
+    desc:"Deze as gaat over financiële buffers en economische handelingsruimte.",
+    inside:"Rijk / Vermogend",
+    middle:"Modaal inkomen",
+    outside:"Minimum / Schulden" },
+  { id:"lichaamsbouw", label:"Lichaamsbouw", icon:"🧍",
+    desc:"Deze as kijkt naar normbeelden rond lichaam en sociale waardering.",
+    inside:"Slank / Atletisch",
+    middle:"Gemiddeld",
+    outside:"Groot / Dik" },
 ];
 
 // ── Micro components ───────────────────────────────────────────
@@ -362,7 +402,7 @@ function PrivilegeWheel({onComplete}){
             <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Voordat je aan de reis begint, sta je even stil bij jezelf.</p>
           </div>
           <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel toont acht maatschappelijke categorieën die beïnvloeden hoeveel privilege — onzichtbare voordelen — iemand heeft in onze samenleving.</p>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel toont dertien maatschappelijke assen die samen een beeld geven van machtscentrum, middenzone en marginale zone.</p>
             <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 18px",marginBottom:20}}>
               <p style={{fontSize:13,color:"#1a5c46",lineHeight:1.7,margin:0}}>
                 <strong>Wat je gaat doen:</strong> Klik per segment op de positie die het meest op jou van toepassing is. Er zijn geen goede of foute antwoorden — dit is een persoonlijk reflectiemoment.
@@ -381,6 +421,29 @@ function PrivilegeWheel({onComplete}){
   }
 
   const activeSegment = activeInfo ? WHEEL_SEGMENTS.find(s=>s.id===activeInfo) : null;
+  const scoreMap = { inside: 3, middle: 2, outside: 1 };
+  const radarSize = 320;
+  const radarCx = radarSize / 2;
+  const radarCy = radarSize / 2;
+  const radarMaxR = 110;
+  const radarLevels = [1, 2, 3];
+
+  function radarPoint(i, score){
+    const angle = ((2 * Math.PI) / WHEEL_SEGMENTS.length) * i - Math.PI / 2;
+    const radius = (score / 3) * radarMaxR;
+    return [
+      radarCx + Math.cos(angle) * radius,
+      radarCy + Math.sin(angle) * radius
+    ];
+  }
+
+  const radarPolygon = WHEEL_SEGMENTS
+    .map((seg, i) => {
+      const score = scoreMap[selected[seg.id]] || 0;
+      const [x, y] = radarPoint(i, score);
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return(
     <div style={{maxWidth:680,margin:"0 auto"}}>
@@ -389,7 +452,7 @@ function PrivilegeWheel({onComplete}){
           <h2 style={{fontWeight:800,fontSize:17,margin:0}}>🌸 Het Privilege Wiel</h2>
           <span style={{fontSize:12,fontWeight:700,color:TEAL}}>{answeredCount}/{WHEEL_SEGMENTS.length}</span>
         </div>
-        <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie — de <strong>binnenkant</strong> of de <strong>buitenkant</strong> van het wiel.</p>
+        <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie: <strong>machtscentrum</strong>, <strong>middenzone</strong> of <strong>marginale zone</strong>.</p>
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
@@ -435,7 +498,7 @@ function PrivilegeWheel({onComplete}){
             {/* Midden tekst */}
             <text x={cx} y={cy-10} textAnchor="middle" fontSize="11" fontWeight="800" fill={TEAL}>Privilege</text>
             <text x={cx} y={cy+6} textAnchor="middle" fontSize="9" fill="#94a3b8">Wiel</text>
-            <text x={cx} y={cy+20} textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">{answeredCount}/8</text>
+            <text x={cx} y={cy+20} textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">{answeredCount}/{WHEEL_SEGMENTS.length}</text>
           </svg>
 
           {/* Legenda */}
@@ -464,18 +527,18 @@ function PrivilegeWheel({onComplete}){
               <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
               <button onClick={()=>toggle(activeSegment.id,"inside")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="inside"?TEAL:"#e2e8f0"}`,background:selected[activeSegment.id]==="inside"?TEAL:"#fff",color:selected[activeSegment.id]==="inside"?"#fff":"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant → Meer privilege</div>
-                <div style={{opacity:.75,fontSize:11}}>{activeSegment.outside}</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant -> Machtscentrum</div>
+                <div style={{opacity:.75,fontSize:11}}>{activeSegment.inside}</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"middle")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="middle"?"#64748b":"#e2e8f0"}`,background:selected[activeSegment.id]==="middle"?"#e2e8f0":"#fff",color:"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Middenring → Tussenvorm</div>
-                <div style={{opacity:.75,fontSize:11}}>Je ervaart kenmerken van zowel binnen- als buitenpositie.</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Middenring -> Middenzone</div>
+                <div style={{opacity:.75,fontSize:11}}>{activeSegment.middle || "Tussenvorm van beide uitersten."}</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"outside")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant → Minder privilege</div>
-                <div style={{opacity:.75,fontSize:11}}>{activeSegment.inside}</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant -> Marginale zone</div>
+                <div style={{opacity:.75,fontSize:11}}>{activeSegment.outside}</div>
               </button>
             </>
           ) : (
@@ -511,6 +574,57 @@ function PrivilegeWheel({onComplete}){
           <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:0}}>
             Je hebt nu een eerste beeld van je eigen rugzak. Privilege betekent niet dat je het makkelijk hebt gehad — maar dat bepaalde drempels voor jou onzichtbaarder zijn dan voor anderen. Houd dit beeld in gedachten tijdens de rest van de reis.
           </p>
+        </div>
+      )}
+
+      {allAnswered && (
+        <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 20px",marginBottom:16}}>
+          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📈 Grafische weergave</p>
+          <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:"0 0 12px"}}>
+            Dit spinneweb laat je ingevulde profiel zien per as (3 = machtscentrum, 2 = middenzone, 1 = marginale zone).
+          </p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,alignItems:"center"}}>
+            <div style={{display:"flex",justifyContent:"center"}}>
+              <svg width={radarSize} height={radarSize} viewBox={`0 0 ${radarSize} ${radarSize}`}>
+                {radarLevels.map((level) => (
+                  <polygon
+                    key={level}
+                    points={WHEEL_SEGMENTS.map((_, i) => radarPoint(i, level).join(",")).join(" ")}
+                    fill="none"
+                    stroke="#e2e8f0"
+                    strokeWidth="1"
+                  />
+                ))}
+                {WHEEL_SEGMENTS.map((_, i) => {
+                  const [x, y] = radarPoint(i, 3);
+                  return <line key={`axis-${i}`} x1={radarCx} y1={radarCy} x2={x} y2={y} stroke="#e2e8f0" strokeWidth="1" />;
+                })}
+                <polygon points={radarPolygon} fill={`${TEAL}33`} stroke={TEAL} strokeWidth="2" />
+                {WHEEL_SEGMENTS.map((seg, i) => {
+                  const score = scoreMap[selected[seg.id]] || 0;
+                  const [x, y] = radarPoint(i, score);
+                  return <circle key={`point-${seg.id}`} cx={x} cy={y} r="3.5" fill={TEAL_DARK} />;
+                })}
+              </svg>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#334155"}}>
+                <span style={{width:12,height:12,borderRadius:"50%",background:TEAL_DARK,display:"inline-block"}} />
+                3 = Machtscentrum (binnenkant)
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#334155"}}>
+                <span style={{width:12,height:12,borderRadius:"50%",background:"#64748b",display:"inline-block"}} />
+                2 = Middenzone (tussenvorm)
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#334155"}}>
+                <span style={{width:12,height:12,borderRadius:"50%",background:"#f59e0b",display:"inline-block"}} />
+                1 = Marginale zone (buitenkant)
+              </div>
+              <p style={{fontSize:11,color:"#64748b",lineHeight:1.6,margin:"8px 0 0"}}>
+                Tip: gebruik dit beeld als reflectiestart, niet als label. Context en persoonlijke geschiedenis blijven altijd belangrijk.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
