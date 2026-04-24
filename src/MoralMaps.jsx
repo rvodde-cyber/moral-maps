@@ -527,17 +527,17 @@ function PrivilegeWheel({onComplete}){
               <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
               <button onClick={()=>toggle(activeSegment.id,"inside")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="inside"?TEAL:"#e2e8f0"}`,background:selected[activeSegment.id]==="inside"?TEAL:"#fff",color:selected[activeSegment.id]==="inside"?"#fff":"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant -> Machtscentrum</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Binnenkant: Machtscentrum</div>
                 <div style={{opacity:.75,fontSize:11}}>{activeSegment.inside}</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"middle")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="middle"?"#64748b":"#e2e8f0"}`,background:selected[activeSegment.id]==="middle"?"#e2e8f0":"#fff",color:"#334155",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Middenring -> Middenzone</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Middenring: Middenzone</div>
                 <div style={{opacity:.75,fontSize:11}}>{activeSegment.middle || "Tussenvorm van beide uitersten."}</div>
               </button>
               <button onClick={()=>toggle(activeSegment.id,"outside")}
                 style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${selected[activeSegment.id]==="outside"?"#f59e0b":"#e2e8f0"}`,background:selected[activeSegment.id]==="outside"?"#fef3c7":"#fff",color:"#92400e",fontWeight:600,fontSize:12,cursor:"pointer",textAlign:"left",fontFamily:FONT,transition:"all .15s"}}>
-                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant -> Marginale zone</div>
+                <div style={{fontWeight:700,marginBottom:2}}>Buitenkant: Marginale zone</div>
                 <div style={{opacity:.75,fontSize:11}}>{activeSegment.outside}</div>
               </button>
             </>
