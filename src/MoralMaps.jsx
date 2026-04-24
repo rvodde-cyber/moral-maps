@@ -1179,7 +1179,16 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [resumeCode,setResumeCode]=useState("");
+  const [startHint, setStartHint] = useState("");
   const canStart = gc.trim() && age;
+  function runStart(action){
+    if(!canStart){
+      setStartHint("Vul eerst groepscode en leeftijd in, daarna kun je direct starten.");
+      return;
+    }
+    setStartHint("");
+    action(gc.trim().toUpperCase(), age);
+  }
 
   return(
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#eef2ff,#f8fafc 38%)",fontFamily:FONT}}>
@@ -1193,18 +1202,32 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 Kies het deel waar je vandaag aan wilt werken. Je verslagen worden per deel opgebouwd en na Deel 3 gekoppeld tot een totaalportfolio.
               </p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
-                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#eef2ff",color:"#3730a3",fontWeight:700}}>Boek I · Fundamenten</span>
-                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#ecfeff",color:"#155e75",fontWeight:700}}>Boek II · Verdieping</span>
-                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>Boek III · Integratie</span>
+                <button onClick={()=>runStart(onStartDeel1)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #c7d2fe",background:"#eef2ff",color:"#3730a3",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start I</button>
+                <button onClick={()=>runStart(onStartDeel2)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #bae6fd",background:"#ecfeff",color:"#155e75",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start II</button>
+                <button onClick={()=>runStart(onStartDeel3)} style={{padding:"8px 12px",borderRadius:99,border:"1px solid #bbf7d0",background:"#f0fdf4",color:"#166534",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Start III</button>
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
+                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#eef2ff",color:"#3730a3",fontWeight:700}}>I: The Beginning</span>
+                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#ecfeff",color:"#155e75",fontWeight:700}}>II: Crossroads</span>
+                <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>III: Final Destination</span>
               </div>
             </div>
             <div style={{background:"linear-gradient(160deg,#0f172a,#1e293b)",borderRadius:18,padding:10,border:"1px solid #334155"}}>
-              <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:210}}>
-                <img src="/trilogie-hero-map.svg" alt="Moral Maps trilogie kaart" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}} />
+              <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:210,padding:12}}>
+                <img src="/trilogie-hero-map.svg" alt="Moral Maps trilogie kaart" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",opacity:.92}} />
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 82% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%)"}} />
                 <div style={{position:"absolute",left:0,right:0,bottom:56,height:18,backgroundImage:"radial-gradient(#475569 1.4px, transparent 1.4px)",backgroundSize:"11px 11px",opacity:.22}} />
+
+                <div style={{position:"relative",zIndex:2,width:106,height:196,marginLeft:10,background:"linear-gradient(175deg,#0f172a,#1e293b)",borderRadius:22,border:"1.5px solid #334155",padding:5,boxShadow:"0 14px 24px rgba(15,23,42,.35)"}}>
+                  <div style={{height:8,width:38,borderRadius:99,background:"#0b1220",margin:"2px auto 4px",border:"1px solid #1f2a3d"}} />
+                  <div style={{height:172,borderRadius:16,overflow:"hidden",position:"relative",background:"#e2e8f0"}}>
+                    <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Moral Maps mobiele mockup" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%"}} />
+                    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(15,23,42,.08),rgba(15,23,42,.18))"}} />
+                  </div>
+                </div>
+
                 <div style={{position:"absolute",left:12,right:12,bottom:10,background:"rgba(255,255,255,.93)",borderRadius:10,padding:"8px 10px",fontSize:11,color:"#334155",fontWeight:700}}>
-                  Kies direct Deel 1, Deel 2 of Deel 3
+                  Kies direct I, II of III
                 </div>
               </div>
             </div>
@@ -1227,22 +1250,23 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
             </div>
           </div>
           <p style={{margin:0,fontSize:11,color:"#64748b"}}>Vul groepscode + leeftijd in om direct een deel te starten.</p>
+          {startHint && <p style={{margin:"8px 0 0",fontSize:11,color:"#b45309",fontWeight:700}}>⚠ {startHint}</p>}
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3, minmax(0, 1fr))",gap:12,marginBottom:16}}>
-          <button onClick={()=>canStart&&onStartDeel1(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
-            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#6366f1",textTransform:"uppercase",letterSpacing:1}}>Boek I</p>
-            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Start Deel 1</p>
+          <button onClick={()=>runStart(onStartDeel1)} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:"pointer",fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
+            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#6366f1",textTransform:"uppercase",letterSpacing:1}}>I: The Beginning</p>
+            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Start Deel I</p>
             <p style={{margin:"6px 0 0",fontSize:12,color:"#64748b",lineHeight:1.6}}>Begin, waarden en eerste reisverslag.</p>
           </button>
-          <button onClick={()=>canStart&&onStartDeel2(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
-            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#0ea5e9",textTransform:"uppercase",letterSpacing:1}}>Boek II</p>
-            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Werk aan Deel 2</p>
+          <button onClick={()=>runStart(onStartDeel2)} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:"pointer",fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
+            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#0ea5e9",textTransform:"uppercase",letterSpacing:1}}>II: Crossroads</p>
+            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Werk aan Deel II</p>
             <p style={{margin:"6px 0 0",fontSize:12,color:"#64748b",lineHeight:1.6}}>Crossroads en De Vreemde Ander.</p>
           </button>
-          <button onClick={()=>canStart&&onStartDeel3(gc.trim().toUpperCase(), age)} disabled={!canStart} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:canStart?"pointer":"not-allowed",opacity:canStart?1:.6,fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
-            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#16a34a",textTransform:"uppercase",letterSpacing:1}}>Boek III</p>
-            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Werk aan Deel 3</p>
+          <button onClick={()=>runStart(onStartDeel3)} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:"pointer",fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
+            <p style={{margin:0,fontSize:10,fontWeight:800,color:"#16a34a",textTransform:"uppercase",letterSpacing:1}}>III: Final Destination</p>
+            <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Werk aan Deel III</p>
             <p style={{margin:"6px 0 0",fontSize:12,color:"#64748b",lineHeight:1.6}}>Brug in de Mist en totaalportfolio.</p>
           </button>
         </div>
