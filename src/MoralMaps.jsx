@@ -1504,6 +1504,7 @@ export default function MoralMaps(){
   const [crossroadsChoice,setCrossroadsChoice]=useState("");
   const [crossroadsReflectie,setCrossroadsReflectie]=useState("");
   const [tankstop,setTankstop]=useState({energie:"",lek:"",nodig:""});
+  const [omweg,setOmweg]=useState({tegenslag:"",bijstelling:"",lering:""});
   const [vreemdeAnderResult,setVreemdeAnderResult]=useState(null);
   const [contentProfile,setContentProfile]=useState({
     locale:"nl",
@@ -1588,7 +1589,7 @@ export default function MoralMaps(){
     setPhase(6);
     setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1719,22 +1720,40 @@ export default function MoralMaps(){
                 <textarea value={tankstop.nodig} onChange={e=>setTankstop({...tankstop,nodig:e.target.value})} rows={2} placeholder="Wat heb je nodig voor de volgende etappe?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
               </div>
               <button onClick={()=>setDeel2Step(3)} disabled={!tankstop.energie.trim() || !tankstop.nodig.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(tankstop.energie.trim() && tankstop.nodig.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:13,cursor:(tankstop.energie.trim() && tankstop.nodig.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
-                Verder naar De Vreemde Ander →
+                Verder naar Omweg-dilemma →
               </button>
             </div>
           )}
 
           {deel2Step===3&&(
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px"}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Onderweg-metafoor</p>
+              <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:900,color:"#0f172a"}}>⤴️ Omweg-dilemma</h3>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,marginTop:0}}>
+                Onderweg kom je soms onverwacht in een omweg terecht. Beschrijf een tegenslag en hoe je je kompas hebt bijgesteld.
+              </p>
+              <div style={{display:"grid",gap:10,marginBottom:10}}>
+                <textarea value={omweg.tegenslag} onChange={e=>setOmweg({...omweg,tegenslag:e.target.value})} rows={2} placeholder="Welke tegenslag of omweg kwam je tegen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <textarea value={omweg.bijstelling} onChange={e=>setOmweg({...omweg,bijstelling:e.target.value})} rows={2} placeholder="Hoe heb je je koers of kompas bijgesteld?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <textarea value={omweg.lering} onChange={e=>setOmweg({...omweg,lering:e.target.value})} rows={2} placeholder="Welke les neem je mee naar de volgende etappe?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              </div>
+              <button onClick={()=>setDeel2Step(4)} disabled={!omweg.tegenslag.trim() || !omweg.bijstelling.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:13,cursor:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
+                Verder naar De Vreemde Ander →
+              </button>
+            </div>
+          )}
+
+          {deel2Step===4&&(
             <VreemdeAnder
               coreVals={coreVals}
               onComplete={(result)=>{
                 setVreemdeAnderResult(result);
-                setDeel2Step(4);
+                setDeel2Step(5);
               }}
             />
           )}
 
-          {deel2Step===4&&(
+          {deel2Step===5&&(
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px"}}>
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Deel 2 afgerond</p>
               <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:900,color:"#0f172a"}}>Onderweg vastgelegd</h3>
@@ -1754,7 +1773,7 @@ export default function MoralMaps(){
               </div>
               <textarea value={contentProfile.extraAssignment} onChange={(e)=>setContentProfile({...contentProfile,extraAssignment:e.target.value})} rows={2} placeholder="Optionele vervolgopdracht (komt mee in PDF)" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:10}} />
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,vreemdeAnderResult,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
+                <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,vreemdeAnderResult,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
                 <button onClick={()=>setDeel2Step(0)} style={{flex:1,padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
                 <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("deel3");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
               </div>
