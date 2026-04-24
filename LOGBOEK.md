@@ -97,3 +97,137 @@
 ### Doel morgen
 - Save op `Rugzak -> Reisverslag` stabiel werkend.
 - Daarna pas afronden van end-to-end testrun en merge.
+
+## 2026-04-24 - Inhoudelijke verrijking trilogie (klaargezet)
+
+### Nieuwe inhoudsvraag van gebruiker
+- Alle 3 delen voorzien van morele coachvragen die passen bij de fase.
+- Vormgeving in Deel 2 en Deel 3 rijker maken met passende visuals.
+- Dit vastleggen voor hervatting na pauze.
+
+### Voorstel morele coachvragen per deel
+
+#### Deel 1 - The Beginning (zelforiëntatie)
+- Heb ik in deze keuzes trouw gehandeld aan mijn kernwaarden?
+- Welke keuze voelde goed, maar wringt achteraf toch een beetje?
+- Waar week ik af van mijn kompas en waarom deed ik dat?
+- Welke waarde wil ik in het volgende deel bewuster vasthouden?
+
+#### Deel 2 - Crossroads (onderweg, spanning, bijsturing)
+- Heb ik goed gedaan in deze context, of vooral veilig gekozen?
+- Welk belang woog ik zwaarder: mezelf, de ander, het systeem?
+- Op welk moment stond mijn kernwaarde het meest onder druk?
+- Wat veranderde in mijn oordeel nadat ik de ander echt meenam?
+
+#### Deel 3 - Final Destination (integratie, actie)
+- Waar ben ik moreel op gegroeid sinds Deel 1?
+- Welke terugkerende blinde vlek neem ik nog mee?
+- Welke keuze ga ik vanaf nu anders maken in de praktijk?
+- Hoe toets ik over 4 weken of ik mijn actieplan ook echt naleef?
+
+### Voorstel visuele verrijking Deel 2
+- Routekaart-progressie bovenin: mini-lijn met iconen (Crossroads -> Tankstop -> Omweg -> Ander -> Inzicht).
+- Per sub-opdracht een eigen header-illustratie:
+  - Tankstop: dashboard/brandstofmeter visual.
+  - Omweg: wegafsluiting/omleiding visual.
+  - Vreemde Ander: ontmoeting/brug visual.
+- Compacte "Kompas in beeld"-badge naast elke opdracht met de 3 kernwaarden.
+
+### Voorstel visuele verrijking Deel 3
+- Hero met horizon/uitkijkpunt na brug-moment (visuele afsluiting van reis).
+- Kaarten-layout voor:
+  - Terugblik
+  - Vooruitblik
+  - Synthese
+  - GROW actieplan
+- Eindblok "Commitment card" met datum + mini-checkpoint (2 en 4 weken).
+
+### Implementatievolgorde na pauze
+1. Morele coachvragen als vaste callout-blokken in Deel 1, 2, 3.
+2. Deel 2 visuele routeprogressie + opdrachtillustraties.
+3. Deel 3 kaart-layout en commitment card.
+4. Portfolio-export uitbreiden met coachvragen + commitment samenvatting.
+
+## 2026-04-24 - Overzicht MAPS-trilogie (Deel 1, 2, 3)
+
+Doel van deze notitie: in 1 plek terugvinden hoe de 3 onderdelen van de MAPS-trilogie lopen, welke opdrachten erbij horen, en wat de PDF/print oplevert.
+
+Bron/implementatiepad:
+- Hoofdflow: `src/MoralMaps.jsx`
+- Beeldmateriaal: `public/`
+
+### Deel 1 - The Beginning (Vertrek)
+- Hoofdthema:
+  - Zelforiëntatie: wie ben ik, welke waarden sturen mij, en hoe handel ik in eerste dilemma's?
+- Flow:
+  1. Privilegewiel (positionering/zelfbeeld).
+  2. Waarden kiezen.
+  3. Kernwaarden (kompas) bepalen.
+  4. 4 morele dilemma's.
+  5. STARR-reflectie.
+  6. Rugzak/socialisatie.
+  7. Reisverslag + signature SMS-dilemma.
+- Opdrachten:
+  - Privilegewiel invullen.
+  - Waarden + kernwaarden selecteren.
+  - Dilemmakeuzes met waardenafweging.
+  - STARR (situatie, taak, actie, resultaat, reflectie).
+  - Rugzak/socialisatievragen.
+  - Einddilemma SMS + reflectie.
+- PDF/print output:
+  - `exportPDF` -> printbaar Deel 1-verslag met:
+    - kernwaarden,
+    - dominante veranderkleur,
+    - dilemma-keuzes,
+    - STARR,
+    - SMS-einddilemma.
+
+### Deel 2 - Crossroads (Onderweg)
+- Hoofdthema:
+  - Kiezen onder druk: routekeuze, energiebalans, omweg en ontmoeting met de ander.
+- Flow:
+  1. Intro Deel 2.
+  2. Signature Crossroads-keuze (4 afslagen + reflectie).
+  3. Tankstop-check.
+  4. Omweg-dilemma.
+  5. De Vreemde Ander (Spiegel, Tussenruimte, Insluiting).
+  6. Deel 2 afronding + inzicht + doorgang naar Deel 3.
+- Opdrachten:
+  - Routekeuze + waardenargumentatie.
+  - Energiegevers/lekken/volgende etappe.
+  - Tegenslag, bijstelling, lering.
+  - Vreemde Ander in 3 stappen.
+  - Persoonlijk kerninzicht na Deel 2.
+- PDF/print output:
+  - `exportPDFDeel2` -> printbaar Deel 2-fragment met:
+    - kernwaarden uit Deel 1,
+    - crossroads-keuze + reflectie,
+    - tankstop,
+    - omweg,
+    - samenvatting Vreemde Ander,
+    - eindreflectie onderweg.
+
+### Deel 3 - Final Destination (Bestemming)
+- Hoofdthema:
+  - Integratie en vooruitkijken: patroon zien, kompas aanscherpen, commitment maken.
+- Flow:
+  1. Signature opdracht: Brug in de Mist.
+  2. Terugblik (scharnierpunt, patroon, ware noorden).
+  3. Vooruitblik (nalatenschap, richting, belofte).
+  4. Synthese (persoonlijk kompasplan / Reisverslag 3.0).
+  5. Eindopdracht GROW (Goal, Reality, Options, Will).
+  6. Opslaan + totaalportfolio export.
+- Opdrachten:
+  - Brug in de Mist (ballast, meenemen, hoop, kompaswaarde).
+  - Terugblik/vooruitblik/synthese.
+  - GROW-actieplan met concrete commitment.
+- PDF/print output:
+  - `exportPDFDeel3Portfolio` -> totaalportfolio t/m Deel 3 met:
+    - kernwaarden + dominante kleur,
+    - Deel 1 elementen (dilemma's, STARR, socialisatie, SMS),
+    - Deel 3 elementen (brug, terugblik, vooruitblik, synthese),
+    - volledige GROW-eindpagina.
+
+### Afscheiding bevestigd
+- Dit overzicht gaat expliciet alleen over de MAPS-trilogie (Deel 1/2/3).
+- Niet-MAPS apps blijven buiten deze trilogie-notitie.
