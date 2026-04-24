@@ -934,7 +934,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
   if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
 }
 
-function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankstop, omweg, vreemdeAnderResult, profile, groupCode, age}){
+function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankstop, omweg, deel2Inzicht, vreemdeAnderResult, groupCode, age}){
   const html = `<!DOCTYPE html><html lang="${profile.locale || "nl"}"><head><meta charset="UTF-8">
     <title>Moral APS - Deel 2 Onderweg</title>
     <style>
@@ -950,7 +950,7 @@ function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankst
     </style></head><body>
     <div class="header">
       <h1 style="font-size:26px;font-weight:900;letter-spacing:-.6px;margin:0">Moral APS - Deel 2 (Onderweg)</h1>
-      <p style="opacity:.9;font-size:12px;margin-top:6px">Groep: ${groupCode || "-"} · Leeftijd: ${age || "-"} · Context: ${profile.workContext || "algemeen"} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
+      <p style="opacity:.9;font-size:12px;margin-top:6px">Groep: ${groupCode || "-"} · Leeftijd: ${age || "-"} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
     </div>
     <div class="section">
       <div class="label">Kernwaarden (mee uit Deel 1)</div>
@@ -977,12 +977,15 @@ function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankst
       <div class="value" style="margin-top:10px"><strong>Lering:</strong><br/>${omweg?.lering || "Niet ingevuld"}</div>
     </div>
     <div class="section">
+      <div class="label">Eindreflectie onderweg</div>
+      <div class="value">${deel2Inzicht || "Niet ingevuld"}</div>
+    </div>
+    <div class="section">
       <div class="label">De Vreemde Ander - samenvatting</div>
       <div class="value"><strong>De Spiegel:</strong><br/>${vreemdeAnderResult?.spiegel || "Niet ingevuld"}</div>
       <div class="value" style="margin-top:10px"><strong>De Tussenruimte:</strong><br/>${vreemdeAnderResult?.tussenruimte || "Niet ingevuld"}</div>
       <div class="value" style="margin-top:10px"><strong>Insluiting:</strong><br/>${vreemdeAnderResult?.insluiting || "Niet ingevuld"}</div>
     </div>
-    ${profile.extraAssignment ? `<div class="section"><div class="label">Extra opdracht</div><div class="value">${profile.extraAssignment}</div></div>` : ""}
     <div class="footer">Gegenereerd voor Deel 2 - printbaar portfolio-fragment</div>
     </body></html>`;
 
@@ -992,7 +995,7 @@ function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankst
   if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
 }
 
-function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, deel3Terugblik, deel3Vooruitblik, deel3Synthese, domColor, socialisatie, profile, groupCode, age}){
+function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, deel3Terugblik, deel3Vooruitblik, deel3Synthese, deel3Grow, domColor, socialisatie, profile, groupCode, age}){
   const c = CM[domColor];
   const html = `<!DOCTYPE html><html lang="${profile.locale || "nl"}"><head><meta charset="UTF-8">
     <title>Moral APS - Portfolio Deel 3</title>
@@ -1022,6 +1025,12 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
     <div class="section"><div class="label">Terugblik (scharnierpunt, patroon, ware noorden)</div><div class="value"><strong>Scharnierpunt:</strong> ${deel3Terugblik?.scharnierpunt || "Niet ingevuld"}</div><div class="value"><strong>Patroon:</strong> ${deel3Terugblik?.patroon || "Niet ingevuld"}</div><div class="value"><strong>Ware noorden:</strong> ${deel3Terugblik?.noorden || "Niet ingevuld"}</div></div>
     <div class="section"><div class="label">Vooruitblik (nalatenschap, richting, belofte)</div><div class="value"><strong>Nalatenschap:</strong> ${deel3Vooruitblik?.nalatenschap || "Niet ingevuld"}</div><div class="value"><strong>Richting:</strong> ${deel3Vooruitblik?.richting || "Niet ingevuld"}</div><div class="value"><strong>Belofte:</strong> ${deel3Vooruitblik?.belofte || "Niet ingevuld"}</div></div>
     <div class="section"><div class="label">Synthese - Persoonlijk kompasplan</div><div class="value">${deel3Synthese || "Niet ingevuld"}</div></div>
+    <div class="section"><div class="label">Persoonlijk actieplan (GROW) - eindpagina</div>
+      <div class="value"><strong>Goal (Doel):</strong><br/>${deel3Grow?.goal || "Niet ingevuld"}</div>
+      <div class="value" style="margin-top:10px"><strong>Reality (Huidige realiteit):</strong><br/>${deel3Grow?.reality || "Niet ingevuld"}</div>
+      <div class="value" style="margin-top:10px"><strong>Options (Mogelijkheden):</strong><br/>${deel3Grow?.options || "Niet ingevuld"}</div>
+      <div class="value" style="margin-top:10px"><strong>Will (Actie en commitment):</strong><br/>${deel3Grow?.will || "Niet ingevuld"}</div>
+    </div>
     ${profile.extraAssignment ? `<div class="section"><div class="label">Extra opdracht</div><div class="value">${profile.extraAssignment}</div></div>` : ""}
     <div class="footer">Portfolio-export - bruikbaar voor presentatie of persoonlijk verhaal</div>
     </body></html>`;
@@ -1494,6 +1503,7 @@ export default function MoralMaps(){
   const [deel3Terugblik,setDeel3Terugblik]=useState({scharnierpunt:"",patroon:"",noorden:""});
   const [deel3Vooruitblik,setDeel3Vooruitblik]=useState({nalatenschap:"",richting:"",belofte:""});
   const [deel3Synthese,setDeel3Synthese]=useState("");
+  const [deel3Grow,setDeel3Grow]=useState({goal:"",reality:"",options:"",will:""});
   const [saved,setSaved]=useState(false);
   const [savedLocal,setSavedLocal]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
@@ -1505,6 +1515,7 @@ export default function MoralMaps(){
   const [crossroadsReflectie,setCrossroadsReflectie]=useState("");
   const [tankstop,setTankstop]=useState({energie:"",lek:"",nodig:""});
   const [omweg,setOmweg]=useState({tegenslag:"",bijstelling:"",lering:""});
+  const [deel2Inzicht,setDeel2Inzicht]=useState("");
   const [vreemdeAnderResult,setVreemdeAnderResult]=useState(null);
   const [contentProfile,setContentProfile]=useState({
     locale:"nl",
@@ -1589,7 +1600,7 @@ export default function MoralMaps(){
     setPhase(6);
     setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1764,16 +1775,15 @@ export default function MoralMaps(){
                 <p style={{fontSize:11,color:"#64748b",margin:"0 0 4px"}}>Jouw gekozen route:</p>
                 <p style={{fontSize:13,color:"#0f172a",fontWeight:700,margin:0}}>{crossroadsChoice || "Niet ingevuld"}</p>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-                <select value={contentProfile.locale} onChange={(e)=>setContentProfile({...contentProfile,locale:e.target.value})} style={{padding:"9px 10px",borderRadius:10,border:"1.5px solid #e2e8f0",fontFamily:FONT,fontSize:12}}>
-                  <option value="nl">Taal: Nederlands</option>
-                  <option value="en">Language: English</option>
-                </select>
-                <input value={contentProfile.workContext} onChange={(e)=>setContentProfile({...contentProfile,workContext:e.target.value})} placeholder="Werkomgeving (bijv. onderwijs, zorg, IT)" style={{padding:"9px 10px",borderRadius:10,border:"1.5px solid #e2e8f0",fontFamily:FONT,fontSize:12}} />
+              <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 14px",marginBottom:10}}>
+                <p style={{fontSize:12,fontWeight:700,color:"#0f172a",margin:"0 0 6px"}}>
+                  Nu je zo ver gekomen bent kijk je uit het raam en denkt na...
+                </p>
+                <p style={{fontSize:11,color:"#64748b",margin:"0 0 8px"}}>Welk inzicht heeft jou het meest gedaan?</p>
+                <textarea value={deel2Inzicht} onChange={(e)=>setDeel2Inzicht(e.target.value)} rows={3} placeholder="Beschrijf je belangrijkste inzicht van Deel 2..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
               </div>
-              <textarea value={contentProfile.extraAssignment} onChange={(e)=>setContentProfile({...contentProfile,extraAssignment:e.target.value})} rows={2} placeholder="Optionele vervolgopdracht (komt mee in PDF)" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:10}} />
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,vreemdeAnderResult,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
+                <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,deel2Inzicht,vreemdeAnderResult,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
                 <button onClick={()=>setDeel2Step(0)} style={{flex:1,padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
                 <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("deel3");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
               </div>
@@ -1844,10 +1854,23 @@ export default function MoralMaps(){
             <textarea value={deel3Synthese} onChange={e=>setDeel3Synthese(e.target.value)} rows={5} placeholder="Mijn kompasplan: waar sta ik nu, waar ga ik naartoe, en hoe ga ik handelen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
           </div>
 
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
+            <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🚀 Eindpagina — Persoonlijk actieplan (GROW)</p>
+            <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:"0 0 10px"}}>
+              Je besluit op basis van je reis en inzichten wat je anders gaat doen. Beantwoord de coachvragen volgens het GROW-model.
+            </p>
+            <div style={{display:"grid",gap:10}}>
+              <textarea value={deel3Grow.goal} onChange={e=>setDeel3Grow({...deel3Grow,goal:e.target.value})} rows={2} placeholder="Goal: Welk concreet doel wil je bereiken in je professioneel handelen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={deel3Grow.reality} onChange={e=>setDeel3Grow({...deel3Grow,reality:e.target.value})} rows={2} placeholder="Reality: Wat is nu je realiteit? Wat gaat al goed en wat belemmert je nog?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={deel3Grow.options} onChange={e=>setDeel3Grow({...deel3Grow,options:e.target.value})} rows={2} placeholder="Options: Welke opties heb je om dit doel te halen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <textarea value={deel3Grow.will} onChange={e=>setDeel3Grow({...deel3Grow,will:e.target.value})} rows={2} placeholder="Will: Wat ga je nu concreet doen, wanneer en waaraan merk je dat je het volhoudt?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+            </div>
+          </div>
+
           <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16}}>
             <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
               <button onClick={async ()=>{await saveProgress("deel3_done");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>Opslaan Deel 3</button>
-              <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,deel3Terugblik,deel3Vooruitblik,deel3Synthese,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Totaalportfolio</button>
+              <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,deel3Terugblik,deel3Vooruitblik,deel3Synthese,deel3Grow,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Totaalportfolio</button>
             </div>
           </div>
         </div>
