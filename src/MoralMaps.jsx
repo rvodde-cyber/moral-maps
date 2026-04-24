@@ -1826,9 +1826,6 @@ export default function MoralMaps(){
               {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
               {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
             </div>
-            <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:8,marginBottom:14}}>
-              <img src={ASSET_IMAGES.deel3.phoneMockup} alt="Deel 3 smartphone mockup op hero" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:280,objectFit:"cover"}} />
-            </div>
             {!showSmsDilemma&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
                 <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📩 Afsluitende SMS-opdracht</p>
@@ -1875,25 +1872,9 @@ export default function MoralMaps(){
                 </div>
               ))}
             </div>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🌫️ Signature opdracht Deel 3 — De Brug in de Mist</p>
-              <div style={{marginBottom:12,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
-                <img src={ASSET_IMAGES.deel3.bridgeEvent} alt="De brug in de mist met beperkte draagkracht" style={{width:"100%",height:"auto",display:"block",maxHeight:280,objectFit:"cover"}} />
-              </div>
-              <p style={{fontSize:13,color:"#334155",lineHeight:1.7,margin:"0 0 10px"}}>
-                De brug heeft beperkte draagkracht. Je kunt niet alles meenemen naar je volgende bestemming.
-              </p>
-              <div style={{display:"grid",gap:10}}>
-                <textarea value={bridge.ballast} onChange={e=>setBridge({...bridge,ballast:e.target.value})} rows={2} placeholder="Wat laat je bewust achter als ballast?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
-                <textarea value={bridge.meenemen} onChange={e=>setBridge({...bridge,meenemen:e.target.value})} rows={2} placeholder="Wat neem je absoluut mee?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
-                <textarea value={bridge.vinden} onChange={e=>setBridge({...bridge,vinden:e.target.value})} rows={2} placeholder="Wat hoop je te vinden aan de overkant?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
-                <textarea value={bridge.kompas} onChange={e=>setBridge({...bridge,kompas:e.target.value})} rows={2} placeholder="Welke kernwaarde stuurt deze keuze?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
-              </div>
-            </div>
             <div style={{display:"flex",gap:12}}>
               <button onClick={()=>setScreen("deel2")} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
               <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
-              <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 3 Portfolio</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
           </div>
