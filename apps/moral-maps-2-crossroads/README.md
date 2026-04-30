@@ -11,6 +11,19 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Build en lint
+
+```bash
+npm run build
+npm run lint
+```
+
+## Vercel
+
+- **Root Directory**: `apps/moral-maps-2-crossroads`
+- **Build Command**: `npm run build`
+- **Output Directory**: `.next`
+
 ## Standaard en templates
 
 - Standaard app structuur: `APP_STANDARD.md`
