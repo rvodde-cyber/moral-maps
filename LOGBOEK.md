@@ -231,3 +231,24 @@ Bron/implementatiepad:
 ### Afscheiding bevestigd
 - Dit overzicht gaat expliciet alleen over de MAPS-trilogie (Deel 1/2/3).
 - Niet-MAPS apps blijven buiten deze trilogie-notitie.
+
+## 2026-04-24 - Pauzestand (lange pauze)
+
+Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
+
+### Laatste afgerond
+- Deel 2 en Deel 3 visueel gepolijst in `src/MoralMaps.jsx` (beeldkoppeling, leesbaarheid, spacing mobiel/tablet).
+- Nieuwe MAPS-assets geplaatst in `public/` en gekoppeld in de flow.
+- Draaiboeken toegevoegd:
+  - `DRAAIBOEK_MAPS_TRILOGIE_WORD.md`
+  - `DRAAIBOEK_MAPS_TRILOGIE_HANDOUT.md`
+- Git:
+  - Branch: `feat/maps-flow-update`
+  - Commit: `b0003a3`
+  - Push naar `origin/feat/maps-flow-update` voltooid.
+
+### Hervatten na pauze (kort)
+1. Open branch `feat/maps-flow-update`.
+2. Start app en doe end-to-end check van Deel 1 -> Deel 2 -> Deel 3.
+3. Controleer vooral beeldcrop op mobiel/iPad en PDF/print-uitvoer per deel.
+4. Bij akkoord: PR/merge naar `main`.
