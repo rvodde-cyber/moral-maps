@@ -4,12 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "dev:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run dev",
     "dev:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run dev",
+    "dev:crossroads": "npm --prefix \"apps/moral-maps-2-crossroads\" run dev",
     "build:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run build",
     "build:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run build",
+    "build:crossroads": "npm --prefix \"apps/moral-maps-2-crossroads\" run build",
+    "build:all": "npm run build && npm run build:persoonlijk && npm run build:organisatie && npm run build:crossroads",
     "lint:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run lint",
-    "lint:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run lint"
+    "lint:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run lint",
+    "lint:crossroads": "npm --prefix \"apps/moral-maps-2-crossroads\" run lint",
+    "lint:all": "npm run lint:persoonlijk && npm run lint:organisatie && npm run lint:crossroads"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.2",
