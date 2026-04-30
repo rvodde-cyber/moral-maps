@@ -1,6 +1,6 @@
 // ============================================================
-//  MORAL APS — v1
-//  Bijgewerkt: Deel 1 (Vertrek) flow met neutrale terminologie
+//  MORALMAPS III — Final Destination
+//  Bijgewerkt: final destination flow met neutrale terminologie
 //
 //  SETUP:
 //  1. npm install @supabase/supabase-js
@@ -691,7 +691,7 @@ function Socialisatieverslag({coreVals, onComplete}){
 function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age){
   const c = CM[domColor];
   const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-    <title>Moral APS – Deel 1 Verslag</title>
+    <title>MoralMaps III: Final Destination Verslag</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
       *{box-sizing:border-box;margin:0;padding:0}
@@ -716,7 +716,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
     </style></head><body>
     <div class="header">
       <div style="font-size:36px;margin-bottom:12px">🏆</div>
-      <h1>Moral APS — Deel 1 Verslag</h1>
+      <h1>MoralMaps III: Final Destination Verslag</h1>
       <p>Groep: ${groupCode} · Leeftijd: ${age} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
     </div>
     <div class="section">
@@ -744,7 +744,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
       <div class="key" style="color:${TEAL}">Waardenafweging</div>
       <div class="val">${smsDilemma.smsReflection || "Niet ingevuld"}</div>
     </div>` : ""}
-    <div class="footer">Gegenereerd door Moral APS · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
+    <div class="footer">Gegenereerd door MoralMaps III · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
     </body></html>`;
 
   const blob = new Blob([html], {type:"text/html"});
@@ -951,16 +951,20 @@ function Landing({onStart}){
           <div style={{maxWidth:480}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(26,115,232,.12)",border:"1px solid rgba(26,115,232,.28)",borderRadius:99,padding:"5px 14px",fontSize:11,color:GM_BLUE,fontWeight:600,marginBottom:24,letterSpacing:.5}}>
               <span style={{width:7,height:7,borderRadius:"50%",background:GM_BLUE,display:"inline-block"}} className="shimmer"/>
-              MORAL MAPS PLATFORM
+              MORALMAPS III
             </div>
-            <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Moral Maps<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>The beginning</span></h1>
-            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Start hier jouw traject in het Moral Maps platform en kies je route: Deel 1 of direct de organisatie lakmoesproef.</p>
+            <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>MoralMaps III<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>Final Destination</span></h1>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:14,maxWidth:420}}>Het derde deel van de trilogie brengt alle routes samen: van bewustwording naar koers en uiteindelijk naar de keuze die ertoe doet.</p>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#fff",border:`1px solid ${GM_BORDER}`,borderRadius:99,padding:"8px 14px",boxShadow:"0 1px 2px rgba(60,64,67,.12)",color:GM_TEXT,fontSize:13,fontWeight:800,marginBottom:34}}>
+              <span style={{fontSize:15}}>🏁</span>
+              Dat heb jij mee gebouwd!
+            </div>
 
             {/* START FORM */}
             <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
                 <div style={{width:32,height:32,borderRadius:10,background:GM_BLUE,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📍</div>
-                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Start Deel 1: The Beginning</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
+                <div><p style={{color:GM_TEXT,fontWeight:800,fontSize:15,margin:0}}>Start Deel III: Final Destination</p><p style={{color:GM_MUTED,fontSize:11,marginTop:1}}>Vul in om te beginnen · anoniem</p></div>
               </div>
               <div style={{marginBottom:14}}>
                 <label style={{color:GM_MUTED,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,display:"block",marginBottom:6}}>Groepscode</label>
@@ -980,7 +984,7 @@ function Landing({onStart}){
               </div>
               <button onClick={()=>{if(gc.trim()&&age)onStart(gc.trim().toUpperCase(),age,null);}} disabled={!gc.trim()||!age}
                 style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                Start Deel 1 →
+                Start Final Destination →
               </button>
             </div>
           </div>
@@ -1008,7 +1012,7 @@ function Landing({onStart}){
         <div style={{maxWidth:720,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:44}}>
             <p style={{fontSize:11,fontWeight:700,color:GM_BLUE,textTransform:"uppercase",letterSpacing:2.5,marginBottom:10}}>Jouw Routebeschrijving</p>
-            <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>5 Stops, Deel 1: Vertrek</h2>
+            <h2 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:900,color:"#0f172a",letterSpacing:-1}}>5 Stops, Deel III: Final Destination</h2>
           </div>
           <div style={{position:"relative"}}>
             <div style={{position:"absolute",left:31,top:32,bottom:32,width:3,background:`linear-gradient(to bottom,${TEAL},#3B82F6,#EAB308,#F43F5E,#22C55E)`,borderRadius:99,zIndex:0}}/>
@@ -1125,7 +1129,7 @@ export default function MoralMaps(){
           <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
             <div style={{fontSize:44,marginBottom:8}}>🏁</div>
             <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Persoonlijke integriteitsmeting afgerond</h2>
-            <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Je bent klaar voor Deel 2: Onderweg (Crossroads)</p>
+            <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Je hebt MoralMaps III: Final Destination afgerond.</p>
             {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
           </div>
           {!showSmsDilemma && (
@@ -1359,7 +1363,7 @@ export default function MoralMaps(){
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
                 <button onClick={saveAndFinish}
                   style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  Rond Deel 1 af →
+                  Rond Final Destination af →
                 </button>
               </div>
             </div>
