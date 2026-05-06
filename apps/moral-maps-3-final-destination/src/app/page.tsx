@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredDraft, STORAGE_KEY } from "@/lib/final-destination-storage";
@@ -94,6 +95,17 @@ export default function Home() {
             Start Je ware koers
           </Link>
         </header>
+
+        <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Image
+            src="/images/maps3-landing-smartphone-gps.jpg"
+            alt="Smartphone met GPS in Je ware koers, aankomst op bestemming"
+            width={1600}
+            height={900}
+            className="h-auto w-full object-cover"
+            priority
+          />
+        </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2">
           {stepOrder.map((step) => (

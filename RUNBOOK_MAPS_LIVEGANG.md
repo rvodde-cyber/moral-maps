@@ -10,7 +10,7 @@
 
 - MAPS 1 (Vite/React): live op `https://moral-maps.vercel.app`.
 - MAPS 2 Crossroads (Next.js/TS): live op `https://moral-maps-2-crossroads.vercel.app`.
-- MAPS 3 Final Destination: losse app-directory bestaat in `apps/moral-maps-3-final-destination`; nog niet live gedeployed.
+- MAPS 3 Je ware koers: live op `https://moral-maps-3-final-destination.vercel.app`.
 
 ## Productregel trilogie (hard)
 
@@ -104,15 +104,16 @@ Pas live zetten als beide builds slagen.
 ## 8) Vooruitblik: eerstvolgende implementatiestap
 
 Doel volgende bouwsessie:
-- MAPS 3 inhoudelijk afronden en live zetten als apart deployment-project.
+- MAPS 3 landing polish afronden met nieuwe hero-image (smartphone + GPS + doel bereikt).
 
 Minimum scope:
-1. content parity met bestaande Deel 3 uit `src/MoralMaps.jsx` bereiken;
-2. PDF/print export toevoegen voor Deel 3;
-3. Vercel project maken met root `apps/moral-maps-3-final-destination`;
-4. productie smoke test uitvoeren;
-5. logboek updaten met URL + resterende backlog.
-6. structuurcheck uitvoeren: elke opdracht = eigen pagina + eigen image.
+1. nieuwe landing image plaatsen op:
+   - `apps/moral-maps-3-final-destination/public/images/maps3-landing-smartphone-gps.jpg`
+2. image koppelen in:
+   - `apps/moral-maps-3-final-destination/src/app/page.tsx`
+3. redeploy MAPS 3 op Vercel;
+4. visuele check mobiel + desktop;
+5. logboekupdate met oplevernotitie.
 
 ---
 

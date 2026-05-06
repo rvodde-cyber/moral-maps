@@ -6,7 +6,7 @@ Gebruik dit bestand als snelle ingang voor GitHub + Vercel status.
 
 - MAPS 1 live: `https://moral-maps.vercel.app`
 - MAPS 2 live: `https://moral-maps-2-crossroads.vercel.app`
-- MAPS 3: app-skeleton staat klaar in `apps/moral-maps-3-final-destination` (nog deployen)
+- MAPS 3 live: `https://moral-maps-3-final-destination.vercel.app`
 
 ## Productregel (altijd toepassen)
 
@@ -44,3 +44,10 @@ Werk altijd bij in `LOGBOEK.md`:
 - URL/status per app;
 - eerstvolgende concrete stap.
 - check op productregel: elke opdracht eigen pagina + eigen afbeelding.
+
+## 6) Volgende concrete taak
+
+- Nieuwe landing image voor MAPS 3 maken en plaatsen:
+  - `apps/moral-maps-3-final-destination/public/images/maps3-landing-smartphone-gps.jpg`
+- Daarna in code koppelen op:
+  - `apps/moral-maps-3-final-destination/src/app/page.tsx`

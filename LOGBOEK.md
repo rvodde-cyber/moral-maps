@@ -359,3 +359,33 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
   - `START_HIER_VERSIONBEHEER_EN_DEPLOY.md`
   - `RUNBOOK_MAPS_LIVEGANG.md`
   - `LOGBOEK.md` (deze sectie)
+
+## 2026-05-06 - MAPS 3 live + paginering per opdracht
+
+### Opgeleverd
+- MAPS 3 is live als apart Vercel-project: `https://moral-maps-3-final-destination.vercel.app`
+- Deel 3 flow is opgesplitst naar 1 opdracht per pagina:
+  - `/opdracht/brug`
+  - `/opdracht/terugblik`
+  - `/opdracht/vooruitblik`
+  - `/opdracht/reisverslag`
+- Per opdracht is een eigen afbeelding gekoppeld:
+  - Brug: `public/brug-in-de-mist.jpg`
+  - Terugblik: `public/images/maps3-terugblik.jpg`
+  - Vooruitblik: `public/images/maps3-vooruitblik.jpg`
+  - Reisverslag: `public/images/maps3-reisverslag.jpg`
+- Terminologie Deel 3 is consistent gemaakt naar: **Je ware koers**.
+
+### Validatie
+- `apps/moral-maps-3-final-destination`: `npm run lint` -> groen
+- `apps/moral-maps-3-final-destination`: `npm run build` -> groen
+- Vercel MAPS 3 deployment status: `Ready` (bevestigd in sessie)
+
+### Volgende stap (direct gepland)
+1. Nieuwe landing image maken voor MAPS 3:
+   - stijl: smartphone met GPS in dezelfde stijl als eerder
+   - boodschap: doel bereikt / aankomst
+2. Bestand opslaan als:
+   - `apps/moral-maps-3-final-destination/public/images/maps3-landing-smartphone-gps.jpg`
+3. Daarna in app koppelen op `src/app/page.tsx` (overzichtspagina Deel 3).
+4. Herdeploy MAPS 3 op Vercel en visueel checken op mobiel + desktop.
