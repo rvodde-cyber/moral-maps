@@ -4,6 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint src",
+    "preview": "vite preview",
     "dev:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run dev",
     "dev:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run dev",
     "build:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run build",

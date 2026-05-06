@@ -252,3 +252,38 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 2. Start app en doe end-to-end check van Deel 1 -> Deel 2 -> Deel 3.
 3. Controleer vooral beeldcrop op mobiel/iPad en PDF/print-uitvoer per deel.
 4. Bij akkoord: PR/merge naar `main`.
+
+## 2026-05-06 - Livegang voorbereiding en hardening
+
+### Uitgevoerd
+- Opschoning uitgevoerd in projectroot:
+  - `dist/` verwijderd
+  - `.vercel/` verwijderd
+  - tijdelijk lockbestand verwijderd
+- MAPS 2 blocker gefixt:
+  - ontbrekende asset toegevoegd in `apps/moral-maps-2-crossroads/public/crossroads-wegomleiding.jpg`
+- Validaties uitgevoerd:
+  - MAPS 2: `npx eslint src` -> groen
+  - MAPS 2: `npm run build` -> groen
+  - MAPS 1: `npx vite build` -> groen
+- Root `package.json` gestandaardiseerd voor MAPS 1:
+  - `dev`: `vite`
+  - `build`: `vite build`
+  - `lint`: `eslint src`
+  - `preview`: `vite preview`
+- Bestaande lint-blocker opgelost in `src/MoralMaps.jsx`:
+  - `profile is not defined` in `exportPDFDeel2` verwijderd door vaste taalinstelling `lang="nl"`.
+- Nieuwe operationele handleiding toegevoegd:
+  - `RUNBOOK_MAPS_LIVEGANG.md`
+- Lognavigatie bijgewerkt:
+  - `START_HIER_LOGS.md` verwijst nu expliciet naar het runbook.
+
+### Huidige live-status
+- MAPS 1: technisch klaar voor livegang op Vercel (Vite + env vars).
+- MAPS 2 Crossroads: technisch klaar voor livegang op Vercel (Next.js).
+- MAPS 3: functioneel aanwezig in MAPS 1, nog geen losse app/deployment.
+
+### Volgende stap (bij eerstvolgende sessie)
+1. Deploy MAPS 1 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
+2. Deploy MAPS 2 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
+3. Productie-URL's en smoke test resultaten vastleggen in dit logboek.

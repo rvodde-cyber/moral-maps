@@ -944,7 +944,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
 }
 
 function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankstop, omweg, deel2Inzicht, vreemdeAnderResult, groupCode, age}){
-  const html = `<!DOCTYPE html><html lang="${profile.locale || "nl"}"><head><meta charset="UTF-8">
+  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
     <title>Moral APS - Deel 2 Onderweg</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');

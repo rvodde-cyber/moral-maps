@@ -8,6 +8,10 @@ Deze standaard app structuur gebruiken we als vaste blueprint voor nieuwe apps e
 - Styling: Tailwind CSS.
 - UI: Shadcn/UI componenten waar zinvol, Lucide icons.
 - Animatie: Framer Motion (subtiel, functioneel).
+- Taalstack-principe:
+  - In webapps blijven HTML, CSS en JavaScript altijd aanwezig onder de motorkap.
+  - TypeScript is de standaard ontwikkeltaal (compileert naar JavaScript).
+  - We vermijden losse scripts en afwijkende stacks voor nieuwe onderdelen.
 - Data:
   - Kleine/solo apps: localStorage + export.
   - Meerdere gebruikers of rapportage: Supabase of Prisma + Postgres.
@@ -128,6 +132,11 @@ Bij migratie van bestaande app naar deze standaard:
 4. Omzetten naar 1-opdracht-per-pagina
 5. UI harmoniseren volgens stijlregels
 6. Lint/build/accessibility check
+
+Migratie-aanpak legacy JavaScript:
+- Geen big-bang herschrijving van werkende apps.
+- Gefaseerd per module migreren naar TypeScript-first.
+- Nieuwe features altijd direct in de standaardstack bouwen (Next.js + TypeScript).
 
 ## 10) Definition of Done
 

@@ -41,3 +41,10 @@ Gebruik dit als startprompt voor elke nieuwe educatieve app.
 - mobiel/desktop check
 - toetsenbordnavigatie check
 - alt-teksten check
+
+## 6) Stack-afspraak
+
+- Werk TypeScript-first binnen Next.js.
+- Accepteer dat browseroutput altijd HTML/CSS/JS is.
+- Vermijd losse scripts of afwijkende frameworks in nieuwe onderdelen.
+- Migreer oudere JavaScript-delen stapsgewijs per module.
