@@ -66,3 +66,13 @@ Deploy elke app als apart Vercel-project.
   - ondertitel per vraag,
   - heldere uitlegtekst per vraag,
   - 1-5 scoremodel en totaalscore.
+
+## Repo-brede stackafspraak
+
+Voor alle nieuwe apps en uitbreidingen in deze repository:
+
+- Standaard stack: **Next.js (App Router) + TypeScript + Tailwind CSS**.
+- Browser-output blijft altijd bestaan uit HTML/CSS/JavaScript; dit is normaal.
+- We werken **TypeScript-first** in de broncode.
+- Vermijd losse scripts en afwijkende frameworks in nieuwe onderdelen.
+- Legacy JavaScript wordt gefaseerd per module gemigreerd (geen big-bang).
