@@ -318,3 +318,36 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
    - Next.js App Router + TypeScript + Tailwind
    - Deel 3-logica modulair overzetten vanuit `src/MoralMaps.jsx`
 4. Na die sessie opnieuw logboek updaten met beslissingen en resterende backlog.
+
+## 2026-05-06 - MAPS 3 losse app gestart
+
+### Opgeleverd
+- Nieuwe app aangemaakt: `apps/moral-maps-3-final-destination`
+- Stack ingericht:
+  - Next.js App Router
+  - TypeScript
+  - Tailwind CSS
+  - Framer Motion
+- Werkende startflow gebouwd in `src/app/page.tsx` met:
+  - Deel 3 intro
+  - Signature-opdracht "De Brug in de Mist"
+  - Terugblik + vooruitblik
+  - Syntheseveld
+  - voortgangspercentage
+  - autosave in localStorage
+- Opslag helper toegevoegd:
+  - `src/lib/final-destination-storage.ts`
+- Root scripts uitgebreid voor MAPS 3:
+  - `dev:maps3`
+  - `build:maps3`
+  - `lint:maps3`
+
+### Validatie
+- In `apps/moral-maps-3-final-destination`:
+  - `npm run lint` -> groen
+  - `npm run build` -> groen
+
+### Volgende stap
+1. Koppel Deel 3-content uit `src/MoralMaps.jsx` één-op-één over (brug, terugblik, vooruitblik, synthese, GROW).
+2. Voeg PDF/print export toe voor MAPS 3 portfolio-fragment.
+3. Maak Vercel project voor MAPS 3 met root `apps/moral-maps-3-final-destination`.

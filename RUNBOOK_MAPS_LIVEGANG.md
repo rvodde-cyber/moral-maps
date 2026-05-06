@@ -10,7 +10,7 @@
 
 - MAPS 1 (Vite/React): live op `https://moral-maps.vercel.app`.
 - MAPS 2 Crossroads (Next.js/TS): live op `https://moral-maps-2-crossroads.vercel.app`.
-- MAPS 3 Final Destination: functioneel in MAPS 1, nog geen losse app-directory/deployment.
+- MAPS 3 Final Destination: losse app-directory bestaat in `apps/moral-maps-3-final-destination`; nog niet live gedeployed.
 
 ---
 
@@ -97,14 +97,14 @@ Pas live zetten als beide builds slagen.
 ## 8) Vooruitblik: eerstvolgende implementatiestap
 
 Doel volgende bouwsessie:
-- MAPS 3 los trekken uit de monolith en voorbereiden als apart deployment-project.
+- MAPS 3 inhoudelijk afronden en live zetten als apart deployment-project.
 
 Minimum scope:
-1. app-skeleton maken (`apps/moral-maps-3-final-destination`);
-2. basisroutes + layout + styling;
-3. Deel 3 signature-opdracht "Brug in de Mist";
-4. lokale draft-opslag (localStorage) + voortgangsindicator;
-5. build/lint groen + logboekupdate.
+1. content parity met bestaande Deel 3 uit `src/MoralMaps.jsx` bereiken;
+2. PDF/print export toevoegen voor Deel 3;
+3. Vercel project maken met root `apps/moral-maps-3-final-destination`;
+4. productie smoke test uitvoeren;
+5. logboek updaten met URL + resterende backlog.
 
 ---
 
