@@ -351,3 +351,11 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 1. Koppel Deel 3-content uit `src/MoralMaps.jsx` één-op-één over (brug, terugblik, vooruitblik, synthese, GROW).
 2. Voeg PDF/print export toe voor MAPS 3 portfolio-fragment.
 3. Maak Vercel project voor MAPS 3 met root `apps/moral-maps-3-final-destination`.
+
+### Versiebeheerstatus (einde sessie)
+- Werkbranch met nieuwste MAPS 3 scaffold: `feat/maps-flow-update`
+- Laatste commit op branch: `ca5ffd5`
+- Vaste startdocumenten voor volgende sessie:
+  - `START_HIER_VERSIONBEHEER_EN_DEPLOY.md`
+  - `RUNBOOK_MAPS_LIVEGANG.md`
+  - `LOGBOEK.md` (deze sectie)

@@ -10,6 +10,9 @@ Gebruik dit bestand als vaste ingang voor voortgang en incidenten.
 - `RUNBOOK_MAPS_LIVEGANG.md`  
   Operationeel stappenplan voor livegang van MAPS 1 en MAPS 2.
 
+- `START_HIER_VERSIONBEHEER_EN_DEPLOY.md`  
+  Snelle ingang voor GitHub/Vercel status en volgende deployactie.
+
 - `LOG_TEMPLATE.md`  
   Template voor nieuwe logsessies.
 
@@ -25,6 +28,7 @@ Gebruik dit bestand als vaste ingang voor voortgang en incidenten.
 ## Werkwijze bij hervatten
 
 1. Open `LOGBOEK.md` en lees de laatste sectie.
-2. Open `RUNBOOK_MAPS_LIVEGANG.md` en volg de preflight/deployvolgorde.
-3. Controleer huidige status in preview of productie.
-4. Werk bij in `LOGBOEK.md` met datum, wijziging, resultaat, URL's en volgende stap.
+2. Open `START_HIER_VERSIONBEHEER_EN_DEPLOY.md` voor actuele GitHub/Vercel status.
+3. Open `RUNBOOK_MAPS_LIVEGANG.md` voor uitvoerbare stappen.
+4. Controleer huidige status in preview of productie.
+5. Werk bij in `LOGBOEK.md` met datum, wijziging, resultaat, URL's en volgende stap.
