@@ -12,6 +12,13 @@
 - MAPS 2 Crossroads (Next.js/TS): live op `https://moral-maps-2-crossroads.vercel.app`.
 - MAPS 3 Final Destination: losse app-directory bestaat in `apps/moral-maps-3-final-destination`; nog niet live gedeployed.
 
+## Productregel trilogie (hard)
+
+Voor MAPS 1, MAPS 2 en MAPS 3 geldt vanaf nu:
+- elke opdracht op een eigen pagina;
+- elke opdracht heeft een eigen afbeelding;
+- geen multi-opdracht pagina's meer in de eindversie.
+
 ---
 
 ## 2) Preflight checks (altijd eerst)
@@ -105,6 +112,7 @@ Minimum scope:
 3. Vercel project maken met root `apps/moral-maps-3-final-destination`;
 4. productie smoke test uitvoeren;
 5. logboek updaten met URL + resterende backlog.
+6. structuurcheck uitvoeren: elke opdracht = eigen pagina + eigen image.
 
 ---
 

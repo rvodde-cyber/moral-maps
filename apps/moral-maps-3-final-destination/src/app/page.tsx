@@ -68,7 +68,7 @@ export default function Home() {
             Moral Maps 3
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-            Final Destination - De Aankomst
+            Je ware koers
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             Laatste etappe van de trilogie: kies wat je achterlaat, wat je
@@ -142,7 +142,7 @@ export default function Home() {
 
           <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <Image
-              src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1400&q=80"
+              src="/brug-in-de-mist.jpg"
               alt="Brug in mistige omgeving als metafoor voor de overgang"
               width={1200}
               height={900}
@@ -177,7 +177,7 @@ export default function Home() {
               />
               <textarea
                 className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat is je ware noorden?"
+                placeholder="Wat is je ware koers?"
                 value={terugblik.noorden}
                 onChange={(e) =>
                   setTerugblik((prev) => ({ ...prev, noorden: e.target.value }))

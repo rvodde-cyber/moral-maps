@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Moral Maps 3: Final Destination",
+  title: "Moral Maps 3: Je ware koers",
   description:
-    "Deel 3 van Moral Maps: De Aankomst met brug-opdracht, terugblik, vooruitblik en persoonlijk kompas.",
+    "Deel 3 van Moral Maps: Je ware koers met brug-opdracht, terugblik, vooruitblik en persoonlijk kompas.",
 };
 
 export default function RootLayout({

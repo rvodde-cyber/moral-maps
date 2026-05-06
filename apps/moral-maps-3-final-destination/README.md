@@ -1,6 +1,6 @@
-# Moral Maps 3 - Final Destination
+# Moral Maps 3 - Je ware koers
 
-Deel 3 van de MAPS-trilogie (De Aankomst).
+Deel 3 van de MAPS-trilogie: Je ware koers.
 
 ## Stack
 
