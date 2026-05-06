@@ -1,24 +1,24 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStoredDraft, STORAGE_KEY } from "@/lib/final-destination-storage";
+import { stepMeta, stepOrder } from "@/lib/final-destination-steps";
 
 export default function Home() {
   const stored = getStoredDraft();
   const [travelerName, setTravelerName] = useState(stored.travelerName ?? "");
   const [destination, setDestination] = useState(stored.destination ?? "");
-  const [bridge, setBridge] = useState(
+  const [bridge] = useState(
     stored.bridge ?? { ballast: "", meenemen: "", vinden: "", kompas: "" },
   );
-  const [terugblik, setTerugblik] = useState(
+  const [terugblik] = useState(
     stored.terugblik ?? { scharnierpunt: "", patroon: "", noorden: "" },
   );
-  const [vooruitblik, setVooruitblik] = useState(
+  const [vooruitblik] = useState(
     stored.vooruitblik ?? { nalatenschap: "", richting: "", belofte: "" },
   );
-  const [synthese, setSynthese] = useState(stored.synthese ?? "");
+  const [synthese] = useState(stored.synthese ?? "");
 
   useEffect(() => {
     localStorage.setItem(
@@ -58,12 +58,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-8 md:px-8">
-        <motion.header
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
+        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
             Moral Maps 3
           </p>
@@ -71,8 +66,8 @@ export default function Home() {
             Je ware koers
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Laatste etappe van de trilogie: kies wat je achterlaat, wat je
-            meeneemt en welke koers je hierna bewust volgt.
+            Elke opdracht staat op een eigen pagina met een eigen afbeelding.
+            Werk de slotfase van de trilogie stap voor stap af.
           </p>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <input
@@ -92,148 +87,32 @@ export default function Home() {
             <p className="text-xs text-slate-500">Voortgang</p>
             <p className="text-2xl font-bold">{progress}%</p>
           </div>
-        </motion.header>
+          <Link
+            href="/opdracht/brug"
+            className="mt-5 inline-flex rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            Start Je ware koers
+          </Link>
+        </header>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-              Signature-opdracht
-            </p>
-            <h2 className="mt-2 text-xl font-bold">De Brug in de Mist</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              De brug heeft beperkte draagkracht. Kies bewust wat je achterlaat
-              en wat je meeneemt naar je volgende fase.
-            </p>
-            <div className="mt-4 grid gap-3">
-              <textarea
-                className="min-h-24 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Welke ballast laat je achter?"
-                value={bridge.ballast}
-                onChange={(e) =>
-                  setBridge((prev) => ({ ...prev, ballast: e.target.value }))
-                }
-              />
-              <textarea
-                className="min-h-24 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat neem je juist bewust mee?"
-                value={bridge.meenemen}
-                onChange={(e) =>
-                  setBridge((prev) => ({ ...prev, meenemen: e.target.value }))
-                }
-              />
-              <textarea
-                className="min-h-24 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat hoop je te vinden aan de overkant?"
-                value={bridge.vinden}
-                onChange={(e) =>
-                  setBridge((prev) => ({ ...prev, vinden: e.target.value }))
-                }
-              />
-              <input
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                placeholder="Kernwaarde als kompas"
-                value={bridge.kompas}
-                onChange={(e) =>
-                  setBridge((prev) => ({ ...prev, kompas: e.target.value }))
-                }
-              />
-            </div>
-          </article>
-
-          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <Image
-              src="/brug-in-de-mist.jpg"
-              alt="Brug in mistige omgeving als metafoor voor de overgang"
-              width={1200}
-              height={900}
-              className="h-full min-h-80 w-full object-cover"
-              priority
-            />
-          </article>
-        </section>
-
-        <section className="mt-6 grid gap-6 md:grid-cols-2">
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold">Terugblik</h3>
-            <div className="mt-3 grid gap-3">
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat was je scharnierpunt?"
-                value={terugblik.scharnierpunt}
-                onChange={(e) =>
-                  setTerugblik((prev) => ({
-                    ...prev,
-                    scharnierpunt: e.target.value,
-                  }))
-                }
-              />
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Welk patroon zie je terug?"
-                value={terugblik.patroon}
-                onChange={(e) =>
-                  setTerugblik((prev) => ({ ...prev, patroon: e.target.value }))
-                }
-              />
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat is je ware koers?"
-                value={terugblik.noorden}
-                onChange={(e) =>
-                  setTerugblik((prev) => ({ ...prev, noorden: e.target.value }))
-                }
-              />
-            </div>
-          </article>
-
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold">Vooruitblik</h3>
-            <div className="mt-3 grid gap-3">
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Welke nalatenschap wil je bouwen?"
-                value={vooruitblik.nalatenschap}
-                onChange={(e) =>
-                  setVooruitblik((prev) => ({
-                    ...prev,
-                    nalatenschap: e.target.value,
-                  }))
-                }
-              />
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Welke richting kies je vanaf nu?"
-                value={vooruitblik.richting}
-                onChange={(e) =>
-                  setVooruitblik((prev) => ({
-                    ...prev,
-                    richting: e.target.value,
-                  }))
-                }
-              />
-              <textarea
-                className="min-h-20 rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-                placeholder="Wat beloof je jezelf concreet?"
-                value={vooruitblik.belofte}
-                onChange={(e) =>
-                  setVooruitblik((prev) => ({ ...prev, belofte: e.target.value }))
-                }
-              />
-            </div>
-          </article>
-        </section>
-
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold">Synthese - Reisverslag 3.0</h3>
-          <textarea
-            className="mt-3 min-h-28 w-full rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-emerald-600"
-            placeholder="Vat samen wie je bent geworden, wat je meeneemt en hoe je koers houdt."
-            value={synthese}
-            onChange={(e) => setSynthese(e.target.value)}
-          />
-          <p className="mt-2 text-xs text-slate-500">
-            Alles wordt automatisch lokaal opgeslagen.
-          </p>
+        <section className="mt-6 grid gap-4 md:grid-cols-2">
+          {stepOrder.map((step) => (
+            <article
+              key={step}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                {stepMeta[step].subtitle}
+              </p>
+              <h2 className="mt-2 text-lg font-semibold">{stepMeta[step].title}</h2>
+              <Link
+                href={`/opdracht/${step}`}
+                className="mt-4 inline-flex text-sm font-semibold text-emerald-700 underline"
+              >
+                Open opdracht
+              </Link>
+            </article>
+          ))}
         </section>
       </div>
     </main>
