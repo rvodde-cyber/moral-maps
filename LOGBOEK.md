@@ -287,3 +287,34 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 1. Deploy MAPS 1 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
 2. Deploy MAPS 2 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
 3. Productie-URL's en smoke test resultaten vastleggen in dit logboek.
+
+## 2026-05-06 - Livegang afgerond (MAPS 1 + MAPS 2)
+
+### Resultaat
+- MAPS 1 deployment op `main` is geslaagd en staat live.
+- MAPS 2 Crossroads deployment is geslaagd na root-directory correctie.
+- Foutoorzaak tijdens deploy was bevestigd:
+  - pad niet gevonden op `main` tijdens eerdere poging;
+  - opgelost door merge + juiste Vercel root-config.
+
+### Live URL's
+- MAPS 1: `https://moral-maps.vercel.app`
+- MAPS 2: `https://moral-maps-2-crossroads.vercel.app`
+
+### Operationele afspraak vanaf nu
+- Na elke sessie altijd dit logboek bijwerken met:
+  - wat is opgeleverd,
+  - wat is gevalideerd (lint/build/deploy),
+  - welke blockers er waren en hoe opgelost,
+  - eerstvolgende concrete stap.
+
+### Volgende sessie (focus vooruit)
+1. Start met `RUNBOOK_MAPS_LIVEGANG.md` als vaste ingang.
+2. Voer een korte productie-smoketest uit op beide live URL's:
+   - MAPS 1: Deel 1 -> Deel 2 -> Deel 3 + PDF/print + hervatten met code
+   - MAPS 2: startflow, routing per opdracht, image check, autosave check
+3. Start architectuurstap MAPS 3 als losse app:
+   - nieuwe app-map `apps/moral-maps-3-final-destination`
+   - Next.js App Router + TypeScript + Tailwind
+   - Deel 3-logica modulair overzetten vanuit `src/MoralMaps.jsx`
+4. Na die sessie opnieuw logboek updaten met beslissingen en resterende backlog.

@@ -8,8 +8,8 @@
 
 ## 1) Huidige status (kort)
 
-- MAPS 1 (Vite/React): buildbaar en live-geschikt.
-- MAPS 2 Crossroads (Next.js/TS): buildbaar en lint-groen; ontbrekende image is gefixt.
+- MAPS 1 (Vite/React): live op `https://moral-maps.vercel.app`.
+- MAPS 2 Crossroads (Next.js/TS): live op `https://moral-maps-2-crossroads.vercel.app`.
 - MAPS 3 Final Destination: functioneel in MAPS 1, nog geen losse app-directory/deployment.
 
 ---
@@ -88,9 +88,23 @@ Pas live zetten als beide builds slagen.
 ## 6) Wat jij volgende keer direct moet doen
 
 1. Open dit bestand: `RUNBOOK_MAPS_LIVEGANG.md`.
-2. Draai preflight checks uit sectie 2.
-3. Als groen: deploy MAPS 1 en daarna MAPS 2 volgens sectie 4.
-4. Noteer resultaat in `LOGBOEK.md` met datum en URL's.
+2. Voer de smoke test uit sectie 5 uit op beide live URL's.
+3. Start daarna MAPS 3 als losse app (Next.js/TS) in `apps/moral-maps-3-final-destination`.
+4. Noteer resultaat, blockers en eerstvolgende stap in `LOGBOEK.md`.
+
+---
+
+## 8) Vooruitblik: eerstvolgende implementatiestap
+
+Doel volgende bouwsessie:
+- MAPS 3 los trekken uit de monolith en voorbereiden als apart deployment-project.
+
+Minimum scope:
+1. app-skeleton maken (`apps/moral-maps-3-final-destination`);
+2. basisroutes + layout + styling;
+3. Deel 3 signature-opdracht "Brug in de Mist";
+4. lokale draft-opslag (localStorage) + voortgangsindicator;
+5. build/lint groen + logboekupdate.
 
 ---
 
