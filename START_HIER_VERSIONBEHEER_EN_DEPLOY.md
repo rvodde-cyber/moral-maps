@@ -8,6 +8,12 @@ Gebruik dit bestand als snelle ingang voor GitHub + Vercel status.
 - MAPS 2 live: `https://moral-maps-2-crossroads.vercel.app`
 - MAPS 3: app-skeleton staat klaar in `apps/moral-maps-3-final-destination` (nog deployen)
 
+## Productregel (altijd toepassen)
+
+- In alle 3 de MAPS-apps:
+  - één opdracht per pagina;
+  - per opdracht een eigen afbeelding.
+
 ## 2) Waar je eerst kijkt
 
 1. `LOGBOEK.md` (laatste sessie + volgende stap)
@@ -37,3 +43,4 @@ Werk altijd bij in `LOGBOEK.md`:
 - welke checks groen zijn (lint/build/deploy);
 - URL/status per app;
 - eerstvolgende concrete stap.
+- check op productregel: elke opdracht eigen pagina + eigen afbeelding.
