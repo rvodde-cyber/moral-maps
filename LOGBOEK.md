@@ -287,3 +287,75 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 1. Deploy MAPS 1 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
 2. Deploy MAPS 2 volgens `RUNBOOK_MAPS_LIVEGANG.md`.
 3. Productie-URL's en smoke test resultaten vastleggen in dit logboek.
+
+## 2026-05-06 - Livegang afgerond (MAPS 1 + MAPS 2)
+
+### Resultaat
+- MAPS 1 deployment op `main` is geslaagd en staat live.
+- MAPS 2 Crossroads deployment is geslaagd na root-directory correctie.
+- Foutoorzaak tijdens deploy was bevestigd:
+  - pad niet gevonden op `main` tijdens eerdere poging;
+  - opgelost door merge + juiste Vercel root-config.
+
+### Live URL's
+- MAPS 1: `https://moral-maps.vercel.app`
+- MAPS 2: `https://moral-maps-2-crossroads.vercel.app`
+
+### Operationele afspraak vanaf nu
+- Na elke sessie altijd dit logboek bijwerken met:
+  - wat is opgeleverd,
+  - wat is gevalideerd (lint/build/deploy),
+  - welke blockers er waren en hoe opgelost,
+  - eerstvolgende concrete stap.
+
+### Volgende sessie (focus vooruit)
+1. Start met `RUNBOOK_MAPS_LIVEGANG.md` als vaste ingang.
+2. Voer een korte productie-smoketest uit op beide live URL's:
+   - MAPS 1: Deel 1 -> Deel 2 -> Deel 3 + PDF/print + hervatten met code
+   - MAPS 2: startflow, routing per opdracht, image check, autosave check
+3. Start architectuurstap MAPS 3 als losse app:
+   - nieuwe app-map `apps/moral-maps-3-final-destination`
+   - Next.js App Router + TypeScript + Tailwind
+   - Deel 3-logica modulair overzetten vanuit `src/MoralMaps.jsx`
+4. Na die sessie opnieuw logboek updaten met beslissingen en resterende backlog.
+
+## 2026-05-06 - MAPS 3 losse app gestart
+
+### Opgeleverd
+- Nieuwe app aangemaakt: `apps/moral-maps-3-final-destination`
+- Stack ingericht:
+  - Next.js App Router
+  - TypeScript
+  - Tailwind CSS
+  - Framer Motion
+- Werkende startflow gebouwd in `src/app/page.tsx` met:
+  - Deel 3 intro
+  - Signature-opdracht "De Brug in de Mist"
+  - Terugblik + vooruitblik
+  - Syntheseveld
+  - voortgangspercentage
+  - autosave in localStorage
+- Opslag helper toegevoegd:
+  - `src/lib/final-destination-storage.ts`
+- Root scripts uitgebreid voor MAPS 3:
+  - `dev:maps3`
+  - `build:maps3`
+  - `lint:maps3`
+
+### Validatie
+- In `apps/moral-maps-3-final-destination`:
+  - `npm run lint` -> groen
+  - `npm run build` -> groen
+
+### Volgende stap
+1. Koppel Deel 3-content uit `src/MoralMaps.jsx` één-op-één over (brug, terugblik, vooruitblik, synthese, GROW).
+2. Voeg PDF/print export toe voor MAPS 3 portfolio-fragment.
+3. Maak Vercel project voor MAPS 3 met root `apps/moral-maps-3-final-destination`.
+
+### Versiebeheerstatus (einde sessie)
+- Werkbranch met nieuwste MAPS 3 scaffold: `feat/maps-flow-update`
+- Laatste commit op branch: `ca5ffd5`
+- Vaste startdocumenten voor volgende sessie:
+  - `START_HIER_VERSIONBEHEER_EN_DEPLOY.md`
+  - `RUNBOOK_MAPS_LIVEGANG.md`
+  - `LOGBOEK.md` (deze sectie)
