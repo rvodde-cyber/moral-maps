@@ -69,7 +69,7 @@ export const stages: Stage[] = [
         title: "De omleiding bij schemer",
         question:
           "Je rijdt door een uitgestrekte, verdroogde vlakte en moet kiezen: avontuur in wilde bossen, omweg via je jeugdstad, hypermoderne stad vol prikkels, of de saaie maar snelle route. Welke kies je en waarom past dit bij jouw kernwaarden?",
-        imageSrc: "/crossroads-wegomleiding.jpg",
+        imageSrc: "/images/crossroads-wegomleiding.jpg",
         imageAlt: "Wegomleiding met meerdere routekeuzes",
       },
     ],
@@ -110,7 +110,7 @@ export const stages: Stage[] = [
         id: "vangrail",
         title: "Langs de Vangrail",
         question:
-          "Denk aan een moment van pech of twijfel. Deelde je wat er werkelijk speelde, of hield je de motorkap dicht?",
+          "Denk aan een moment van pech of twijfel. Deelde je wat er speelde met andere mensen, of hield je de motorkap dicht?",
         imageSrc:
           "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Auto langs de vangrail op een stille weg",
@@ -130,13 +130,13 @@ export const stages: Stage[] = [
     id: "mist",
     label: "Mist & Zicht",
     icon: "🌫️",
-    summary: "Wanneer zicht ontbreekt, bepaalt je interne kompas je koers.",
+    summary: "Wanneer zicht ontbreekt, bepalen de instellingen van je interne GPS je koers.",
     prompts: [
       {
         id: "mist-rijden",
         title: "Rijden in de Mist",
         question:
-          "Op welk intern kompas vertrouw je wanneer externe zekerheden wegvallen?",
+          "Op welke interne GPS-instellingen vertrouw je wanneer externe zekerheden wegvallen?",
         imageSrc:
           "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Weg in dichte mist met zacht licht",
@@ -153,11 +153,44 @@ export const stages: Stage[] = [
     ],
   },
   {
+    id: "wegkeuze",
+    label: "De Wegkeuze",
+    icon: "🧭",
+    summary:
+      "Soms weet je routeplanner precies waar je heen moet - maar sla je toch een andere afslag.",
+    prompts: [
+      {
+        id: "wegkeuze-goede-niet-gedaan",
+        title: "Het goede weten, toch afslaan",
+        question:
+          "Beschrijf een moment waarop je wist wat het goede was - maar het toch niet deed. Wat hield je tegen?",
+        imageSrc: "/images/maps2-wegkeuze-goede-niet-gedaan.jpg",
+        imageAlt: "Wegkeuze: het goede weten en toch afslaan",
+      },
+      {
+        id: "wegkeuze-zwijgen",
+        title: "De stilte op het kruispunt",
+        question:
+          "Wanneer zweeg je terwijl spreken beter was geweest - voor jezelf of voor een ander?",
+        imageSrc: "/images/maps2-wegkeuze-zwijgen.jpg",
+        imageAlt: "Wegkeuze: de stilte op het kruispunt",
+      },
+      {
+        id: "wegkeuze-moeilijk-of-fout",
+        title: "Moeilijk of fout",
+        question:
+          "Wat is het verschil tussen een moeilijke keuze en een foute keuze, voor jou persoonlijk?",
+        imageSrc: "/images/maps2-wegkeuze-moeilijk-of-fout.jpg",
+        imageAlt: "Wegkeuze: moeilijke keuze versus foute keuze",
+      },
+    ],
+  },
+  {
     id: "socialisatie",
     label: "Socialisatieverslag",
     icon: "🧾",
     summary:
-      "Wie ben je onderweg tegengekomen en hoe vormen die ontmoetingen je morele koers?",
+      "Wie ben je onderweg tegengekomen en hoe vormen die ontmoetingen je morele GPS-koers?",
     prompts: [
       {
         id: "ontmoetingen-route",
@@ -172,7 +205,7 @@ export const stages: Stage[] = [
         id: "sociale-sporen",
         title: "Sporen op je stuur",
         question:
-          "Welke overtuigingen heb je onderweg overgenomen, en welke heb je bewust losgelaten om koersvast te blijven?",
+          "Welke overtuigingen heb je onderweg overgenomen, en welke heb je bewust losgelaten? In welke mate is jouw keuze volgens jouw kernwaarden?",
         imageSrc:
           "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Hand op stuur met focus op richting",
@@ -199,7 +232,7 @@ export const stages: Stage[] = [
         id: "insluiting-onderweg",
         title: "Insluiting onderweg",
         question:
-          "Wat kun je concreet doen om deze reisgenoot beter te begrijpen en in te sluiten, zonder je eigen kompas te verliezen?",
+          "Wat kun je concreet doen om deze reisgenoot beter te begrijpen en in te sluiten, zonder je interne GPS te verliezen?",
         imageSrc:
           "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Mensen die samen een brug oversteken",

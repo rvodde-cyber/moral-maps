@@ -389,3 +389,208 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
    - `apps/moral-maps-3-final-destination/public/images/maps3-landing-smartphone-gps.jpg`
 3. Daarna in app koppelen op `src/app/page.tsx` (overzichtspagina Deel 3).
 4. Herdeploy MAPS 3 op Vercel en visueel checken op mobiel + desktop.
+
+## 2026-05-07 - Wensenronde MAPS 2 + MAPS 3
+
+### Nieuwe wensen verwerkt
+- MAPS 2 inhoudelijk verdiept met een aparte fase **De Wegkeuze**.
+- MAPS 3 uitgebreid met een nieuw thema in Laag 2: **Het Panorama - Morele Eerlijkheid**.
+- In MAPS 3 per vraag extra duiding toegevoegd zodat velden niet alleen als losse invulvelden aanvoelen.
+
+### Technische aanpassingen
+- `apps/moral-maps-2-crossroads/src/lib/crossroads-content.ts`:
+  - nieuwe stage `wegkeuze` toegevoegd met 3 prompts:
+    - het goede weten maar niet doen,
+    - zwijgen waar spreken beter was,
+    - verschil tussen moeilijke en foute keuze.
+- `apps/moral-maps-3-final-destination/src/lib/final-destination-steps.ts`:
+  - nieuwe stap `panorama` toegevoegd in `stepOrder` na `terugblik`.
+- `apps/moral-maps-3-final-destination/src/lib/final-destination-storage.ts`:
+  - nieuw opslagblok `panorama` toegevoegd met 4 antwoorden.
+- `apps/moral-maps-3-final-destination/src/app/opdracht/[step]/page.tsx`:
+  - nieuw UI-blok voor `panorama` met 4 morele reflectievragen + korte toelichting per vraag.
+  - extra microtoelichtingen toegevoegd boven bestaande stapblokken.
+  - voortgangsberekening aangepast naar 17 velden.
+- `apps/moral-maps-3-final-destination/src/app/page.tsx`:
+  - homepage-voortgang en autosave uitgebreid met de 4 nieuwe panorama-antwoorden.
+
+### Validatie
+- MAPS 2 `npm run build`: geslaagd.
+
+### Openstaand
+- Live-foutmelding MAPS 2 is nog niet runtime-gereproduceerd in deze sessie (build lokaal is groen).
+- Volgende stap: production URL reproduceren, exacte foutmelding/log vastleggen en gericht fixen.
+
+## 2026-05-07 - Tekstfixes, routing en portfolio-export
+
+### Uitgevoerd
+- Consistentie tussen Deel 1 en Deel 2 routing verbeterd:
+  - in `src/MoralMaps.jsx` stuurt "Start Deel 2" nu naar de live Crossroads-app.
+  - queryparams worden meegegeven (groep/leeftijd/kernwaarden).
+- MAPS 2 Crossroads (`apps/moral-maps-2-crossroads`) inhoud en UX aangescherpt:
+  - scorelabel gewijzigd naar: "In welke mate is jouw keuze volgens jouw kernwaarden?"
+  - extra korte uitleg toegevoegd per opdrachtpagina.
+  - wording met koersvastheid vervangen in de socialisatieprompt.
+  - routeverslag-export toegevoegd als printbare PDF-flow via browser print.
+- MAPS 3 Final Destination (`apps/moral-maps-3-final-destination`) titel gecorrigeerd:
+  - metadata en paginakoppen aangepast naar "Moral Maps 3: Final Destination".
+  - landingtitel en CTA aangepast.
+  - knop toegevoegd om verslag van deel 1-2-3 als 1 document te openen/printen voor portfolio.
+- In MAPS 1 (`src/MoralMaps.jsx`) tekstfixes doorgevoerd:
+  - "veranderkleur" vervangen door "waardenkleur" op relevante plekken.
+  - kernwaardenbeschrijving aangepast naar gewenste formulering.
+  - crossroads-reflectieprompt aangepast naar kernwaardenformulering.
+  - fallback toegevoegd bij geblokkeerde popup voor Deel 2 PDF-export.
+
+### Openstaand
+- E2E-check op live URL's met echte deelnemerflow:
+  - Deel 1 -> externe Deel 2 start,
+  - Deel 2 routeverslag PDF/print openen,
+  - Deel 3 gecombineerde trilogie-export openen.
+
+## 2026-05-07 - Pauzestand + vervolgstappen
+
+### Pauzestand nu
+- Gevraagde tekstwijzigingen zijn doorgevoerd in MAPS 1, MAPS 2 en MAPS 3.
+- Titelcorrectie voor MAPS 3 staat nu op **Final Destination**.
+- Deel 2 heeft nu een expliciete routeverslag-knop voor PDF/print.
+- Deel 3 heeft nu een knop om een gecombineerd verslag (deel 1-2-3) als 1 document te openen/printen.
+- Routing vanuit Deel 1 naar Deel 2 wijst nu naar de live Crossroads-app, zodat gebruikers niet meer in een andere versie belanden.
+- Buildvalidatie afgerond:
+  - MAPS 2 `npm run build` -> geslaagd.
+  - MAPS 3 `npm run build` -> geslaagd.
+
+### Eerstvolgende stappen om af te maken (in volgorde)
+1. **Lokale checks afmaken**
+   - `apps/moral-maps-2-crossroads`: `npm run lint` (al groen), daarna `npm run build`.
+   - `apps/moral-maps-3-final-destination`: `npm run lint` (al groen), daarna `npm run build`.
+2. **Functionele E2E test op live**
+   - Start in MAPS 1 en klik door naar Deel 2.
+   - Controleer of Deel 2 altijd de juiste (nieuwe) appversie opent.
+   - Vul minimaal 2 opdrachten in en test **Open routeverslag als PDF/print**.
+3. **MAPS 3 validatie**
+   - Controleer titelweergave: “Moral Maps 3: Final Destination”.
+   - Open meerdere opdrachten en check de korte uitleg + afbeelding per opdracht.
+   - Test **Download verslag deel 1-2-3** en controleer print/PDF output.
+4. **Inhoudelijke finetune**
+   - Tekst “Kies drie kernwaarde die voor jou boven alles staan.” eventueel taalkundig finaliseren naar “kernwaarden” als je dat toch wenst.
+   - Controleren of alle “koersvastheid”-verwijzingen nu vervangen zijn op alle zichtbare schermen.
+5. **Deploy en afronding**
+   - Wijzigingen committen op werkbranch.
+   - Deploy van MAPS 2 en MAPS 3.
+   - Live smoke test herhalen na deploy.
+   - Logboek afsluiten met definitieve live-status.
+
+## 2026-05-08 - Finetuning trilogie (strikt op opdracht)
+
+### Uitgevoerd
+- MAPS 1 (`src/MoralMaps.jsx`)
+  - Deel 1 heeft nu een aparte **welkomstpagina** met uitleg en een startknop in auto-startstijl.
+  - Nieuwe opdracht **Motivatie** toegevoegd als eigen stap/pagina in de flow, vóór Reisverslag.
+  - Terminologie aangepast:
+    - `Smeed je Kompas` -> `Stel je GPS bij`
+    - zinnen met `kompas bijstellen` -> `instellingen van je interne GPS opnieuw bijstellen`
+  - Tekstcorrecties:
+    - STARR placeholder `Beschrijf het resultaat`
+    - `Veranderkleuren` -> `Waardenkleuren`
+  - Rugzak-opdracht aangescherpt naar:
+    - primaire socialisatie
+    - secundaire socialisatie
+    - identiteit
+    - reflectie
+  - Start Deel 3 verwijst nu naar live URL van MAPS 3.
+- MAPS 2 (`apps/moral-maps-2-crossroads`)
+  - Voortgang met bolletjes toegevoegd op overzichtspagina én opdrachtpagina.
+  - GPS-terminologie doorgevoerd in relevante content.
+- MAPS 3 (`apps/moral-maps-3-final-destination`)
+  - Drie nieuwe opdrachten toegevoegd als **eigen pagina’s** in `stepOrder`:
+    - `passie`
+    - `mensen`
+    - `nalatenschap`
+  - Opslagmodel uitgebreid voor nieuwe velden.
+  - Voortgang met bolletjes toegevoegd op overzichts- en opdrachtpagina.
+
+### URL-check live (huidige productie)
+- MAPS 1: `https://moral-maps.vercel.app`
+- MAPS 2: `https://moral-maps-2-crossroads.vercel.app`
+- MAPS 3: `https://moral-maps-3-final-destination.vercel.app`
+
+### Opmerking
+- Bovenstaande codewijzigingen zijn lokaal aangebracht; productie-URL’s tonen pas de laatste versie na deploy.
+
+## 2026-05-08 - MAPS 1 losgezet + images-map
+
+### Uitgevoerd
+- Nieuwe app aangemaakt: `apps/moral-maps-1-the-beginning`.
+- Basisbestanden toegevoegd in deze app:
+  - `index.html`
+  - `vite.config.js`
+  - `eslint.config.js`
+  - `src/main.jsx`
+  - `src/index.css`
+  - `package.json`
+- Nieuwe afbeeldingsmap toegevoegd:
+  - `apps/moral-maps-1-the-beginning/public/images/.gitkeep`
+- Root scripts omgezet zodat standaard MAPS 1-app wordt gestart vanuit de nieuwe app-map.
+- Assetpaden in `src/MoralMaps.jsx` aangepast naar `/images/...` voor consistente image-resolving.
+- Ook op rootniveau een images-map toegevoegd:
+  - `public/images/.gitkeep`
+
+## 2026-05-08 - Afbeeldingen opschonen + pauze
+
+### Uitgevoerd
+- Fallback voor SMS-afbeelding verwijderd uit `src/MoralMaps.jsx`:
+  - `SMS_EVENT_FALLBACK` verwijderd.
+  - `onError` fallback op de SMS `<img>` verwijderd.
+- MAPS-afbeeldingsset opgeschoond conform instructie:
+  - Werkblad-verwijzingen verwijderd uit MAPS-flow.
+  - `socialisatie-ui-analyse` niet meer gebruikt in MAPS-flow.
+- Naamconventie bevestigd: primair `.jpg` voor illustraties; `trilogie-hero-map.svg` blijft vector.
+
+### Volgende acties (na pauze)
+1. Bestand lokaal hernoemen naar de definitieve naam:
+   - `moral-maps-sms-dilemma.jp.png` -> `sms-koud-station.jpg`
+2. Beelden per app-map plaatsen:
+   - `apps/moral-maps-1-the-beginning/public/images`
+   - `apps/moral-maps-2-crossroads/public/images`
+   - `apps/moral-maps-3-final-destination/public/images`
+3. Missende beelden genereren (laatste afgesproken lijst zonder werkbladen/socialisatie-analyse).
+4. Per app een smoke test draaien (home + 1 opdracht met afbeelding).
+5. Daarna pas committen met korte changelogregel.
+
+## 2026-05-08 - UX finetune trilogie + Deel 3 parity
+
+### Uitgevoerd
+- Teksten en terminologie geharmoniseerd op Google Maps-analogie:
+  - `kompas` in zichtbare UI-teksten vervangen door `morele GPS`/`interne GPS` waar passend.
+  - `Caluwé`-verwijzingen verwijderd uit appbeleving; alleen bronvermelding behouden.
+- MAPS 1 (`src/MoralMaps.jsx`):
+  - Formuleringen aangescherpt (o.a. privilege-uitleg, GPS-terminologie, routeplan-tekst).
+  - Overzichtspagina geoptimaliseerd met beeldplaatsing richting Deel 2.
+- MAPS 2:
+  - Wegkeuze opgesplitst naar drie eigen afbeeldingnamen voor drie opdrachten:
+    - `maps2-wegkeuze-goede-niet-gedaan.jpg`
+    - `maps2-wegkeuze-zwijgen.jpg`
+    - `maps2-wegkeuze-moeilijk-of-fout.jpg`
+- MAPS 3 standalone (`apps/moral-maps-3-final-destination`):
+  - Landingtekst herschreven met vriendelijke inleiding.
+  - Per opdrachtpagina labels en introblokken verbeterd (scharnierpunt/vooruitblik/reisverslag).
+  - Knop toegevoegd: `Opslaan en afsluiten` (lokaal opslaan + veilige sluitmelding).
+- Gecombineerde flow (`src/MoralMaps.jsx`) Deel 3 parity:
+  - Deel 3 opgesplitst in opeenvolgende pagina’s (brug, terugblik, passie, mensen, nalatenschap, vooruitblik, reisverslag, actieplan).
+  - Voortgangsbollen toegevoegd.
+  - Vorige/Volgende-knoppen toegevoegd.
+  - Per stap eigen visual + passende inleidende teksten toegevoegd.
+
+### Volgende stappen
+1. Eind-smoketest op alle 3 URL’s na deploy:
+   - `https://moral-maps.vercel.app`
+   - `https://moral-maps-2-crossroads.vercel.app`
+   - `https://moral-maps-3-final-destination.vercel.app`
+2. Checklijst voor testers delen:
+   - per opdracht eigen pagina
+   - per opdracht eigen afbeelding
+   - voortgangsbollen zichtbaar
+   - vorige/volgende navigatie werkt
+   - PDF/opslaan werkt op overzichtspagina
+3. Daarna committen en deploy afronden naar productie.

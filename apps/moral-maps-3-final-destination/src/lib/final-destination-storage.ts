@@ -14,10 +14,26 @@ export type FinalDestinationDraft = {
     patroon: string;
     noorden: string;
   };
+  panorama?: {
+    goedOndanksKost: string;
+    nietGeklopt: string;
+    minderStandvastig: string;
+    verantwoordelijkheid: string;
+  };
   vooruitblik?: {
     nalatenschap: string;
     richting: string;
     belofte: string;
+  };
+  passie?: {
+    waar: string;
+  };
+  mensen?: {
+    wie: string;
+  };
+  nalatenschapStory?: {
+    verhaal: string;
+    goedeDingen: string;
   };
   synthese?: string;
 };

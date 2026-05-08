@@ -48,10 +48,11 @@ export default function PromptPage() {
 
   const completion = useMemo(() => {
     const answered = allPrompts.filter(
-      (item) => (answers[item.id] ?? "").trim().length >= 30,
+      (item) =>
+        (answers[item.id] ?? "").trim().length >= 10 || Boolean(scores[item.id]),
     ).length;
     return Math.round((answered / allPrompts.length) * 100);
-  }, [answers]);
+  }, [answers, scores]);
 
   if (!prompt) {
     return (
@@ -83,7 +84,21 @@ export default function PromptPage() {
             <p className="text-xs text-slate-500">Voortgang: {completion}%</p>
           </div>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">{prompt.title}</h1>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {allPrompts.map((item, idx) => {
+              const isCurrent = idx === promptIndex;
+              const isDone =
+                (answers[item.id] ?? "").trim().length >= 10 ||
+                Boolean(scores[item.id]);
+              const cls = isCurrent ? "bg-teal-700" : isDone ? "bg-teal-400" : "bg-slate-300";
+              return <span key={item.id} className={`h-2.5 w-2.5 rounded-full ${cls}`} title={item.title} />;
+            })}
+          </div>
           <p className="mt-3 text-sm leading-6 text-slate-700">{prompt.question}</p>
+          <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-xs leading-5 text-teal-900">
+            Korte uitleg: deze opdracht helpt je om zichtbaar te maken in welke mate jouw
+            keuze volgens jouw kernwaarden is.
+          </p>
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-[0_12px_24px_rgba(15,23,42,0.08)]">
             <Image
               src={prompt.imageSrc}
@@ -145,7 +160,9 @@ export default function PromptPage() {
           />
 
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-xs text-slate-500">Koerszekerheid</span>
+            <span className="text-xs text-slate-500">
+              In welke mate is jouw keuze volgens jouw kernwaarden?
+            </span>
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
