@@ -1,129 +1,61 @@
-import { useMemo, useState } from "react";
-
-type Question = {
-  id: number;
-  title: string;
-  subtitle: string;
-  explanation: string;
-};
-
-type Pillar = {
-  label: string;
-  avg: number;
-};
-
-const questions: Question[] = [
-  { id: 1, title: "Ethische visie", subtitle: "Richting en betekenis", explanation: "In welke mate is de missie concreet verbonden aan maatschappelijke waarde en verantwoord handelen?" },
-  { id: 2, title: "Leiderschap als voorbeeld", subtitle: "Walk the talk", explanation: "In welke mate laten leidinggevenden in keuzes en gedrag zien wat zij van professionals verwachten?" },
-  { id: 3, title: "Psychologische veiligheid", subtitle: "Ruimte om te spreken", explanation: "In welke mate ervaren medewerkers veiligheid om fouten, twijfels en zorgen bespreekbaar te maken?" },
-  { id: 4, title: "Waarden in besluitvorming", subtitle: "Meer dan KPI's", explanation: "In welke mate worden waarden zichtbaar meegewogen naast kosten, snelheid en resultaat?" },
-  { id: 5, title: "Transparantie", subtitle: "Uitlegbaar handelen", explanation: "In welke mate zijn besluiten navolgbaar en helder onderbouwd voor medewerkers en stakeholders?" },
-  { id: 6, title: "Aanspreekcultuur", subtitle: "Constructieve correctie", explanation: "In welke mate spreken collega's elkaar professioneel aan op gedrag en verantwoordelijkheid?" },
-  { id: 7, title: "Leren van fouten", subtitle: "Van incident naar leren", explanation: "In welke mate worden incidenten structureel geanalyseerd en omgezet in betere werkwijzen?" },
-  { id: 8, title: "Rechtvaardigheid", subtitle: "Eerlijk en consistent", explanation: "In welke mate zijn kansen, beoordeling en beloning binnen teams rechtvaardig ingericht?" },
-  { id: 9, title: "Inclusie", subtitle: "Diversiteit benutten", explanation: "In welke mate worden verschillende perspectieven actief betrokken in overleg en besluitvorming?" },
-  { id: 10, title: "Eigenaarschap", subtitle: "Verantwoordelijkheid op elk niveau", explanation: "In welke mate ervaren professionals dat zij zelf een verantwoordelijkheid dragen voor de ethische kwaliteit van hun werkzaamheden?" },
-  { id: 11, title: "Stakeholderperspectief", subtitle: "Brede impact", explanation: "In welke mate worden effecten op klanten, burgers en partners expliciet meegewogen?" },
-  { id: 12, title: "Lange termijn", subtitle: "Duurzame keuzes", explanation: "In welke mate kiest de organisatie voor duurzame oplossingen boven korte-termijnwinst?" },
-  { id: 13, title: "Samenwerking", subtitle: "Silo's doorbreken", explanation: "In welke mate werken teams en afdelingen integraal samen aan gedeelde waarden en doelen?" },
-  { id: 14, title: "Signalering en opvolging", subtitle: "Melden heeft effect", explanation: "In welke mate worden signalen over risico's en misstanden tijdig en aantoonbaar opgevolgd?" },
-  { id: 15, title: "Morele reflectie", subtitle: "Tijd voor beraad", explanation: "In welke mate bestaat er structureel ruimte voor ethische reflectie op complexe casuistiek?" },
-  { id: 16, title: "Vakmanschap", subtitle: "Kennis en competenties", explanation: "In welke mate worden medewerkers getraind in morele oordeelsvorming en professioneel handelen?" },
-  { id: 17, title: "Heldere grenzen", subtitle: "Normen en consequenties", explanation: "In welke mate zijn gedragsnormen, grensoverschrijding en consequenties expliciet en bekend?" },
-  { id: 18, title: "Datagedreven verbeteren", subtitle: "Meten is leren", explanation: "In welke mate gebruikt de organisatie betrouwbare data om ethisch werken gericht te versterken?" },
-  { id: 19, title: "Menselijke maat", subtitle: "Mensen boven systeemdruk", explanation: "In welke mate blijft de menselijke maat leidend in beleid, uitvoering en klantcontact?" },
-  { id: 20, title: "Externe verantwoording", subtitle: "Open naar buiten", explanation: "In welke mate legt de organisatie actief verantwoording af over ethische keuzes en impact?" },
-  { id: 21, title: "Verbeterkracht", subtitle: "Van scan naar uitvoering", explanation: "In welke mate worden inzichten uit metingen vertaald naar duidelijke acties en eigenaarschap?" },
-];
-
-function RadarChart({ pillars }: { pillars: Pillar[] }) {
-  const size = 280;
-  const center = size / 2;
-  const maxRadius = 95;
-  const steps = 5;
-  const n = pillars.length;
-  const angleStep = (Math.PI * 2) / n;
-
-  const pointFor = (index: number, value: number) => {
-    const angle = -Math.PI / 2 + index * angleStep;
-    const radius = (value / 5) * maxRadius;
-    return [center + Math.cos(angle) * radius, center + Math.sin(angle) * radius];
-  };
-
-  const polygonPoints = pillars
-    .map((pillar, i) => pointFor(i, pillar.avg || 0))
-    .map(([x, y]) => `${x},${y}`)
-    .join(" ");
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
-      {[...Array(steps)].map((_, i) => {
-        const r = ((i + 1) / steps) * maxRadius;
-        const ringPoints = pillars
-          .map((_, idx) => {
-            const angle = -Math.PI / 2 + idx * angleStep;
-            return `${center + Math.cos(angle) * r},${center + Math.sin(angle) * r}`;
-          })
-          .join(" ");
-        return <polygon key={i} points={ringPoints} fill="none" stroke="#dbe2ea" strokeWidth="1" />;
-      })}
-      {pillars.map((pillar, i) => {
-        const [x, y] = pointFor(i, 5);
-        return (
-          <g key={pillar.label}>
-            <line x1={center} y1={center} x2={x} y2={y} stroke="#dbe2ea" />
-            <text x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="#475569">
-              {pillar.label}
-            </text>
-          </g>
-        );
-      })}
-      <polygon points={polygonPoints} fill="rgba(14,165,233,0.22)" stroke="#0ea5e9" strokeWidth="2" />
-    </svg>
-  );
-}
+import { useEffect, useMemo, useRef, useState } from "react";
+import { QuestionCard } from "./components/QuestionCard";
+import { RadarChart } from "./components/RadarChart";
+import {
+  INSTRUMENT_VERSION,
+  PAGE_CAPTIONS,
+  PAGE_IMAGE_PATHS,
+  QUESTIONS_PER_PAGE,
+  questions,
+} from "./data/questions";
+import { LitmusTube } from "./LitmusTube";
+import { PageIllustration } from "./PageIllustration";
+import {
+  calculateLitmus,
+  calculatePillars,
+  calculateQuickActions,
+  calculateScore,
+  chunkQuestions,
+  clearSession,
+  loadSession,
+  saveSession,
+} from "./utils/assessment";
 
 export default function App() {
   const [organization, setOrganization] = useState("");
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState("");
   const [started, setStarted] = useState(false);
+  const [questionPageIndex, setQuestionPageIndex] = useState(0);
+  const questionnaireRef = useRef<HTMLElement>(null);
+  const isRestoringRef = useRef(true);
+
+  const questionPages = useMemo(() => chunkQuestions(questions, QUESTIONS_PER_PAGE), []);
+
+  const totalQuestionPages = questionPages.length;
+  const currentQuestions = questionPages[questionPageIndex] ?? [];
+
+  useEffect(() => {
+    if (!started) return;
+    questionnaireRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [questionPageIndex, started]);
 
   const completed = Object.keys(answers).length;
   const isDone = completed === questions.length;
-  const score = useMemo(() => {
-    if (!isDone) return 0;
-    const total = Object.values(answers).reduce((sum, current) => sum + current, 0);
-    return Math.round((total / (questions.length * 5)) * 100);
-  }, [answers, isDone]);
-
-  const pillars = useMemo(() => {
-    const labels = ["Shared Values", "Strategy", "Structure", "Systems", "Staff", "Style", "Skills"];
-    return labels.map((label, index) => {
-      const start = index * 3 + 1;
-      const ids = [start, start + 1, start + 2];
-      const values = ids.map((id) => answers[id]).filter((v): v is number => typeof v === "number");
-      const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
-      return { label, avg };
-    });
-  }, [answers]);
-
-  const quickActions = useMemo(() => {
-    if (!isDone) return [];
-    const lowest = [...pillars].sort((a, b) => a.avg - b.avg).slice(0, 3);
-    return lowest.map((item) => {
-      if (item.label === "Shared Values") return "Plan een teamsessie waarin waarden worden vertaald naar concreet gedrag en besluitcriteria.";
-      if (item.label === "Strategy") return "Toets lopende strategische keuzes op maatschappelijke impact en lange-termijn effecten.";
-      if (item.label === "Structure") return "Herijk rollen en verantwoordelijkheden rond ethische besluitvorming in elke laag.";
-      if (item.label === "Systems") return "Bouw een vaste cyclus voor signaleren, evalueren en opvolgen van ethische risico's.";
-      if (item.label === "Staff") return "Start gerichte ontwikkeling op morele oordeelsvorming voor sleutelrollen.";
-      if (item.label === "Style") return "Versterk psychologische veiligheid door structurele dialoog en zichtbaar voorbeeldgedrag.";
-      return "Ontwikkel trainingsmodules op integriteit, aanspreekcultuur en professionele reflectie.";
-    });
-  }, [isDone, pillars]);
+  const score = useMemo(() => calculateScore(answers, questions.length), [answers]);
+  const pillars = useMemo(() => calculatePillars(answers), [answers]);
+  const quickActions = useMemo(() => (isDone ? calculateQuickActions(pillars) : []), [isDone, pillars]);
+  const litmus = useMemo(() => calculateLitmus(answers, completed, questions.length), [answers, completed]);
 
   const handlePrint = () => {
     window.print();
+  };
+  const handleReset = () => {
+    setAnswers({});
+    setNotes("");
+    setOrganization("");
+    setQuestionPageIndex(0);
+    clearSession();
   };
 
   const printDate = useMemo(
@@ -135,6 +67,25 @@ export default function App() {
       }).format(new Date()),
     [],
   );
+
+  useEffect(() => {
+    const saved = loadSession();
+    if (saved) {
+      setOrganization(saved.organization ?? "");
+      setAnswers(saved.answers ?? {});
+      setNotes(saved.notes ?? "");
+      setQuestionPageIndex(saved.questionPageIndex ?? 0);
+      if (Object.keys(saved.answers ?? {}).length > 0) {
+        setStarted(true);
+      }
+    }
+    isRestoringRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (isRestoringRef.current) return;
+    saveSession({ organization, answers, notes, questionPageIndex });
+  }, [organization, answers, notes, questionPageIndex]);
 
   return (
     <main className="min-h-screen bg-[#f1f3f4] text-slate-900">
@@ -157,7 +108,7 @@ export default function App() {
                 <div className="mt-6 grid grid-cols-3 gap-3 text-center">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-2xl text-violet-600">⚖️</p>
-                    <p className="mt-1 text-sm font-semibold">13 Filters</p>
+                    <p className="mt-1 text-sm font-semibold">7 dimensies</p>
                     <p className="mt-1 text-xs text-slate-500">Volledige analyse</p>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -171,7 +122,13 @@ export default function App() {
                     <p className="mt-1 text-xs text-slate-500">Helder scorebeeld</p>
                   </div>
                 </div>
-                <button onClick={() => setStarted(true)} className="mt-7 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-95">
+                <button
+                  onClick={() => {
+                    setQuestionPageIndex(0);
+                    setStarted(true);
+                  }}
+                  className="mt-7 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-95"
+                >
                   Start inschatting
                 </button>
                 <p className="mt-5 text-xs text-slate-500">
@@ -179,6 +136,9 @@ export default function App() {
                 </p>
                 <p className="mt-2 text-xs text-slate-500">
                   Bronvermelding volgens APA7 is opgenomen op de eindpagina.
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Instrumentversie: <span className="font-semibold">{INSTRUMENT_VERSION}</span>
                 </p>
               </div>
               <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-gradient-to-b from-[#eef2f7] to-white p-4">
@@ -193,23 +153,60 @@ export default function App() {
         )}
 
         {started && (
-        <section className="space-y-3 print:hidden">
-          {questions.map((question) => (
-            <article key={question.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Vraag {question.id}</p>
-              <h2 className="mt-1 text-xl font-semibold">{question.title}</h2>
-              <p className="text-sm font-medium text-teal-700">{question.subtitle}</p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{question.explanation}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} onClick={() => setAnswers((prev) => ({ ...prev, [question.id]: n }))} className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${answers[question.id] === n ? "border-teal-600 bg-teal-50 text-teal-900" : "border-slate-300 bg-white hover:border-slate-400"}`}>
-                    {n}
-                  </button>
+          <section ref={questionnaireRef} className="print:hidden">
+            <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Vragenblok</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {questionPageIndex + 1} / {totalQuestionPages}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setQuestionPageIndex((p) => Math.max(0, p - 1))}
+                  disabled={questionPageIndex === 0}
+                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40 hover:border-slate-400"
+                >
+                  Vorige
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQuestionPageIndex((p) => Math.min(totalQuestionPages - 1, p + 1))
+                  }
+                  disabled={questionPageIndex >= totalQuestionPages - 1}
+                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-800"
+                >
+                  Volgende
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+              <div className="space-y-3">
+                {currentQuestions.map((question) => (
+                  <QuestionCard
+                    key={question.id}
+                    question={question}
+                    selected={answers[question.id]}
+                    onSelect={(value) => setAnswers((prev) => ({ ...prev, [question.id]: value }))}
+                  />
                 ))}
               </div>
-            </article>
-          ))}
-        </section>
+              <aside className="space-y-4 lg:sticky lg:top-6">
+                <LitmusTube
+                  fillRatio={litmus.fillRatio}
+                  liquidColor={litmus.liquidColor}
+                  statusLabel={litmus.statusLabel}
+                />
+                <PageIllustration
+                  imagePath={PAGE_IMAGE_PATHS[questionPageIndex] ?? PAGE_IMAGE_PATHS[0]}
+                  caption={PAGE_CAPTIONS[questionPageIndex] ?? PAGE_CAPTIONS[0]}
+                />
+              </aside>
+            </div>
+          </section>
         )}
 
         <section className="report-section mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -223,9 +220,12 @@ export default function App() {
                   ? organization
                   : "Organisatie (niet ingevuld)"}
               </h2>
-              <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+              <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-4">
                 <p>
                   <span className="font-semibold">Datum:</span> {printDate}
+                </p>
+                <p>
+                  <span className="font-semibold">Versie:</span> {INSTRUMENT_VERSION}
                 </p>
                 <p>
                   <span className="font-semibold">Score:</span> {score}%
@@ -239,6 +239,18 @@ export default function App() {
           <p className="text-sm text-slate-600">Voortgang: {completed}/{questions.length}</p>
           <label className="mt-4 block text-sm font-medium print:hidden">Kernobservaties en verbeteracties</label>
           <textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Welke 2-3 interventies hebben nu prioriteit?" className="mt-2 w-full resize-y rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-teal-600 focus:outline-none print:hidden" />
+          <div className="mt-3 flex flex-wrap items-center gap-3 print:hidden">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+            >
+              Sessie wissen
+            </button>
+            <p className="text-xs text-slate-500">
+              Privacy: antwoorden worden lokaal in deze browser opgeslagen voor hervatten; er is geen serveropslag.
+            </p>
+          </div>
           {isDone && (
             <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1.1fr] print:mt-2 print:grid-cols-1">
               <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-sky-50 to-white p-4">
