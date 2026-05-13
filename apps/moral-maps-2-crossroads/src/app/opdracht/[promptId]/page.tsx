@@ -95,10 +95,6 @@ export default function PromptPage() {
             })}
           </div>
           <p className="mt-3 text-sm leading-6 text-slate-700">{prompt.question}</p>
-          <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-xs leading-5 text-teal-900">
-            Korte uitleg: deze opdracht helpt je om zichtbaar te maken in welke mate jouw
-            keuze volgens jouw kernwaarden is.
-          </p>
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-[0_12px_24px_rgba(15,23,42,0.08)]">
             <Image
               src={prompt.imageSrc}
@@ -149,7 +145,7 @@ export default function PromptPage() {
 
           <textarea
             className="mt-4 min-h-32 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus:border-teal-600"
-            placeholder="Schrijf je reflectie..."
+            placeholder="Kort antwoord — een paar zinnen is genoeg."
             value={answers[prompt.id] ?? ""}
             onChange={(e) =>
               setAnswers((prev) => ({
@@ -161,7 +157,7 @@ export default function PromptPage() {
 
           <div className="mt-4 flex items-center gap-2">
             <span className="text-xs text-slate-500">
-              In welke mate is jouw keuze volgens jouw kernwaarden?
+              Sluit dit aan bij je kernwaarden? (1 = weinig · 5 = sterk)
             </span>
             {[1, 2, 3, 4, 5].map((n) => (
               <button

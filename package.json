@@ -11,14 +11,14 @@
     "dev:maps1": "npm --prefix \"apps/moral-maps-1-the-beginning\" run dev",
     "build:maps1": "npm --prefix \"apps/moral-maps-1-the-beginning\" run build",
     "lint:maps1": "npm --prefix \"apps/moral-maps-1-the-beginning\" run lint",
+    "dev:maps2": "npm --prefix \"apps/moral-maps-2-crossroads\" run dev",
+    "build:maps2": "npm --prefix \"apps/moral-maps-2-crossroads\" run build",
+    "lint:maps2": "npm --prefix \"apps/moral-maps-2-crossroads\" run lint",
     "dev:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run dev",
-    "dev:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run dev",
     "dev:maps3": "npm --prefix \"apps/moral-maps-3-final-destination\" run dev",
     "build:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run build",
-    "build:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run build",
     "build:maps3": "npm --prefix \"apps/moral-maps-3-final-destination\" run build",
     "lint:persoonlijk": "npm --prefix \"apps/persoonlijke-integriteitsmeting\" run lint",
-    "lint:organisatie": "npm --prefix \"apps/organisatie-lakmoesproef\" run lint",
     "lint:maps3": "npm --prefix \"apps/moral-maps-3-final-destination\" run lint"
   },
   "dependencies": {

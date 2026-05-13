@@ -1,78 +1,63 @@
-# Morele Lakmoesproef Apps
+# Moral APS — Moral Maps monorepo
 
-Deze repository bevat nu twee gescheiden productie-apps:
+Deze repository is ingericht voor de **Moral Maps-trilogie** en aanverwante tools.  
+**Organisatie lakmoesproef** (organisatiescan) hoort in een **eigen repository** — zie `docs/SCHEIDING_MAPS_EN_ORGANISATIE_LAKMOES.md`.
 
-- `apps/persoonlijke-integriteitsmeting`
-- `apps/organisatie-lakmoesproef`
+## Apps in deze monorepo
 
-Beide apps zijn gebouwd met:
-
-- React + Vite
-- TypeScript
-- Tailwind CSS (via `@tailwindcss/vite`)
+| Map | Product |
+|-----|---------|
+| `apps/moral-maps-1-the-beginning` | Moral Maps 1 (Vite/React) |
+| `apps/moral-maps-2-crossroads` | Moral Maps 2 (Next.js) |
+| `apps/moral-maps-3-final-destination` | Moral Maps 3 (Next.js) |
+| `apps/persoonlijke-integriteitsmeting` | Persoonlijke integriteitsmeting |
 
 ## Lokale ontwikkeling
 
-Installeer dependencies per app (eenmalig):
+Installeer dependencies **per app** (eenmalig), bijvoorbeeld:
 
 ```bash
-cd apps/persoonlijke-integriteitsmeting && npm install
-cd ../organisatie-lakmoesproef && npm install
+cd apps/moral-maps-1-the-beginning && npm install
+cd ../moral-maps-2-crossroads && npm install
+cd ../moral-maps-3-final-destination && npm install
+cd ../persoonlijke-integriteitsmeting && npm install
 ```
 
-Starten:
+### Scripts vanaf repo-root
 
 ```bash
+# Moral Maps 1 (default: npm run dev)
+npm run dev:maps1
+npm run build:maps1
+npm run lint:maps1
+
+# Moral Maps 2
+npm run dev:maps2
+npm run build:maps2
+npm run lint:maps2
+
+# Moral Maps 3
+npm run dev:maps3
+npm run build:maps3
+npm run lint:maps3
+
 # Persoonlijke integriteitsmeting
 npm run dev:persoonlijk
-
-# Organisatie lakmoesproef
-npm run dev:organisatie
-```
-
-Builden:
-
-```bash
 npm run build:persoonlijk
-npm run build:organisatie
-```
-
-Linten:
-
-```bash
 npm run lint:persoonlijk
-npm run lint:organisatie
 ```
 
-## Vercel deployment
+## Vercel
 
-Deploy elke app als apart Vercel-project.
+Deploy **elke app** als **apart Vercel-project**. Stel per project de **root directory** in op de bijbehorende `apps/...`-map.
 
-### Project 1: Persoonlijke integriteitsmeting
-- **Root Directory**: `apps/persoonlijke-integriteitsmeting`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-
-### Project 2: Organisatie lakmoesproef
-- **Root Directory**: `apps/organisatie-lakmoesproef`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-
-## Inhoud
-
-- De individuele app is hernoemd naar **Persoonlijke integriteitsmeting**.
-- De organisatie-app bevat de **complete 21-vragen Organisatie lakmoesproef** met:
-  - professionele vraagformulering,
-  - ondertitel per vraag,
-  - heldere uitlegtekst per vraag,
-  - 1-5 scoremodel en totaalscore.
+**Organisatie lakmoesproef:** niet uit deze repo — eigen project, root `.` op de organisatie-repo. Zie scheidingsdocument.
 
 ## Repo-brede stackafspraak
 
-Voor alle nieuwe apps en uitbreidingen in deze repository:
+- Nieuwe apps bij voorkeur: **Next.js (App Router) + TypeScript + Tailwind**.
+- Bestaande Vite-apps (Maps 1, persoonlijk) blijven tot nader order op Vite.
 
-- Standaard stack: **Next.js (App Router) + TypeScript + Tailwind CSS**.
-- Browser-output blijft altijd bestaan uit HTML/CSS/JavaScript; dit is normaal.
-- We werken **TypeScript-first** in de broncode.
-- Vermijd losse scripts en afwijkende frameworks in nieuwe onderdelen.
-- Legacy JavaScript wordt gefaseerd per module gemigreerd (geen big-bang).
+## Scheiding organisatiescan
+
+→ **`docs/SCHEIDING_MAPS_EN_ORGANISATIE_LAKMOES.md`**

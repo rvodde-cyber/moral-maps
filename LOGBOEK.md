@@ -1,5 +1,25 @@
 # Logboek Moral APS
 
+## 2026-05-13 — Hervat volgens handoff
+
+- Handoff opgepakt: status bevestigd dat standalone-map `C:\Users\876409\organisatie-lakmoesproef` al een `.git` heeft, maar nog **geen remote `origin`**.
+- Ook bevestigd: per ongeluk `.git` in `C:\Users\876409` bestaat nog; eerst verwijderen voordat verdere git-acties op rootniveau verwarring geven.
+- `docs/HANDOFF_MORGEN.md` bijgewerkt met actuele statuscheck en veilige volgorde van afronden.
+- Nog niet uitgevoerd in deze sessie (accountstap): push van standalone-repo naar GitHub + Vercel-root omzetten, daarna `git rm -r apps/organisatie-lakmoesproef` in monorepo.
+
+## 2026-05-12 — Pauze: handoff morgen
+
+- **Status:** alles wat zonder GitHub-login kan, staat vast in repo + `docs/HANDOFF_MORGEN.md`.
+- **Morgen door eigenaar:** standalone `organisatie-lakmoesproef` pushen (`SETUP_GIT.ps1` met echte `$RemoteUrl`), Vercel-root op `.`, daarna `git rm -r apps/organisatie-lakmoesproef` in moral aps + PR/merge.
+- **Let op:** geen `git init` in `C:\Users\876409`; alleen `.git` in projectmap. Zie handoff.
+
+## 2026-05-12 — Scheiding Moral Maps ↔ organisatie lakmoesproef
+
+- **Besluit:** organisatie lakmoesproef is **geen onderdeel** van deze monorepo; eigen GitHub-repo + eigen Vercel-root (`.`).
+- **Repo-root:** `npm run dev/build/lint:organisatie` verwijderd uit `package.json`; `README.md` herschreven rond Moral Maps-trilogie + persoonlijke integriteitsmeting.
+- **Handleiding:** `docs/SCHEIDING_MAPS_EN_ORGANISATIE_LAKMOES.md` + `apps/organisatie-lakmoesproef/MIGRATIE_APARTE_REPOSITORY.md` + `apps/organisatie-lakmoesproef/SETUP_GIT.ps1` (PowerShell-setup zonder `origin`-crash).
+- **Nog te doen door eigenaar:** standalone-repo pushen; daarna map uit monorepo verwijderen en Vercel aanpassen (zie `docs/HANDOFF_MORGEN.md`).
+
 ## 2026-04-20
 - Nieuw project aangemaakt: `C:\Users\876409\moral aps` (kopie van `moral-maps`).
 - Terminologie in de actieve flow geneutraliseerd naar `collega`, `medewerker` en `leidinggevende`.
@@ -594,3 +614,263 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
    - vorige/volgende navigatie werkt
    - PDF/opslaan werkt op overzichtspagina
 3. Daarna committen en deploy afronden naar productie.
+
+## 2026-05-11 - Deploypoging MAPS 3 (vanaf agent)
+
+### Uitgevoerd
+- Nieuwste logboekstatus opnieuw opgehaald en gecontroleerd.
+- In `apps/moral-maps-3-final-destination` deploystappen uitgevoerd:
+  - `npm run build`
+  - `vercel --prod --yes`
+- Extra verificatie geprobeerd op live URL.
+
+### Resultaat
+- Commando's eindigden met exit code 0 in deze omgeving, maar zonder zichtbare stdout/stderr.
+- Live check toont nog oude titel (`Moral Maps 3: Je ware koers`), dus de nieuwste versie staat nog niet bevestigd live.
+
+### Volgende directe stap
+1. In dezelfde map lokaal nogmaals draaien:
+   - `vercel --prod --yes`
+2. Daarna meteen live verifiëren op:
+   - `https://moral-maps-3-final-destination.vercel.app`
+   - titel moet zijn: `Moral Maps 3: Final Destination`
+
+## 2026-05-11 - MAPS 3 deploy definitief gelukt
+
+### Resultaat
+- Productie staat nu op de nieuwste versie van MAPS 3.
+- Live bevestiging zichtbaar met:
+  - titel/landing: **Final Destination**
+  - CTA: **Start Final Destination**
+  - knop: **Download verslag deel 1-2-3**
+  - knop: **Opslaan en afsluiten**
+
+### Oorzaak van eerdere deploy-fout
+- Vercel project-link en rootdirectory pad stonden niet goed uitgelijnd, waardoor een dubbel pad werd gezocht.
+- Opgelost door opnieuw te linken met `vercel link` naar bestaand project en daarna productie deploy uit te voeren.
+
+### Bevestigde live URL
+- `https://moral-maps-3-final-destination.vercel.app`
+
+## 2026-05-11 - Algemene ontwerp- en bouwregels (geldig voor MAPS 1, 2 en 3)
+
+Deze sectie is de vaste referentie voor trilogie-consistentie. Wijzigingen in een deel moeten hiertegen getoetst worden.
+
+### 1) UX- en ontwerpregels (gemeenschappelijk)
+- Elke app start met een **landingspagina** met:
+  - korte context van het deel;
+  - duidelijke start-CTA;
+  - zichtbare voortgang of route-indicatie.
+- **1 opdracht = 1 pagina** (geen multi-opdracht pagina's in de eindversie).
+- Elke opdracht heeft een **eigen afbeelding** die inhoudelijk past bij de opdracht.
+- Navigatie is lineair en begrijpelijk:
+  - **Vorige** / **Volgende**;
+  - terug naar overzicht waar logisch;
+  - duidelijke CTA's op afrondmomenten.
+- Visuele stijl is clean en rustig:
+  - veel witruimte;
+  - afgeronde cards/secties;
+  - zachte schaduwen;
+  - consistente spacing en typografie.
+- Taal en terminologie blijven consistent binnen de trilogie:
+  - GPS/reis-metafoor;
+  - professionele, laagdrempelige uitleg;
+  - korte microtoelichtingen per opdracht.
+- Mobielvriendelijk gedrag is standaard:
+  - responsive layout;
+  - leesbare inputvelden;
+  - knoppen met voldoende tap-target.
+
+### 2) Functionele regels (gemeenschappelijk)
+- Invoer wordt automatisch opgeslagen (draft/autosave), minimaal lokaal.
+- Deelnemer kan het traject hervatten zonder alles opnieuw in te vullen.
+- Voortgang is zichtbaar (percentage en/of voortgangsbollen).
+- Exportfunctionaliteit is aanwezig:
+  - PDF/print per deel of routeverslag waar van toepassing;
+  - portfolio-export over meerdere delen waar voorzien.
+- Routing tussen delen (1 -> 2 -> 3) moet altijd naar de juiste live appversie verwijzen.
+
+### 3) Technische regels (gemeenschappelijk)
+- Frontendstack per deel:
+  - Next.js App Router + TypeScript (MAPS 2 en MAPS 3);
+  - MAPS 1 is in transitie, maar volgt dezelfde UX-regels.
+- Styling via Tailwind/CSS utility-benadering met consistente design tokens.
+- State-opslag:
+  - lokale opslag (`localStorage`) voor draft/herstel;
+  - waar aanwezig: backend-opslag voor sessie/hervatten.
+- Deploystandaard:
+  - Vercel per app;
+  - correcte rootdirectory per project;
+  - preflight: lint + build vóór livegang.
+
+### 4) Sessie, inloggen en data
+- "Inloggen" in de trilogie is functioneel opgezet als deelnemeridentificatie:
+  - naam/code, groep, leeftijd of participant code (afhankelijk van deel);
+  - gericht op hervatten en koppelen van voortgang.
+- Geen zware accountflow vereist voor basisgebruik; focus op snelle instap voor deelnemers.
+- Data moet veilig en voorspelbaar opgeslagen worden met fallbackgedrag als online opslag faalt.
+
+### 5) Export- en portfolioregels
+- Exports zijn printvriendelijk en bruikbaar voor onderwijs/portfolio.
+- Inhoud van export is semantisch opgebouwd:
+  - kernkeuzes;
+  - reflecties per opdracht;
+  - eindinzichten/actiepunten.
+- Waar mogelijk wordt een gecombineerde export ondersteund voor trilogie-overzicht.
+
+### 6) Kwaliteits- en acceptatiecriteria (voor alle delen)
+- Voor livegang:
+  - lint groen;
+  - build groen;
+  - smoke test op productie-URL.
+- Minimale smoke test:
+  1. landingspagina laadt;
+  2. opdrachten openen per pagina;
+  3. afbeeldingen tonen correct;
+  4. invoer blijft bewaard na refresh;
+  5. exportknoppen werken;
+  6. navigatie naar volgend deel werkt.
+- Elke wijziging wordt vastgelegd in `LOGBOEK.md` met:
+  - wat is aangepast;
+  - wat is gevalideerd;
+  - wat is de eerstvolgende stap.
+
+## 2026-05-11 - Collega-checklist (inhoud & didactiek, niet-technisch)
+
+Gebruik deze lijst bij review van opdrachten en leerervaring (zonder technische beoordeling).
+
+### A) Begrijpelijkheid per opdracht
+- Is in 1 oogopslag duidelijk wat de deelnemer moet doen?
+- Is de vraagtaal concreet genoeg (niet te abstract, niet te vaag)?
+- Is de opdrachttekst niet te lang, maar wel volledig?
+- Helpt de korte uitleg de deelnemer echt op weg?
+- Is het taalniveau passend voor de doelgroep?
+
+### B) Inhoudelijke passendheid
+- Past de opdracht logisch binnen de fase van de reis (begin/onderweg/bestemming)?
+- Sluit de opdracht aan op kernwaarden en morele keuzes?
+- Is de opdracht relevant voor praktijk/werkcontext van deelnemers?
+- Voelt de opdracht als verdieping en niet als herhaling?
+- Zijn voorbeelden en woorden inclusief en herkenbaar?
+
+### C) Volgorde en opbouw
+- Zit er een duidelijke opbouw in moeilijkheid en reflectiediepte?
+- Is de overgang tussen opdrachten logisch en natuurlijk?
+- Komt terugblik pas na voldoende ervaring/opdrachten?
+- Volgt vooruitblik op een geloofwaardige manier uit eerdere antwoorden?
+- Is de eindopdracht een echte synthese van het hele deel?
+
+### D) Volledigheid van het deel
+- Missen er opdrachten om van inzicht naar actie te komen?
+- Missen er opdrachten die sociale context (anderen/systeem) meenemen?
+- Is er voldoende balans tussen persoonlijke en professionele reflectie?
+- Is er een concrete vertaalslag naar gedrag of volgende stap?
+- Is de set opdrachten samen niet te zwaar of te licht?
+
+### E) Kwaliteit van leerervaring
+- Helpt dit deel deelnemers om eerlijker naar keuzes te kijken?
+- Ontstaat er door de vragen echte zelfreflectie i.p.v. oppervlakkige invulling?
+- Nodigen opdrachten uit tot eigenaarschap en verantwoordelijkheid?
+- Geeft het deel vertrouwen om volgende keuzes beter te maken?
+- Zou jij deze opdrachtset zelf als deelnemer waardevol vinden?
+
+## 2026-05-11 - Wat Deel 3 goed doet (en toepassen op Deel 1/2)
+
+### Sterktes van Deel 3 (huidige kwaliteit)
+- Rustige, volwassen landing met heldere toon en duidelijke route.
+- Sterke microcopy: korte toelichting per stap maakt vragen begrijpelijker.
+- Duidelijke progressie: deelnemers voelen dat ze "verder in het verhaal" komen.
+- Goede balans tussen reflectie (terugkijken) en concrete richting (vooruitkijken).
+- Sterke CTA's (start, opslaan, gecombineerd verslag) geven regie en afronding.
+
+### Aanscherping voor Deel 1
+- Per opdracht 1 extra "waarom deze vraag" zin toevoegen (zoals Deel 3).
+- Nog explicieter onderscheid maken tussen verkennen (waarden) en kiezen (kernwaarden).
+- Aan einde van Deel 1 een compacte "tussenbalans" toevoegen:
+  - wat heb je ontdekt?
+  - wat neem je mee naar Deel 2?
+- STARR en Reisverslag laten eindigen met 1 concrete gedragsintentie.
+
+### Aanscherping voor Deel 2
+- Bij elke opdracht standaard 1 reflectie-opener toevoegen (consistent met Deel 3-stijl).
+- Route-opbouw explicieter maken met "waar sta je nu op de reis?" boven elke stap.
+- In wegkeuze/socialisatie scherper verschil aanbrengen tussen:
+  - "wat voelde goed"
+  - "wat was volgens je kernwaarden juist"
+- Afronding van Deel 2 versterken met een mini-syntheseblok:
+  - grootste inzicht,
+  - grootste spanningspunt,
+  - 1 keuze die je in Deel 3 anders wilt maken.
+
+## 2026-05-11 - Snelle 10-vragen review (collega's)
+
+Gebruik deze lijst voor een korte inhoudelijke kwaliteitscheck (niet-technisch).  
+Antwoord per vraag met: **Ja / Deels / Nee** + korte opmerking.
+
+1. Is het doel van dit deel (Begin/Onderweg/Bestemming) meteen duidelijk?
+2. Is per opdracht direct helder wat de deelnemer moet doen?
+3. Is de formulering van de vragen begrijpelijk en niet onnodig abstract?
+4. Past elke opdracht logisch bij de fase van de reis?
+5. Zitten er opdrachten in die overbodig, dubbel of niet-passend voelen?
+6. Mis je een opdracht die nodig is voor een complete leerroute?
+7. Is de volgorde van opdrachten logisch opgebouwd (van verkennen naar verdiepen naar kiezen)?
+8. Helpen de opdrachten deelnemers om keuzes te koppelen aan kernwaarden?
+9. Leidt dit deel tot een concrete volgende stap in gedrag of handelen?
+10. Zou jij dit deel, in deze vorm, gebruiken met echte deelnemers?
+
+### Snelle duiding
+- **8-10x Ja** -> klaar voor gebruik.
+- **5-7x Ja** -> goed, maar eerst aanscherpen.
+- **0-4x Ja** -> herontwerp nodig op inhoud/volgorde.
+
+## 2026-05-11 - Lokaal wijzigingsplan vastgelegd
+
+### Opgeleverd
+- Uitvoerbaar lokaal plan voor kwaliteitsharmonisatie van alle drie delen opgeslagen als:
+  - `LOKAAL_WIJZIGINGSPLAN_TRILOGIE_2026-05-11.md`
+
+### Doel van dit plan
+- Niveau van Deel 3 systematisch doortrekken naar Deel 1 en Deel 2 via:
+  - microcopy-patroon;
+  - tussenbalansmomenten;
+  - mini-synthese;
+  - consistente doorstroomteksten.
+
+## 2026-05-11 - Teamafspraak anonimiteit en koppeling Deel 1-2-3
+
+Doel: deelnemers anoniem laten werken en toch output uit alle drie delen betrouwbaar koppelen.
+
+### A) Identificatieprincipe
+- Elke deelnemer werkt met een unieke **participant code** (geen naam/e-mail als sleutel).
+- Deze code is de enige functionele sleutel voor koppeling tussen Deel 1, Deel 2 en Deel 3.
+- Optioneel mag een niet-herleidbare **groepcode** gebruikt worden voor klas/cohortanalyse.
+
+### B) Wat we wel en niet opslaan
+- Wel opslaan:
+  - participant code (of hash ervan);
+  - deel-specifieke antwoorden;
+  - voortgangsstatus per deel;
+  - tijdstempel.
+- Niet opslaan:
+  - direct herleidbare persoonsgegevens (naam, e-mail, studentnummer) als koppel-ID.
+
+### C) UX-afspraken in alle delen
+- Op landingspagina tonen:
+  - "Verdergaan met code";
+  - korte uitleg waarom code belangrijk is.
+- Bij opslaan/export altijd participant code zichtbaar meenemen.
+- In elk deel moet hervatten met dezelfde code mogelijk zijn.
+
+### D) Privacy-afspraken
+- Participant code wordt als pseudoniem behandeld.
+- Als extra privacymaatregel mag code server-side gehasht worden (aanbevolen bij opschaling).
+- Dataretentie periodiek uitvoeren volgens onderwijsafspraak (bijv. opschonen na afgesproken termijn).
+
+### E) Operationele consequentie
+- Gecombineerde output (portfolio over 1-2-3) wordt altijd opgebouwd op basis van participant code.
+- Verlies van code betekent:
+  - geen automatische herleiding naar eerdere sessie zonder aparte beheersprocedure.
+
+## Backlog — volgende verbetering (2026)
+
+- **Zachtere fout-UX bij cloud-save in Deel 1 (`MoralMaps.jsx`):** wanneer online opslaan of hervatten via Supabase faalt, nu soms `setSaveErr` + lange melding of `alert`. Voor een volgende ronde: copy korter/vriendelijker, niet-blokkerend (bijv. toast of banner), en duidelijk maken dat **lokale fallback** gewoon werkt zodat gebruikers geen onnodige “fout”-ervaring krijgen. Optioneel: `resumeWithCode` bij DB-fout onderscheiden van “geen sessie” (geen technische ruis tonen).

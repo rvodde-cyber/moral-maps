@@ -10,26 +10,20 @@ import {
   STORAGE_KEY,
 } from "@/lib/crossroads-storage";
 
+/** Zelfde sleutel als Moral Maps 1 (Vite) voor doorgeven kernwaarden cross-app. */
+const MAPS1_CORE_CSV_KEY = "moralmaps_core_values_csv";
+
 export default function Home() {
-  const initialQuery =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-  const [travelerName, setTravelerName] = useState(
-    () => getStoredDraft().travelerName ?? initialQuery?.get("groupCode") ?? "",
-  );
-  const initialCoreValues = (
-    getStoredDraft().coreValues ?? initialQuery?.get("coreValues") ?? ""
-  )
+  const draft = getStoredDraft();
+  const [travelerName, setTravelerName] = useState(draft.travelerName ?? "");
+  const initialCoreParts = (draft.coreValues ?? "")
     .split(",")
     .map((v) => v.trim())
     .filter(Boolean);
-  const [coreValue1, setCoreValue1] = useState(initialCoreValues[0] ?? "");
-  const [coreValue2, setCoreValue2] = useState(initialCoreValues[1] ?? "");
-  const [coreValue3, setCoreValue3] = useState(initialCoreValues[2] ?? "");
-  const [destination, setDestination] = useState(
-    () =>
-      getStoredDraft().destination ??
-      (initialQuery?.get("age") ? `Leeftijd ${initialQuery.get("age")}` : ""),
-  );
+  const [coreValue1, setCoreValue1] = useState(initialCoreParts[0] ?? "");
+  const [coreValue2, setCoreValue2] = useState(initialCoreParts[1] ?? "");
+  const [coreValue3, setCoreValue3] = useState(initialCoreParts[2] ?? "");
+  const [destination, setDestination] = useState(draft.destination ?? "");
   const [answers] = useState<AnswerMap>(() => getStoredDraft().answers ?? {});
   const [scores] = useState<ScoreMap>(() => getStoredDraft().scores ?? {});
   const coreValues = [coreValue1, coreValue2, coreValue3]
@@ -39,6 +33,27 @@ export default function Home() {
 
   const isPromptCompleted = (promptId: string) =>
     (answers[promptId] ?? "").trim().length >= 10 || Boolean(scores[promptId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search);
+    const code = (q.get("participantCode") || q.get("groupCode") || "").trim();
+    const age = (q.get("age") || "").trim();
+    const csv =
+      (q.get("coreValues") || "").trim() ||
+      (localStorage.getItem(MAPS1_CORE_CSV_KEY) || "").trim();
+
+    if (code) setTravelerName((prev) => (prev.trim() ? prev : code));
+    if (age)
+      setDestination((prev) => (prev.trim() ? prev : `Leeftijd ${age}`));
+
+    if (csv) {
+      const parts = csv.split(",").map((s) => s.trim()).filter(Boolean);
+      setCoreValue1((p) => (p.trim() ? p : parts[0] ?? ""));
+      setCoreValue2((p) => (p.trim() ? p : parts[1] ?? ""));
+      setCoreValue3((p) => (p.trim() ? p : parts[2] ?? ""));
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
@@ -52,6 +67,15 @@ export default function Home() {
       }),
     );
   }, [travelerName, coreValues, destination, answers, scores]);
+
+  useEffect(() => {
+    if (!coreValues.trim()) return;
+    try {
+      localStorage.setItem(MAPS1_CORE_CSV_KEY, coreValues);
+    } catch {
+      /* ignore */
+    }
+  }, [coreValues]);
 
   const answeredPrompts = useMemo(
     () => allPrompts.filter((prompt) => isPromptCompleted(prompt.id)).length,
@@ -95,8 +119,14 @@ export default function Home() {
             Crossroads
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Elke opdracht staat nu op een eigen pagina met een eigen afbeelding.
-            Werk stap voor stap aan je routeverslag.
+            Elke opdracht heeft een eigen pagina en beeld. Antwoord kort; je hoeft
+            geen uitgebreid verslag te schrijven.
+          </p>
+          <p className="mt-2 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+            <strong className="font-semibold">Tip:</strong> bedenk en bewaar je{" "}
+            <span className="font-mono text-[11px]">participantcode</span> of
+            startlink als je later of op een ander apparaat verder wilt — voortgang
+            van dit deel staat lokaal in je browser.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {allPrompts.map((prompt) => {
@@ -129,7 +159,8 @@ export default function Home() {
               Kernwaarden uit Deel 1
             </p>
             <p className="mt-1 text-xs text-teal-900">
-              Vul hier je drie kernwaarden in uit Deel 1.
+              Als je vanuit Deel 1 komt, worden je drie kernwaarden en
+              participantcode automatisch ingevuld. Je kunt ze hier nog aanpassen.
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               <input

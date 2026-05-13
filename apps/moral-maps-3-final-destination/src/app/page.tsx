@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getStoredDraft, STORAGE_KEY } from "@/lib/final-destination-storage";
 import { stepMeta, stepOrder } from "@/lib/final-destination-steps";
 
+const MAPS1_CORE_CSV_KEY = "moralmaps_core_values_csv";
+
 export default function Home() {
   const stored = getStoredDraft();
   const [travelerName, setTravelerName] = useState(stored.travelerName ?? "");
@@ -33,6 +35,30 @@ export default function Home() {
     stored.nalatenschapStory ?? { verhaal: "", goedeDingen: "" },
   );
   const [synthese] = useState(stored.synthese ?? "");
+  const [maps1CoreCsv, setMaps1CoreCsv] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search);
+    const code = (q.get("participantCode") || "").trim();
+    const group = (q.get("groupCode") || "").trim();
+    const age = (q.get("age") || "").trim();
+    const csvFromUrl = (q.get("coreValues") || "").trim();
+    const csvFromLs = (localStorage.getItem(MAPS1_CORE_CSV_KEY) || "").trim();
+    const csv = csvFromUrl || csvFromLs;
+
+    if (code) setTravelerName((prev) => (prev.trim() ? prev : code));
+    else if (group) setTravelerName((prev) => (prev.trim() ? prev : group));
+    if (age) setDestination((prev) => (prev.trim() ? prev : `Leeftijd ${age}`));
+    if (csvFromUrl) {
+      try {
+        localStorage.setItem(MAPS1_CORE_CSV_KEY, csvFromUrl);
+      } catch {
+        /* ignore */
+      }
+    }
+    if (csv) setMaps1CoreCsv(csv);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
@@ -130,6 +156,9 @@ export default function Home() {
   }
 
   function downloadTrilogyReport() {
+    const maps1Core = (
+      window.localStorage.getItem(MAPS1_CORE_CSV_KEY) || maps1CoreCsv || ""
+    ).trim();
     const maps2Raw = window.localStorage.getItem("maps2-crossroads-v2");
     const maps2 = maps2Raw ? (JSON.parse(maps2Raw) as Record<string, unknown>) : {};
     const maps2Answers = ((maps2.answers as Record<string, string>) ?? {});
@@ -149,7 +178,7 @@ export default function Home() {
       </style></head><body>
       <h1>Moral Maps - Trilogie Portfolio</h1>
       <p>Deelnemer: ${travelerName || "-"} · Bestemming: ${destination || "-"}</p>
-      <section class="section"><h2>Deel 1 - The Beginning</h2><p class="value">Samenvatting Deel 1 kan hier worden aangevuld vanuit jouw MAPS 1 export.</p></section>
+      <section class="section"><h2>Deel 1 - The Beginning</h2><p class="value"><strong>Kernwaarden (uit Deel 1):</strong> ${maps1Core || "Niet ingevuld of nog niet doorgegeven — gebruik dezelfde browser na Deel 1, of vul handmatig in je PDF-export."}</p><p class="value">Volledige samenvatting Deel 1: gebruik je PDF-export uit Moral Maps 1 en voeg die toe aan dit portfolio.</p></section>
       <section class="section"><h2>Deel 2 - Crossroads</h2><ul>${maps2Items || "<li>Geen opgeslagen antwoorden uit Deel 2 gevonden.</li>"}</ul></section>
       <section class="section"><h2>Deel 3 - Final Destination</h2>
         <p class="value"><strong>Brug - Ballast:</strong> ${bridge.ballast || "Niet ingevuld"}</p>
@@ -192,6 +221,12 @@ export default function Home() {
             het om helder te kiezen wat je in ieder geval wel wilt, en wat je niet
             meer wilt meenemen op je route.
           </p>
+          <p className="mt-2 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+            <strong className="font-semibold">Tip:</strong> bedenk en bewaar je{" "}
+            <span className="font-mono text-[11px]">participantcode</span> of
+            startlink als je later of op een ander apparaat verder wilt — voortgang
+            van dit deel staat lokaal in je browser.
+          </p>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <input
               className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
@@ -205,6 +240,36 @@ export default function Home() {
               onChange={(e) => setDestination(e.target.value)}
               placeholder="Jouw volgende bestemming"
             />
+          </div>
+          <div
+            className={`mt-3 rounded-xl border p-4 ${maps1CoreCsv.trim() ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}
+          >
+            <p
+              className={`text-xs font-semibold uppercase tracking-[0.12em] ${maps1CoreCsv.trim() ? "text-emerald-800" : "text-slate-600"}`}
+            >
+              Kernwaarden uit Deel 1
+            </p>
+            {maps1CoreCsv.trim() ? (
+              <>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-emerald-950">
+                  {maps1CoreCsv
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-emerald-900/85">
+                  Automatisch meegenomen via je link of dezelfde browser na Deel
+                  1 (of Deel 2). Ze staan ook in je trilogie-PDF hieronder.
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Nog geen drie waarden gevonden. Open Deel 3 via de knop in Moral
+                Maps 1, of gebruik dezelfde browser waarin je Deel 1 hebt
+                afgerond — dan worden ze uit lokale opslag gehaald.
+              </p>
+            )}
           </div>
           <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
             <p className="text-xs text-slate-500">Voortgang</p>

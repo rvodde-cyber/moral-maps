@@ -19,13 +19,13 @@ export const stages: Stage[] = [
     id: "crossroads",
     label: "De Kruising",
     icon: "🛣️",
-    summary: "Kiezen is ook verliezen. Onderzoek welke afslag je neemt en waarom.",
+    summary: "Kiezen is ook iets laten liggen. Welke afslag nam je wél — en welke niet?",
     prompts: [
       {
         id: "onbewandelde-weg",
         title: "De Onbewandelde Weg",
         question:
-          "Reflecteer op een afslag die je niet hebt genomen. Wat liet je achter? Was het angst, veiligheid of een keuze vanuit je kernwaarden?",
+          "Een afslag die je níet nam: wat liet je daardoor achter? Angst, veiligheid zoeken, of juist je kernwaarden?",
         imageSrc:
           "https://images.unsplash.com/photo-1501534664411-27bfbf5c3d88?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Kruispunt met twee wegen in zacht licht",
@@ -36,7 +36,7 @@ export const stages: Stage[] = [
     id: "energie",
     label: "Brandstof",
     icon: "⛽",
-    summary: "Zonder energie geen duurzame reis. Breng je actieradius eerlijk in beeld.",
+    summary: "Waar tank je bij en waar lekt de energie weg?",
     prompts: [
       {
         id: "tankstation-ziel",
@@ -51,7 +51,7 @@ export const stages: Stage[] = [
         id: "reserve-lampje",
         title: "Rijden op de Reserve",
         question:
-          "Beschrijf een periode waarin je te lang doorging. Wat was de morele en relationele prijs van die uitputting?",
+          "Een periode waarin je te lang doorging: wat kostte je dat (in werk, relaties, humeur)?",
         imageSrc:
           "https://images.unsplash.com/photo-1493236296276-d17357e288a7?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Dashboard met brandstofwaarschuwing in donkere sfeer",
@@ -62,7 +62,7 @@ export const stages: Stage[] = [
     id: "wegomleiding",
     label: "Wegomleiding",
     icon: "🚧",
-    summary: "De weg wordt versperd. Je moet kiezen uit vier routes met elk een andere morele lading.",
+    summary: "Omleiding: vier routes, één keuze.",
     prompts: [
       {
         id: "wegomleiding-keuze",
@@ -78,7 +78,7 @@ export const stages: Stage[] = [
     id: "apk",
     label: "Morele APK",
     icon: "🧰",
-    summary: "Onderhoud bepaalt betrouwbaarheid. Kijk naar slijtage en ballast.",
+    summary: "Slijtage en ballast: wat heeft nu onderhoud nodig?",
     prompts: [
       {
         id: "slijtage",
@@ -93,7 +93,7 @@ export const stages: Stage[] = [
         id: "ballast",
         title: "Bagagedrager",
         question:
-          "Welke oude koffers maken je reis zwaarder dan nodig? Wat kun je bewust achterlaten?",
+          "Welke oude koffers maken je reis zwaarder dan nodig? Wat kun je achterlaten?",
         imageSrc:
           "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Koffers naast een lege weg",
@@ -104,13 +104,13 @@ export const stages: Stage[] = [
     id: "panne",
     label: "Pech & Hulp",
     icon: "🛟",
-    summary: "Stilstand hoort erbij. Kwetsbaarheid en wederkerigheid zijn onderdeel van leiderschap.",
+    summary: "Stilstand hoort erbij: pech, hulp vragen en hulp bieden.",
     prompts: [
       {
         id: "vangrail",
         title: "Langs de Vangrail",
         question:
-          "Denk aan een moment van pech of twijfel. Deelde je wat er speelde met andere mensen, of hield je de motorkap dicht?",
+          "Pech of twijfel: deelde je wat er speelde, of hield je de motorkap dicht?",
         imageSrc:
           "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Auto langs de vangrail op een stille weg",
@@ -130,7 +130,7 @@ export const stages: Stage[] = [
     id: "mist",
     label: "Mist & Zicht",
     icon: "🌫️",
-    summary: "Wanneer zicht ontbreekt, bepalen de instellingen van je interne GPS je koers.",
+    summary: "Weinig zicht: waar vertrouw je op als de route onduidelijk is?",
     prompts: [
       {
         id: "mist-rijden",
@@ -156,14 +156,13 @@ export const stages: Stage[] = [
     id: "wegkeuze",
     label: "De Wegkeuze",
     icon: "🧭",
-    summary:
-      "Soms weet je routeplanner precies waar je heen moet - maar sla je toch een andere afslag.",
+    summary: "Je weet wat klopt — en toch sla je soms een andere afslag in.",
     prompts: [
       {
         id: "wegkeuze-goede-niet-gedaan",
         title: "Het goede weten, toch afslaan",
         question:
-          "Beschrijf een moment waarop je wist wat het goede was - maar het toch niet deed. Wat hield je tegen?",
+          "Je wist wat het goede was — maar deed het niet. Wat hield je tegen?",
         imageSrc: "/images/maps2-wegkeuze-goede-niet-gedaan.jpg",
         imageAlt: "Wegkeuze: het goede weten en toch afslaan",
       },
@@ -189,14 +188,13 @@ export const stages: Stage[] = [
     id: "socialisatie",
     label: "Socialisatieverslag",
     icon: "🧾",
-    summary:
-      "Wie ben je onderweg tegengekomen en hoe vormen die ontmoetingen je morele GPS-koers?",
+    summary: "Wie of wat heeft je route echt beïnvloed?",
     prompts: [
       {
         id: "ontmoetingen-route",
         title: "Wie kwam je onderweg tegen?",
         question:
-          "Welke personen, groepen of systemen hebben jouw route wezenlijk beïnvloed? Beschrijf per ontmoeting de impact op je waarden en keuzes.",
+          "Welke personen, groepen of systemen hebben je route echt beïnvloed? Noem er een paar en wat ze bij je deden.",
         imageSrc:
           "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Groep mensen in gesprek rond een tafel",
@@ -205,7 +203,7 @@ export const stages: Stage[] = [
         id: "sociale-sporen",
         title: "Sporen op je stuur",
         question:
-          "Welke overtuigingen heb je onderweg overgenomen, en welke heb je bewust losgelaten? In welke mate is jouw keuze volgens jouw kernwaarden?",
+          "Welke overtuigingen nam je onderweg mee en welke liet je los?",
         imageSrc:
           "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Hand op stuur met focus op richting",
@@ -216,14 +214,13 @@ export const stages: Stage[] = [
     id: "vreemde-ander",
     label: "De Vreemde Ander",
     icon: "🧍",
-    summary:
-      "De reisgenoot die anders is, houdt je een spiegel voor en verbreedt je blik.",
+    summary: "Iemand die anders is dan jij: wat leer je daarvan over jezelf?",
     prompts: [
       {
         id: "reisgenoot-spiegel",
         title: "De Reisgenoot als Spiegel",
         question:
-          "Denk aan iemand die je als 'anders' ervaart. Wat laat deze persoon je zien over je eigen aannames, grenzen en waarden?",
+          "Iemand die je als ‘anders’ ervaart: welke aannames of grenzen merk je bij jezelf?",
         imageSrc:
           "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Twee mensen lopen naast elkaar in open ruimte",

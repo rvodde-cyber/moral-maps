@@ -21,6 +21,24 @@ const supabase = hasSupabaseConfig
   : null;
 // ─────────────────────────────────────────────────────────────
 
+/** Gedeelde sleutel: kernwaarden uit Deel 1 voor Deel 2/3 (cross-origin via URL + fallback). */
+const MORALMAPS_CORE_VALUES_CSV_KEY = "moralmaps_core_values_csv";
+
+function persistCoreValuesAcrossApps(coreVals) {
+  const csv = (coreVals || [])
+    .map((cv) => (cv && cv.name ? String(cv.name).trim() : ""))
+    .filter(Boolean)
+    .join(",");
+  if (typeof window !== "undefined" && csv) {
+    try {
+      window.localStorage.setItem(MORALMAPS_CORE_VALUES_CSV_KEY, csv);
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }
+  return csv;
+}
+
 // ── Database functies ──────────────────────────────────────────
 
 async function dbSave(entry) {
@@ -948,7 +966,12 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
     </div>
     <div class="section">
       <div class="section-title">✨ STARR Reflectie</div>
-      ${Object.entries(starr).map(([key,val])=>`<div class="key" style="color:${TEAL}">${key.charAt(0).toUpperCase()+key.slice(1)}</div><div class="val">${val||"Niet ingevuld"}</div>`).join("")}
+      ${["situatie","taak","actie","resultaat","reflectie"].map((key)=>{
+        const labels={situatie:"Situatie",taak:"Taak",actie:"Actie",resultaat:"Resultaat",reflectie:"Reflectie"};
+        const val=starr?.[key]||"";
+        return `<div class="key" style="color:${TEAL}">${labels[key]}</div><div class="val">${val||"Niet ingevuld"}</div>`;
+      }).join("")}
+      ${starr?.volgendeStapGedrag ? `<div class="key" style="color:${TEAL}">Concrete volgende stap in gedrag</div><div class="val">${starr.volgendeStapGedrag}</div>` : ""}
     </div>
     ${smsDilemma?.smsChoice ? `
     <div class="section">
@@ -1055,7 +1078,7 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
     <div class="section"><div class="label">Kernwaarden</div><div>${(coreVals||[]).map(cv=>{const cc=CM[cv.color];return `<span class="chip" style="background:${cc.bg};border:1px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("") || "<span class='value'>Niet ingevuld</span>"}</div></div>
     <div class="section"><div class="label">Dominante waardenkleur</div><div class="dominant"><div class="value" style="font-weight:800;color:${c.text}">${c.label}</div><div class="value">${c.desc}</div></div></div>
     <div class="section"><div class="label">Dilemma-keuzes Deel 1</div>${DILEMMAS.map((d,i)=>{const r=dilResp?.[i];return `<div class="value" style="margin-bottom:8px"><strong>${i+1}. ${d.title}</strong><br/>${r?.text || "Niet ingevuld"}</div>`;}).join("")}</div>
-    <div class="section"><div class="label">STARR</div>${Object.entries(starr||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
+    <div class="section"><div class="label">STARR</div>${["situatie","taak","actie","resultaat","reflectie"].map((k)=>`<div class="value"><strong>${k}:</strong> ${(starr||{})[k] || "Niet ingevuld"}</div>`).join("")}${(starr||{}).volgendeStapGedrag ? `<div class="value"><strong>Concrete volgende stap:</strong> ${starr.volgendeStapGedrag}</div>` : ""}</div>
     <div class="section"><div class="label">Socialisatie / Rugzak</div>${Object.entries(socialisatie||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
     <div class="section"><div class="label">SMS-einddilemma</div><div class="value"><strong>Keuze:</strong> ${smsDilemma?.smsChoice || "Niet ingevuld"}</div><div class="value"><strong>Reflectie:</strong> ${smsDilemma?.smsReflection || "Niet ingevuld"}</div></div>
     <div class="section"><div class="label">De Brug in de Mist (Deel 3 signature)</div><div class="value"><strong>Ballast:</strong> ${bridge?.ballast || "Niet ingevuld"}</div><div class="value"><strong>Meenemen:</strong> ${bridge?.meenemen || "Niet ingevuld"}</div><div class="value"><strong>Hoop te vinden:</strong> ${bridge?.vinden || "Niet ingevuld"}</div><div class="value"><strong>Kernwaarde:</strong> ${bridge?.kompas || "Niet ingevuld"}</div></div>
@@ -1262,6 +1285,9 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
               <p style={{margin:"10px 0 0",fontSize:14,color:"#475569",lineHeight:1.7}}>
                 Kies het deel waar je vandaag aan wilt werken. Je verslagen worden per deel opgebouwd en na Deel 3 gekoppeld tot een totaalportfolio.
               </p>
+              <p style={{margin:"10px 0 0",fontSize:13,color:"#334155",lineHeight:1.65,background:"#f1f5f9",borderRadius:10,padding:"10px 12px",border:"1px solid #e2e8f0"}}>
+                <strong>Tip:</strong> bedenk en bewaar een code als je later of op een ander apparaat verder wilt — na het starten zie je je <strong style={{fontFamily:"'DM Mono',monospace"}}>participantcode</strong> (MM-…) in de app; noteer die of bewaar je startlink.
+              </p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#e2e8f0",color:"#1f2937",fontWeight:700}}>I: The Beginning</span>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#e2e8f0",color:"#1f2937",fontWeight:700}}>II: Crossroads</span>
@@ -1406,6 +1432,9 @@ function Landing({onStart, onResume, onStartDeel2}){
               </div>
               <div style={{background:"#f8f9fa",borderRadius:10,padding:"9px 12px",marginBottom:16,border:`1px solid ${GM_BORDER}`}}>
                 <p style={{color:GM_MUTED,fontSize:11,lineHeight:1.6,margin:0}}>🔒 <strong style={{color:GM_TEXT}}>Anoniem:</strong> Alleen groepscode en leeftijd worden opgeslagen. Geen naam, geen login.</p>
+                <p style={{color:GM_MUTED,fontSize:11,lineHeight:1.6,margin:"8px 0 0"}}>
+                  <strong style={{color:GM_TEXT}}>Tip:</strong> bedenk en bewaar een code als je later of op een ander apparaat verder wilt — na het starten zie je je <strong style={{fontFamily:"'DM Mono',monospace",color:GM_TEXT}}>participantcode</strong> (MM-…); noteer die of bewaar je startlink.
+                </p>
               </div>
               <button onClick={()=>{if(gc.trim()&&age)onStart(gc.trim().toUpperCase(),age,null);}} disabled={!gc.trim()||!age}
                 style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:gc.trim()&&age?GM_BLUE:"#c4c7c5",color:"#fff",fontWeight:800,fontSize:15,cursor:gc.trim()&&age?"pointer":"not-allowed",boxShadow:gc.trim()&&age?"0 4px 14px rgba(26,115,232,.35)":"none",transition:"all .2s",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -1534,7 +1563,8 @@ export default function MoralMaps(){
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
-  const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+  const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",volgendeStapGedrag:""});
+  const [kernwaardenTussenbalans,setKernwaardenTussenbalans]=useState({opvalt:"",stuurt:""});
   const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
   const [motivatie,setMotivatie]=useState({intern:"",extern:"",valkuilen:""});
   const [bridge,setBridge]=useState({ballast:"",meenemen:"",vinden:"",kompas:""});
@@ -1596,13 +1626,18 @@ export default function MoralMaps(){
     if (phase === -1) return true;
     if (phase === 0) return false; // PrivilegeWheel handelt zelf completion af
     if (phase === 1) return selVals.length >= 10;
-    if (phase === 2) return coreVals.length === 3;
+    if (phase === 2)
+      return (
+        coreVals.length === 3 &&
+        kernwaardenTussenbalans.opvalt.trim().length > 0 &&
+        kernwaardenTussenbalans.stuurt.trim().length > 0
+      );
     if (phase === 3) return dilResp.length >= DILEMMAS.length;
     if (phase === 4) return true;
     if (phase === 5) return true;
     if (phase === 6) return true;
     return false;
-  }, [phase, selVals.length, coreVals.length, dilResp.length]);
+  }, [phase, selVals.length, coreVals.length, dilResp.length, kernwaardenTussenbalans]);
 
   useEffect(() => {
     if (screen !== "app" || typeof window === "undefined") return;
@@ -1649,37 +1684,47 @@ export default function MoralMaps(){
     }
   }
   function startDeel2Direct(gc, ag){
-    setParticipantCode(generateParticipantCode());
+    const newCode = generateParticipantCode();
+    setParticipantCode(newCode);
     setGroupCode(gc);
     setAge(ag);
     // Minimale demo-kernwaarden zodat Deel 2 context direct bruikbaar is.
-    setCoreVals([
+    const demoCores = [
       { id: 12, name: "Integriteit", color: "blauw" },
       { id: 16, name: "Empathie", color: "rood" },
       { id: 24, name: "Reflectie", color: "groen" },
-    ]);
+    ];
+    setCoreVals(demoCores);
+    const csv2 = persistCoreValuesAcrossApps(demoCores);
     const params = new URLSearchParams({
+      participantCode: newCode,
       groupCode: gc || "",
       age: ag || "",
-      coreValues: "Integriteit, Empathie, Reflectie",
+      coreValues: csv2 || "Integriteit,Empathie,Reflectie",
     });
     window.location.href = `https://moral-maps-2-crossroads.vercel.app/?${params.toString()}`;
   }
   function startDeel3Direct(gc, ag){
-    setParticipantCode(generateParticipantCode());
+    const newCode = generateParticipantCode();
+    setParticipantCode(newCode);
     setGroupCode(gc);
     setAge(ag);
-    if(coreVals.length===0){
-      setCoreVals([
-        { id: 12, name: "Integriteit", color: "blauw" },
-        { id: 16, name: "Empathie", color: "rood" },
-        { id: 24, name: "Reflectie", color: "groen" },
-      ]);
+    const fallbackCores = [
+      { id: 12, name: "Integriteit", color: "blauw" },
+      { id: 16, name: "Empathie", color: "rood" },
+      { id: 24, name: "Reflectie", color: "groen" },
+    ];
+    const cores = coreVals.length === 0 ? fallbackCores : coreVals;
+    if (coreVals.length === 0) {
+      setCoreVals(fallbackCores);
     }
+    const csv3 = persistCoreValuesAcrossApps(cores);
     const params = new URLSearchParams({
+      participantCode: newCode,
       groupCode: gc || "",
       age: ag || "",
     });
+    if (csv3) params.set("coreValues", csv3);
     window.location.href = `https://moral-maps-3-final-destination.vercel.app/?${params.toString()}`;
   }
   async function resumeWithCode(code){
@@ -1693,7 +1738,15 @@ export default function MoralMaps(){
     setAge(data.age || "");
     setCoreVals(data.coreValues || []);
     setDilResp(data.dilemmaResponses || []);
-    setStarr(data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+    setStarr({
+      situatie:"",
+      taak:"",
+      actie:"",
+      resultaat:"",
+      reflectie:"",
+      volgendeStapGedrag:"",
+      ...(data.starr && typeof data.starr === "object" ? data.starr : {}),
+    });
     setSocialisatie(data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
     setMotivatie({intern:"",extern:"",valkuilen:""});
     const stage = (data.currentStage || "").toLowerCase();
@@ -1710,7 +1763,7 @@ export default function MoralMaps(){
     setPhase(7);
     setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(-1);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setMotivatie({intern:"",extern:"",valkuilen:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setDeel3Passie("");setDeel3Mensen("");setDeel3Nalatenschap({verhaal:"",goedeDingen:""});setDeel3Step(0);setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(typeof window!=="undefined"){window.history.replaceState(null,"",window.location.pathname+window.location.search);}}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(-1);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setKernwaardenTussenbalans({opvalt:"",stuurt:""});setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",volgendeStapGedrag:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setMotivatie({intern:"",extern:"",valkuilen:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setDeel3Passie("");setDeel3Mensen("");setDeel3Nalatenschap({verhaal:"",goedeDingen:""});setDeel3Step(0);setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(typeof window!=="undefined"){window.history.replaceState(null,"",window.location.pathname+window.location.search);}}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -2090,6 +2143,11 @@ export default function MoralMaps(){
               <p style={{fontSize:13,color:"#334155",lineHeight:1.7,marginTop:0}}>
                 U start met zelforiëntatie en bouwt stap voor stap naar uw persoonlijke reisverslag.
               </p>
+              <div style={{background:"#ecfeff",border:"1px solid #bae6fd",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
+                <p style={{fontSize:12,color:"#0c4a6e",lineHeight:1.65,margin:0}}>
+                  <strong>Waarom deze route:</strong> elke stop bouwt voort op de vorige — van positie en waarden naar je morele GPS, dilemma&apos;s, STARR en je reisverslag. Zo sluit Deel 1 straks logisch aan op het onderweg-zijn in Deel 2.
+                </p>
+              </div>
               <button
                 onClick={()=>setPhase(0)}
                 style={{width:"100%",padding:"13px",borderRadius:999,border:"none",background:"#111827",color:"#fff",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:FONT,boxShadow:"inset 0 -3px 0 rgba(255,255,255,.12), 0 6px 20px rgba(17,24,39,.35)"}}
@@ -2113,6 +2171,11 @@ export default function MoralMaps(){
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div><h2 style={{fontWeight:800,fontSize:17,margin:0}}>🗺 De Grote Kaart</h2><p style={{fontSize:12,color:"#64748b",margin:"4px 0 0"}}>Kies <strong>10 waarden</strong> die bij jou passen.</p></div>
                 <div style={{width:48,height:48,borderRadius:"50%",background:TEAL_LIGHT,border:`2px solid ${TEAL}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:TEAL}}>{selVals.length}<span style={{fontSize:10,color:"#94a3b8"}}>/10</span></div>
+              </div>
+              <div style={{marginTop:12,background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 12px"}}>
+                <p style={{fontSize:12,color:"#334155",lineHeight:1.65,margin:0}}>
+                  <strong>Waarom deze opdracht:</strong> je maakt eerst een brede waardenkaart. Straks kies je daaruit drie vaste ankers voor je morele GPS — deze tien helpen je verkennen zonder meteen te hoeven kiezen.
+                </p>
               </div>
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:12,marginBottom:16,display:"flex",flexWrap:"wrap",gap:8}}>
@@ -2154,6 +2217,11 @@ export default function MoralMaps(){
               <div style={{fontSize:32,marginBottom:8}}>🧭</div>
               <h2 style={{fontWeight:800,fontSize:17,margin:0}}>Stel je GPS in</h2>
               <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Kies 3 kernwaarden als ankerpunten van jouw morele GPS.</p>
+              <div style={{marginTop:12,textAlign:"left",background:"#ecfeff",border:"1px solid #bae6fd",borderRadius:10,padding:"10px 12px"}}>
+                <p style={{fontSize:12,color:"#0c4a6e",lineHeight:1.65,margin:0}}>
+                  <strong>Waarom deze opdracht:</strong> je verkleint je waardenlijst tot drie vaste ankers. Die drie nemen straks mee in dilemma&apos;s, STARR en de rest van de trilogie.
+                </p>
+              </div>
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
               <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center"}}>
@@ -2174,7 +2242,25 @@ export default function MoralMaps(){
             )}
             <div style={{textAlign:"center"}}>
               <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}><strong style={{color:TEAL}}>{coreVals.length}</strong> / 3 kernwaarden</p>
-              {coreVals.length===3&&<button onClick={()=>setPhase(3)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>}
+              {coreVals.length===3&&(
+                <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16,textAlign:"left"}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:"0 0 8px"}}>Tussenbalans — jouw GPS staat</p>
+                  <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 12px",marginBottom:12}}>
+                    <p style={{fontSize:12,color:"#334155",lineHeight:1.65,margin:0}}>
+                      <strong>Waarom even stilstaan:</strong> voordat je dilemma&apos;s induikt, maak je bewust wat opvalt en welke waarde nu het hardst stuurt. Dat helpt je straks keuzes te duiden.
+                    </p>
+                  </div>
+                  <label style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Wat valt je op?</label>
+                  <p style={{fontSize:11,color:"#94a3b8",margin:"0 0 6px"}}>Bijvoorbeeld: een patroon in je selectie, een spanning tussen waarden, of iets dat je verrast.</p>
+                  <textarea value={kernwaardenTussenbalans.opvalt} onChange={e=>setKernwaardenTussenbalans({...kernwaardenTussenbalans,opvalt:e.target.value})} rows={2} placeholder="Kort: wat valt je op aan jouw drie kernwaarden?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:12}} />
+                  <label style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Welke waarde stuurt nu het meest?</label>
+                  <p style={{fontSize:11,color:"#94a3b8",margin:"0 0 6px"}}>Noem één van je drie en waarom die nu op de voorgrond staat.</p>
+                  <textarea value={kernwaardenTussenbalans.stuurt} onChange={e=>setKernwaardenTussenbalans({...kernwaardenTussenbalans,stuurt:e.target.value})} rows={2} placeholder="Welke kernwaarde stuurt nu het meest, en waarom?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                </div>
+              )}
+              {coreVals.length===3&&kernwaardenTussenbalans.opvalt.trim()&&kernwaardenTussenbalans.stuurt.trim()&&(
+                <button onClick={()=>setPhase(3)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>
+              )}
             </div>
           </div>
         )}
@@ -2182,6 +2268,11 @@ export default function MoralMaps(){
         {/* P3 — Dilemma's */}
         {phase===3&&(
           <div>
+            <div style={{background:"#ecfeff",border:"1px solid #bae6fd",borderRadius:12,padding:"12px 14px",marginBottom:12}}>
+              <p style={{fontSize:12,color:"#0c4a6e",lineHeight:1.65,margin:0}}>
+                <strong>Waarom dilemma&apos;s nu:</strong> je oefent keuzes tegen het licht van je drie kernwaarden. Zo zie je waar je morele GPS al stabiel is — en waar je spanning ervaart. Dat bereidt je voor op het onderweg-zijn in Deel 2.
+              </p>
+            </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
               <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Deel 1 smartphone mockup" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
             </div>
@@ -2256,6 +2347,9 @@ export default function MoralMaps(){
               <div style={{background:TEAL,padding:"20px 22px"}}>
                 <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>✨ STARR Reflectie</h2>
                 <p style={{color:"rgba(255,255,255,.85)",fontSize:13,marginTop:8,lineHeight:1.6}}>Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Gebruik de STARR-methode om deze situatie te beschrijven.</p>
+                <p style={{color:"rgba(255,255,255,.75)",fontSize:12,marginTop:10,lineHeight:1.55,marginBottom:0}}>
+                  <strong>Waarom STARR:</strong> je koppelt je waarden aan een echte situatie. Sluit af met één concrete gedragsintentie — die neem je mee naar rugzak, motivatie en je reisverslag.
+                </p>
               </div>
               <div style={{background:"#fff",padding:20,display:"flex",flexDirection:"column",gap:18}}>
                 <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:14}}>
@@ -2279,6 +2373,13 @@ export default function MoralMaps(){
                       onFocus={e=>e.target.style.borderColor=TEAL} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                   </div>
                 ))}
+                <div>
+                  <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>Concrete volgende stap in gedrag</label>
+                  <p style={{fontSize:11,color:"#94a3b8",marginBottom:6}}>Deze opdracht helpt je om reflectie te laten landen: wat ga je een volgende keer anders of bewuster doen in de praktijk?</p>
+                  <textarea value={starr.volgendeStapGedrag} onChange={e=>setStarr({...starr,volgendeStapGedrag:e.target.value})} placeholder="Bijvoorbeeld: de volgende keer vraag ik eerst om… / ik durf nee te zeggen wanneer…" rows={3}
+                    style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}
+                    onFocus={e=>e.target.style.borderColor=TEAL} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                </div>
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
                 <button onClick={()=>setPhase(5)}
                   style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -2297,6 +2398,9 @@ export default function MoralMaps(){
             <div style={{background:"linear-gradient(135deg,#7c3aed,#8B5CF6)",padding:"20px 22px"}}>
               <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🎒 Jouw Rugzak</h2>
               <p style={{color:"#ddd6fe",fontSize:13,marginTop:8,lineHeight:1.6}}>Reflecteer op hoe socialisatie je waarden en professionele blik vormt.</p>
+              <p style={{color:"rgba(255,255,255,.82)",fontSize:12,marginTop:10,lineHeight:1.55,marginBottom:0}}>
+                <strong>Waarom deze opdracht:</strong> je morele GPS heeft wortels. Door je rugzak te benoemen, begrijp je beter waarom bepaalde waarden voor jou zo zwaar wegen in keuzes.
+              </p>
             </div>
             <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
               {[
@@ -2352,6 +2456,9 @@ export default function MoralMaps(){
               <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🚘 Motivatie</h2>
               <p style={{color:"#dbeafe",fontSize:13,marginTop:8,lineHeight:1.6}}>
                 Onderzoek wat u van buitenaf motiveert en wat van binnenuit al aanwezig is.
+              </p>
+              <p style={{color:"rgba(255,255,255,.85)",fontSize:12,marginTop:10,lineHeight:1.55,marginBottom:0}}>
+                <strong>Waarom motivatie:</strong> externe prikkels en innerlijke drive beïnvloeden je route. Dat inzicht helpt je straks in Deel 2 eerlijker te kijken naar keuzes onder druk.
               </p>
             </div>
             <div style={{padding:20,display:"grid",gap:12}}>
@@ -2440,8 +2547,22 @@ export default function MoralMaps(){
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:14}}>
               <img src={ASSET_IMAGES.deel2.hero} alt="Overzichtsvisual voor de route naar Deel 2" style={{width:"100%",display:"block",borderRadius:10,maxHeight:220,objectFit:"cover"}} />
             </div>
+            <div style={{background:"#ecfeff",border:"1px solid #bae6fd",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
+              <p style={{fontSize:12,color:"#0c4a6e",lineHeight:1.65,margin:0}}>
+                <strong>De brug naar Deel 2 (Crossroads):</strong> in het volgende deel sta je vaker op kruispunten — meer spanning, meer afwegingen, meer &quot;onderweg&quot;. Je drie kernwaarden worden automatisch meegenomen in de Crossroads-app (via je code en dit overzicht). Waar verwacht jij nu al dat het spannend wordt?
+              </p>
+            </div>
             <div style={{display:"flex",gap:12}}>
-              <button onClick={()=>window.location.href="https://moral-maps-2-crossroads.vercel.app"} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
+              <button onClick={()=>{
+                const csv = persistCoreValuesAcrossApps(coreVals);
+                const params = new URLSearchParams({
+                  participantCode: participantCode || "",
+                  groupCode: groupCode || "",
+                  age: age || "",
+                });
+                if (csv) params.set("coreValues", csv);
+                window.location.href = `https://moral-maps-2-crossroads.vercel.app/?${params.toString()}`;
+              }} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
               <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
