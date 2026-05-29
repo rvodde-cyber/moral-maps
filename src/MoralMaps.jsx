@@ -1306,13 +1306,9 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
             <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
           </div>
         </div>
-      </div>
-    </div>
-  );
-        <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #f1f5f9",textAlign:"center"}}>
+      <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #f1f5f9",textAlign:"center"}}>
           <p style={{fontSize:11,color:"#94a3b8",lineHeight:1.8,margin:0}}>
-            Dit project maakt deel uit van de reeks <strong style={{color:"#64748b"}}>Moreel Vakmanschap</strong> van het{" "}
-            <a href="https://www.linkedin.com/company/lectoraat-ethisch-werken-bijdragen" target="_blank" rel="noopener noreferrer" style={{color:"#1b9e77",textDecoration:"none",fontWeight:700}}>Fontys Lectoraat Ethisch Werken</a>
+            Dit project maakt deel uit van de reeks <strong style={{color:"#64748b"}}>Moreel Vakmanschap</strong> van het <a href="https://www.linkedin.com/company/lectoraat-ethisch-werken-bijdragen" target="_blank" rel="noopener noreferrer" style={{color:"#1b9e77",textDecoration:"none",fontWeight:700}}>Fontys Lectoraat Ethisch Werken</a>
           </p>
           <p style={{fontSize:10,color:"#cbd5e1",marginTop:4}}>Fontys HRM en TP · Richard Voddé MCC</p>
         </div>
