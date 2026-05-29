@@ -1240,7 +1240,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>III: Final Destination</span>
               </div>
             </div>
-            <div style={{background:"linear-gradient(160deg,#0f172a,#1e293b)",borderRadius:18,padding:10,border:"1px solid #334155"}}>
+            <div style={{borderRadius:18,overflow:"hidden"}}>
               <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:260,padding:12}}>
                 <img src="/trilogie-hero-map.svg" alt="Moral Maps trilogie kaart" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",opacity:.92}} />
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 82% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%)"}} />
