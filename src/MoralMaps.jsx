@@ -10,6 +10,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
+import HalteCrossroads from "./HalteCrossroads";
 
 // ── Supabase via Vite env vars (Vercel friendly) ─────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -1585,6 +1586,7 @@ export default function MoralMaps(){
   const [deel3Synthese,setDeel3Synthese]=useState("");
   const [deel3Grow,setDeel3Grow]=useState({goal:"",reality:"",options:"",will:""});
   const [saved,setSaved]=useState(false);
+  const [showHalteCrossroads,setShowHalteCrossroads]=useState(false);
   const [savedLocal,setSavedLocal]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
   const [showSmsDilemma,setShowSmsDilemma]=useState(false);
@@ -1736,6 +1738,7 @@ export default function MoralMaps(){
   if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
   if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
+  if(showHalteCrossroads)return <HalteCrossroads coreValues={coreVals} groupCode={groupCode} onContinue={()=>{setShowHalteCrossroads(false);setScreen("deel2");setDeel2Step(0);}}/>;
   if(screen==="deel2"){
     const crossroadsOptions = [
       "Snelle, saaie route naar je bestemming",
@@ -2289,7 +2292,7 @@ export default function MoralMaps(){
               ))}
             </div>
             <div style={{display:"flex",gap:12}}>
-              <button onClick={()=>setScreen("deel2")} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
+              <button onClick={()=>setShowHalteCrossroads(true)}} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
               <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
