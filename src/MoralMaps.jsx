@@ -11,6 +11,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import HalteCrossroads from "./HalteCrossroads";
+import HalteFinalDestination from "./HalteFinalDestination";
 
 // ── Supabase via Vite env vars (Vercel friendly) ─────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -1587,6 +1588,7 @@ export default function MoralMaps(){
   const [deel3Grow,setDeel3Grow]=useState({goal:"",reality:"",options:"",will:""});
   const [saved,setSaved]=useState(false);
   const [showHalteCrossroads,setShowHalteCrossroads]=useState(false);
+  const [showHalteFinal,setShowHalteFinal]=useState(false);
   const [savedLocal,setSavedLocal]=useState(false);
   const [saveErr,setSaveErr]=useState(null);
   const [showSmsDilemma,setShowSmsDilemma]=useState(false);
@@ -1883,7 +1885,7 @@ export default function MoralMaps(){
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,deel2Inzicht,vreemdeAnderResult,groupCode,age})} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
                 <button onClick={()=>setDeel2Step(0)} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
-                <button onClick={async ()=>{await saveProgress("deel2_done");setScreen("deel3");}} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
+                <button onClick={async ()=>{await saveProgress("deel2_done");setShowHalteFinal(true);}} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
               </div>
             </div>
           )}
@@ -1892,6 +1894,7 @@ export default function MoralMaps(){
     );
   }
 
+  if(showHalteFinal)return <HalteFinalDestination groupCode={groupCode} onContinue={()=>{setShowHalteFinal(false);setScreen("deel3");}}/>;
   if(screen==="deel3"){
     return (
       <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
