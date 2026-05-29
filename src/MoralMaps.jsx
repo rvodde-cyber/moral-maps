@@ -1240,22 +1240,60 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>III: Final Destination</span>
               </div>
             </div>
-            <div style={{borderRadius:18,overflow:"hidden"}}>
-              <div style={{background:"#dbeafe",borderRadius:14,overflow:"hidden",position:"relative",height:260,padding:12}}>
-                <img src="/trilogie-hero-map.svg" alt="Moral Maps trilogie kaart" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",opacity:.92}} />
-                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 82% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%)"}} />
-                <div style={{position:"absolute",left:0,right:0,bottom:56,height:18,backgroundImage:"radial-gradient(#475569 1.4px, transparent 1.4px)",backgroundSize:"11px 11px",opacity:.22}} />
-
-                <div style={{position:"relative",zIndex:2,width:140,height:240,marginLeft:14,background:"#0f172a",borderRadius:24,border:"2px solid #334155",padding:4,boxShadow:"0 14px 24px rgba(15,23,42,.35)"}}>
-                  <div style={{height:"100%",borderRadius:20,overflow:"hidden"}}>
-                    <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Moral Maps mobiele mockup" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%"}} />
-                  </div>
-                </div>
-
-                <div style={{position:"absolute",left:12,right:12,bottom:10,background:"rgba(255,255,255,.93)",borderRadius:10,padding:"8px 10px",fontSize:11,color:"#334155",fontWeight:700}}>
-                  Kies direct I, II of III
-                </div>
-              </div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 0"}}>
+              <svg width="220" height="280" viewBox="0 0 220 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Telefoon body */}
+                <rect x="20" y="4" width="180" height="272" rx="28" fill="#0f172a"/>
+                <rect x="22" y="6" width="176" height="268" rx="26" fill="#1e293b"/>
+                {/* Notch */}
+                <rect x="80" y="10" width="60" height="10" rx="5" fill="#0a0f1e"/>
+                {/* Scherm */}
+                <rect x="26" y="22" width="168" height="232" rx="18" fill="#e0f2fe"/>
+                {/* Kaart achtergrond */}
+                <rect x="26" y="22" width="168" height="232" rx="18" fill="#bfdbfe"/>
+                {/* Kaart straten */}
+                <line x1="26" y1="100" x2="194" y2="100" stroke="#93c5fd" strokeWidth="8"/>
+                <line x1="26" y1="140" x2="194" y2="140" stroke="#93c5fd" strokeWidth="6"/>
+                <line x1="26" y1="175" x2="194" y2="175" stroke="#93c5fd" strokeWidth="5"/>
+                <line x1="80" y1="22" x2="80" y2="254" stroke="#93c5fd" strokeWidth="7"/>
+                <line x1="130" y1="22" x2="130" y2="254" stroke="#93c5fd" strokeWidth="5"/>
+                <line x1="55" y1="22" x2="55" y2="254" stroke="#bfdbfe" strokeWidth="3"/>
+                <line x1="160" y1="22" x2="160" y2="254" stroke="#bfdbfe" strokeWidth="3"/>
+                <line x1="26" y1="65" x2="194" y2="65" stroke="#bfdbfe" strokeWidth="3"/>
+                <line x1="26" y1="210" x2="194" y2="210" stroke="#bfdbfe" strokeWidth="3"/>
+                {/* Route lijn */}
+                <path d="M60 220 Q60 160 80 140 Q100 120 110 100 Q120 80 130 60" stroke="#1d4ed8" strokeWidth="4" strokeLinecap="round" fill="none" strokeDasharray="1 0"/>
+                {/* GPS pin */}
+                <circle cx="110" cy="95" r="14" fill="#1d9e75"/>
+                <circle cx="110" cy="95" r="8" fill="white"/>
+                <circle cx="110" cy="95" r="4" fill="#1d9e75"/>
+                {/* Kaart labels */}
+                <rect x="32" y="150" width="72" height="20" rx="4" fill="white" fillOpacity="0.9"/>
+                <text x="68" y="164" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Persoonlijke waarden</text>
+                <rect x="112" y="150" width="60" height="20" rx="4" fill="white" fillOpacity="0.9"/>
+                <text x="142" y="164" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Werkwaarden</text>
+                <rect x="32" y="178" width="52" height="20" rx="4" fill="white" fillOpacity="0.9"/>
+                <text x="58" y="192" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Drijfveren</text>
+                <rect x="112" y="178" width="52" height="20" rx="4" fill="white" fillOpacity="0.9"/>
+                <text x="138" y="192" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Levensdoel</text>
+                {/* App header balk */}
+                <rect x="26" y="22" width="168" height="28" rx="0" fill="white" fillOpacity="0.95"/>
+                <rect x="26" y="22" width="168" height="28" rx="18" fill="white" fillOpacity="0.95"/>
+                <rect x="26" y="36" width="168" height="14" fill="white" fillOpacity="0.95"/>
+                <text x="110" y="40" textAnchor="middle" fontSize="10" fill="#0f172a" fontFamily="sans-serif" fontWeight="800">Moral Maps</text>
+                {/* Drie stops onderaan */}
+                <rect x="26" y="230" width="168" height="26" rx="0" fill="white" fillOpacity="0.97"/>
+                <rect x="26" y="236" width="168" height="18" fill="white" fillOpacity="0.97"/>
+                <rect x="26" y="230" width="168" height="24" rx="12" fill="white" fillOpacity="0.97"/>
+                <circle cx="62" cy="242" r="7" fill="#1d9e75"/>
+                <text x="62" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">I</text>
+                <circle cx="110" cy="242" r="7" fill="#ef9f27"/>
+                <text x="110" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">II</text>
+                <circle cx="158" cy="242" r="7" fill="#d4537e"/>
+                <text x="158" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">III</text>
+                {/* Thuis-indicator */}
+                <rect x="85" y="260" width="50" height="5" rx="2.5" fill="#334155" fillOpacity="0.4"/>
+              </svg>
             </div>
           </div>
         </div>
