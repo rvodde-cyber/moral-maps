@@ -10,7 +10,6 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
-import MapsLanding from "./MapsLanding";
 
 // ── Supabase via Vite env vars (Vercel friendly) ─────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -1310,6 +1309,16 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
       </div>
     </div>
   );
+        <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #f1f5f9",textAlign:"center"}}>
+          <p style={{fontSize:11,color:"#94a3b8",lineHeight:1.8,margin:0}}>
+            Dit project maakt deel uit van de reeks <strong style={{color:"#64748b"}}>Moreel Vakmanschap</strong> van het{" "}
+            <a href="https://www.linkedin.com/company/lectoraat-ethisch-werken-bijdragen" target="_blank" rel="noopener noreferrer" style={{color:"#1b9e77",textDecoration:"none",fontWeight:700}}>Fontys Lectoraat Ethisch Werken</a>
+          </p>
+          <p style={{fontSize:10,color:"#cbd5e1",marginTop:4}}>Fontys HRM en TP · Richard Voddé MCC</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Landing({onStart, onResume, onStartDeel2}){
@@ -1664,7 +1673,7 @@ export default function MoralMaps(){
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
   if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
-  if(screen==="landing")return <MapsLanding onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
+  if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
   if(screen==="deel2"){
     const crossroadsOptions = [
