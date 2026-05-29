@@ -1243,88 +1243,40 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
               </div>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 0"}}>
-              <svg width="200" height="280" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Telefoon body — donker frame met subtiele glans */}
-                <rect x="10" y="2" width="180" height="276" rx="30" fill="#111827"/>
-                <rect x="12" y="4" width="176" height="272" rx="28" fill="#1f2937"/>
-                <rect x="12" y="4" width="176" height="20" rx="28" fill="#1f2937"/>
-                {/* Zijknopjes */}
-                <rect x="6" y="80" width="4" height="28" rx="2" fill="#374151"/>
-                <rect x="6" y="116" width="4" height="20" rx="2" fill="#374151"/>
-                <rect x="190" y="90" width="4" height="36" rx="2" fill="#374151"/>
-                {/* Notch */}
-                <rect x="72" y="8" width="56" height="12" rx="6" fill="#0a0f1a"/>
-                <circle cx="118" cy="14" r="3.5" fill="#1f2937"/>
-                {/* Scherm */}
-                <rect x="16" y="22" width="168" height="236" rx="20" fill="#dbeafe"/>
-                {/* Kaart — water */}
-                <rect x="16" y="22" width="168" height="236" rx="20" fill="#eff6ff"/>
-                <path d="M16 180 Q50 165 80 175 Q110 185 140 170 Q165 158 184 165 L184 258 Q184 262 180 262 L20 262 Q16 262 16 258 Z" fill="#bfdbfe"/>
-                {/* Kaart — groen park */}
-                <rect x="20" y="60" width="48" height="35" rx="4" fill="#bbf7d0"/>
-                <rect x="120" y="130" width="55" height="30" rx="4" fill="#bbf7d0"/>
-                <rect x="20" y="130" width="30" height="25" rx="3" fill="#bbf7d0"/>
-                {/* Kaart — blokken bebouwing */}
-                <rect x="74" y="55" width="36" height="22" rx="2" fill="#e2e8f0"/>
-                <rect x="116" y="55" width="28" height="22" rx="2" fill="#e2e8f0"/>
-                <rect x="74" y="83" width="22" height="18" rx="2" fill="#e2e8f0"/>
-                <rect x="102" y="83" width="32" height="18" rx="2" fill="#e2e8f0"/>
-                <rect x="20" y="100" width="42" height="20" rx="2" fill="#e2e8f0"/>
-                <rect x="74" y="107" width="50" height="16" rx="2" fill="#e2e8f0"/>
-                <rect x="130" y="83" width="38" height="32" rx="2" fill="#e2e8f0"/>
-                {/* Straten — breed */}
-                <line x1="16" y1="108" x2="184" y2="108" stroke="white" strokeWidth="7"/>
-                <line x1="16" y1="155" x2="184" y2="155" stroke="white" strokeWidth="6"/>
-                <line x1="68" y1="22" x2="68" y2="258" stroke="white" strokeWidth="7"/>
-                <line x1="128" y1="22" x2="128" y2="258" stroke="white" strokeWidth="6"/>
-                {/* Straten — smal */}
-                <line x1="16" y1="78" x2="184" y2="78" stroke="white" strokeWidth="3"/>
-                <line x1="16" y1="130" x2="184" y2="130" stroke="white" strokeWidth="3"/>
-                <line x1="16" y1="185" x2="184" y2="185" stroke="white" strokeWidth="3"/>
-                <line x1="40" y1="22" x2="40" y2="258" stroke="white" strokeWidth="3"/>
-                <line x1="100" y1="22" x2="100" y2="258" stroke="white" strokeWidth="3"/>
-                <line x1="155" y1="22" x2="155" y2="258" stroke="white" strokeWidth="3"/>
-                {/* Diagonale weg */}
-                <path d="M16 200 L68 155 L100 108 L128 78 L155 50" stroke="white" strokeWidth="5" strokeLinecap="round"/>
-                {/* Route lijn */}
-                <path d="M55 210 Q68 180 90 155 Q108 133 118 108 Q130 85 140 68" stroke="#1d4ed8" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-                <circle cx="55" cy="210" r="5" fill="#1d4ed8" fillOpacity="0.4"/>
-                {/* GPS locatie pulse */}
-                <circle cx="140" cy="68" r="16" fill="#1d9e75" fillOpacity="0.2"/>
-                <circle cx="140" cy="68" r="11" fill="#1d9e75" fillOpacity="0.35"/>
-                <circle cx="140" cy="68" r="7" fill="#1d9e75"/>
-                <circle cx="140" cy="68" r="3.5" fill="white"/>
-                {/* Locatie labels op kaart */}
-                <rect x="72" y="118" width="52" height="14" rx="7" fill="white" fillOpacity="0.95"/>
-                <text x="98" y="129" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontFamily="sans-serif" fontWeight="700">Familie</text>
-                <rect x="30" y="162" width="56" height="14" rx="7" fill="white" fillOpacity="0.95"/>
-                <text x="58" y="173" textAnchor="middle" fontSize="7.5" fill="#334155" fontFamily="sans-serif" fontWeight="700">Vriendschap</text>
-                <rect x="130" y="140" width="48" height="14" rx="7" fill="white" fillOpacity="0.95"/>
-                <text x="154" y="151" textAnchor="middle" fontSize="7.5" fill="#334155" fontFamily="sans-serif" fontWeight="700">Werk</text>
-                {/* App header */}
-                <rect x="16" y="22" width="168" height="32" rx="20" fill="white" fillOpacity="0.97"/>
-                <rect x="16" y="38" width="168" height="16" fill="white" fillOpacity="0.97"/>
-                <circle cx="32" cy="38" r="8" fill="#f1f5f9"/>
-                <text x="32" y="42" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif">←</text>
-                <text x="100" y="43" textAnchor="middle" fontSize="9.5" fill="#0f172a" fontFamily="sans-serif" fontWeight="800">Moral Maps</text>
-                <circle cx="168" cy="38" r="8" fill="#1d9e75"/>
-                <text x="168" y="42" textAnchor="middle" fontSize="8" fill="white" fontFamily="sans-serif" fontWeight="800">●</text>
-                {/* Drie kaart-labels onderaan */}
-                <rect x="16" y="222" width="168" height="36" rx="0" fill="white" fillOpacity="0.97"/>
-                <rect x="16" y="236" width="168" height="22" fill="white" fillOpacity="0.97"/>
-                <rect x="16" y="222" width="168" height="36" rx="16" fill="white" fillOpacity="0.97"/>
-                <rect x="20" y="228" width="50" height="24" rx="8" fill="#f0fdf4"/>
-                <text x="45" y="238" textAnchor="middle" fontSize="7" fill="#166534" fontFamily="sans-serif" fontWeight="700">I: The</text>
-                <text x="45" y="247" textAnchor="middle" fontSize="7" fill="#166534" fontFamily="sans-serif" fontWeight="700">Beginning</text>
-                <rect x="75" y="228" width="50" height="24" rx="8" fill="#fffbeb"/>
-                <text x="100" y="238" textAnchor="middle" fontSize="7" fill="#92400e" fontFamily="sans-serif" fontWeight="700">II:</text>
-                <text x="100" y="247" textAnchor="middle" fontSize="7" fill="#92400e" fontFamily="sans-serif" fontWeight="700">Crossroads</text>
-                <rect x="130" y="228" width="54" height="24" rx="8" fill="#fdf2f8"/>
-                <text x="157" y="238" textAnchor="middle" fontSize="7" fill="#831843" fontFamily="sans-serif" fontWeight="700">III: Final</text>
-                <text x="157" y="247" textAnchor="middle" fontSize="7" fill="#831843" fontFamily="sans-serif" fontWeight="700">Destination</text>
-                {/* Home indicator */}
-                <rect x="75" y="264" width="50" height="5" rx="2.5" fill="#374151" fillOpacity="0.5"/>
-              </svg>
+              <div style={{width:180,height:360,background:"linear-gradient(170deg,#1e293b,#0f172a)",borderRadius:32,border:"2px solid #2d3f55",boxShadow:"0 32px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)",padding:8,flexShrink:0}}>
+                <div style={{width:56,height:14,background:"#0a0f1e",borderRadius:99,margin:"0 auto 6px",border:"1px solid #1e2d3d"}}/>
+                <div style={{background:"#f8fafc",borderRadius:22,height:310,overflow:"hidden",position:"relative"}}>
+                  <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px)",backgroundSize:"14px 14px"}}/>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 55%,rgba(248,250,252,.98))"}}/>
+                  <div style={{position:"relative",zIndex:2,background:"#fff",margin:"6px 6px 0",borderRadius:10,padding:"5px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.1)",display:"flex",alignItems:"center",gap:5}}>
+                    <span style={{fontSize:10}}>🧭</span>
+                    <span style={{fontSize:9,fontWeight:800,color:"#1d9e75",flex:1}}>Moral Maps</span>
+                    <span style={{fontSize:8,color:"#94a3b8",fontWeight:600}}>3 delen</span>
+                  </div>
+                  <div style={{position:"relative",zIndex:2,padding:"8px 8px 0"}}>
+                    {[
+                      {icon:"🗺",label:"The Beginning",color:"#1d9e75",time:"25 min"},
+                      {icon:"🛣",label:"Crossroads",color:"#ef9f27",time:"30 min"},
+                      {icon:"🏁",label:"Final Destination",color:"#d4537e",time:"35 min"},
+                    ].map((s,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6}}>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+                          <div style={{width:22,height:22,borderRadius:"50%",background:s.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>{s.icon}</div>
+                          {i<2&&<div style={{width:2,height:16,background:`${s.color}50`,margin:"2px 0"}}/>}
+                        </div>
+                        <div style={{paddingTop:2}}>
+                          <p style={{fontSize:9,fontWeight:700,color:"#1e293b",margin:0}}>{s.label}</p>
+                          <p style={{fontSize:8,color:"#94a3b8",margin:"1px 0 0"}}>{s.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{position:"absolute",bottom:6,left:6,right:6,background:"linear-gradient(135deg,#1d9e75,#0f6e56)",borderRadius:10,padding:"7px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{color:"#fff",fontSize:9,fontWeight:800}}>Jouw bestemming</span>
+                    <span style={{color:"rgba(255,255,255,.7)",fontSize:8,fontWeight:600}}>±90 min</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
