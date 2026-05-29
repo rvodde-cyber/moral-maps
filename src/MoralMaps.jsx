@@ -1246,12 +1246,8 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 82% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%)"}} />
                 <div style={{position:"absolute",left:0,right:0,bottom:56,height:18,backgroundImage:"radial-gradient(#475569 1.4px, transparent 1.4px)",backgroundSize:"11px 11px",opacity:.22}} />
 
-                <div style={{position:"relative",zIndex:2,width:132,height:238,marginLeft:14,background:"linear-gradient(175deg,#0f172a,#1e293b)",borderRadius:24,border:"1.5px solid #334155",padding:6,boxShadow:"0 14px 24px rgba(15,23,42,.35)"}}>
-                  <div style={{height:8,width:38,borderRadius:99,background:"#0b1220",margin:"2px auto 4px",border:"1px solid #1f2a3d"}} />
-                  <div style={{height:210,borderRadius:17,overflow:"hidden",position:"relative",background:"#e2e8f0"}}>
-                    <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Moral Maps mobiele mockup" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%"}} />
-                    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(15,23,42,.08),rgba(15,23,42,.18))"}} />
-                  </div>
+                <div style={{position:"relative",zIndex:2,width:140,height:240,marginLeft:14,borderRadius:12,overflow:"hidden",boxShadow:"0 14px 24px rgba(15,23,42,.25)"}}>
+                  <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Moral Maps mobiele mockup" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 42%"}} />
                 </div>
 
                 <div style={{position:"absolute",left:12,right:12,bottom:10,background:"rgba(255,255,255,.93)",borderRadius:10,padding:"8px 10px",fontSize:11,color:"#334155",fontWeight:700}}>
