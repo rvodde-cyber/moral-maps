@@ -10,6 +10,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
+import MapsLanding from "./MapsLanding";
 
 // ── Supabase via Vite env vars (Vercel friendly) ─────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -1663,7 +1664,7 @@ export default function MoralMaps(){
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
   if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
-  if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
+  if(screen==="landing")return <MapsLanding onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
   if(screen==="deel2"){
     const crossroadsOptions = [
