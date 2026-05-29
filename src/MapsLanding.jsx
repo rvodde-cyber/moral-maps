@@ -54,15 +54,22 @@ const PARTS = [
   },
 ];
 
-export default function MapsLanding() {
+export default function MapsLanding({ onStart, onResume, onStartDeel2 }) {
   const [code, setCode] = useState("");
   const [hover, setHover] = useState(null);
 
   function handleStart(url) {
-    const dest = code.trim()
-      ? `${url}?code=${encodeURIComponent(code.trim().toUpperCase())}`
-      : url;
-    window.location.href = dest;
+    if (url === PARTS[0].url && onStart) {
+      // Deel 1: gebruik interne app-navigatie
+      if (code.trim()) onStart(code.trim().toUpperCase(), null, null);
+      else onStart("", null, null);
+    } else {
+      // Deel 2 of 3: navigeer naar externe URL
+      const dest = code.trim()
+        ? `${url}?code=${encodeURIComponent(code.trim().toUpperCase())}`
+        : url;
+      window.location.href = dest;
+    }
   }
 
   return (
