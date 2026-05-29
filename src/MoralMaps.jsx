@@ -1241,58 +1241,87 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
               </div>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 0"}}>
-              <svg width="220" height="280" viewBox="0 0 220 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Telefoon body */}
-                <rect x="20" y="4" width="180" height="272" rx="28" fill="#0f172a"/>
-                <rect x="22" y="6" width="176" height="268" rx="26" fill="#1e293b"/>
+              <svg width="200" height="280" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Telefoon body — donker frame met subtiele glans */}
+                <rect x="10" y="2" width="180" height="276" rx="30" fill="#111827"/>
+                <rect x="12" y="4" width="176" height="272" rx="28" fill="#1f2937"/>
+                <rect x="12" y="4" width="176" height="20" rx="28" fill="#1f2937"/>
+                {/* Zijknopjes */}
+                <rect x="6" y="80" width="4" height="28" rx="2" fill="#374151"/>
+                <rect x="6" y="116" width="4" height="20" rx="2" fill="#374151"/>
+                <rect x="190" y="90" width="4" height="36" rx="2" fill="#374151"/>
                 {/* Notch */}
-                <rect x="80" y="10" width="60" height="10" rx="5" fill="#0a0f1e"/>
+                <rect x="72" y="8" width="56" height="12" rx="6" fill="#0a0f1a"/>
+                <circle cx="118" cy="14" r="3.5" fill="#1f2937"/>
                 {/* Scherm */}
-                <rect x="26" y="22" width="168" height="232" rx="18" fill="#e0f2fe"/>
-                {/* Kaart achtergrond */}
-                <rect x="26" y="22" width="168" height="232" rx="18" fill="#bfdbfe"/>
-                {/* Kaart straten */}
-                <line x1="26" y1="100" x2="194" y2="100" stroke="#93c5fd" strokeWidth="8"/>
-                <line x1="26" y1="140" x2="194" y2="140" stroke="#93c5fd" strokeWidth="6"/>
-                <line x1="26" y1="175" x2="194" y2="175" stroke="#93c5fd" strokeWidth="5"/>
-                <line x1="80" y1="22" x2="80" y2="254" stroke="#93c5fd" strokeWidth="7"/>
-                <line x1="130" y1="22" x2="130" y2="254" stroke="#93c5fd" strokeWidth="5"/>
-                <line x1="55" y1="22" x2="55" y2="254" stroke="#bfdbfe" strokeWidth="3"/>
-                <line x1="160" y1="22" x2="160" y2="254" stroke="#bfdbfe" strokeWidth="3"/>
-                <line x1="26" y1="65" x2="194" y2="65" stroke="#bfdbfe" strokeWidth="3"/>
-                <line x1="26" y1="210" x2="194" y2="210" stroke="#bfdbfe" strokeWidth="3"/>
+                <rect x="16" y="22" width="168" height="236" rx="20" fill="#dbeafe"/>
+                {/* Kaart — water */}
+                <rect x="16" y="22" width="168" height="236" rx="20" fill="#eff6ff"/>
+                <path d="M16 180 Q50 165 80 175 Q110 185 140 170 Q165 158 184 165 L184 258 Q184 262 180 262 L20 262 Q16 262 16 258 Z" fill="#bfdbfe"/>
+                {/* Kaart — groen park */}
+                <rect x="20" y="60" width="48" height="35" rx="4" fill="#bbf7d0"/>
+                <rect x="120" y="130" width="55" height="30" rx="4" fill="#bbf7d0"/>
+                <rect x="20" y="130" width="30" height="25" rx="3" fill="#bbf7d0"/>
+                {/* Kaart — blokken bebouwing */}
+                <rect x="74" y="55" width="36" height="22" rx="2" fill="#e2e8f0"/>
+                <rect x="116" y="55" width="28" height="22" rx="2" fill="#e2e8f0"/>
+                <rect x="74" y="83" width="22" height="18" rx="2" fill="#e2e8f0"/>
+                <rect x="102" y="83" width="32" height="18" rx="2" fill="#e2e8f0"/>
+                <rect x="20" y="100" width="42" height="20" rx="2" fill="#e2e8f0"/>
+                <rect x="74" y="107" width="50" height="16" rx="2" fill="#e2e8f0"/>
+                <rect x="130" y="83" width="38" height="32" rx="2" fill="#e2e8f0"/>
+                {/* Straten — breed */}
+                <line x1="16" y1="108" x2="184" y2="108" stroke="white" strokeWidth="7"/>
+                <line x1="16" y1="155" x2="184" y2="155" stroke="white" strokeWidth="6"/>
+                <line x1="68" y1="22" x2="68" y2="258" stroke="white" strokeWidth="7"/>
+                <line x1="128" y1="22" x2="128" y2="258" stroke="white" strokeWidth="6"/>
+                {/* Straten — smal */}
+                <line x1="16" y1="78" x2="184" y2="78" stroke="white" strokeWidth="3"/>
+                <line x1="16" y1="130" x2="184" y2="130" stroke="white" strokeWidth="3"/>
+                <line x1="16" y1="185" x2="184" y2="185" stroke="white" strokeWidth="3"/>
+                <line x1="40" y1="22" x2="40" y2="258" stroke="white" strokeWidth="3"/>
+                <line x1="100" y1="22" x2="100" y2="258" stroke="white" strokeWidth="3"/>
+                <line x1="155" y1="22" x2="155" y2="258" stroke="white" strokeWidth="3"/>
+                {/* Diagonale weg */}
+                <path d="M16 200 L68 155 L100 108 L128 78 L155 50" stroke="white" strokeWidth="5" strokeLinecap="round"/>
                 {/* Route lijn */}
-                <path d="M60 220 Q60 160 80 140 Q100 120 110 100 Q120 80 130 60" stroke="#1d4ed8" strokeWidth="4" strokeLinecap="round" fill="none" strokeDasharray="1 0"/>
-                {/* GPS pin */}
-                <circle cx="110" cy="95" r="14" fill="#1d9e75"/>
-                <circle cx="110" cy="95" r="8" fill="white"/>
-                <circle cx="110" cy="95" r="4" fill="#1d9e75"/>
-                {/* Kaart labels */}
-                <rect x="32" y="150" width="72" height="20" rx="4" fill="white" fillOpacity="0.9"/>
-                <text x="68" y="164" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Persoonlijke waarden</text>
-                <rect x="112" y="150" width="60" height="20" rx="4" fill="white" fillOpacity="0.9"/>
-                <text x="142" y="164" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Werkwaarden</text>
-                <rect x="32" y="178" width="52" height="20" rx="4" fill="white" fillOpacity="0.9"/>
-                <text x="58" y="192" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Drijfveren</text>
-                <rect x="112" y="178" width="52" height="20" rx="4" fill="white" fillOpacity="0.9"/>
-                <text x="138" y="192" textAnchor="middle" fontSize="8" fill="#334155" fontFamily="sans-serif" fontWeight="700">Levensdoel</text>
-                {/* App header balk */}
-                <rect x="26" y="22" width="168" height="28" rx="0" fill="white" fillOpacity="0.95"/>
-                <rect x="26" y="22" width="168" height="28" rx="18" fill="white" fillOpacity="0.95"/>
-                <rect x="26" y="36" width="168" height="14" fill="white" fillOpacity="0.95"/>
-                <text x="110" y="40" textAnchor="middle" fontSize="10" fill="#0f172a" fontFamily="sans-serif" fontWeight="800">Moral Maps</text>
-                {/* Drie stops onderaan */}
-                <rect x="26" y="230" width="168" height="26" rx="0" fill="white" fillOpacity="0.97"/>
-                <rect x="26" y="236" width="168" height="18" fill="white" fillOpacity="0.97"/>
-                <rect x="26" y="230" width="168" height="24" rx="12" fill="white" fillOpacity="0.97"/>
-                <circle cx="62" cy="242" r="7" fill="#1d9e75"/>
-                <text x="62" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">I</text>
-                <circle cx="110" cy="242" r="7" fill="#ef9f27"/>
-                <text x="110" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">II</text>
-                <circle cx="158" cy="242" r="7" fill="#d4537e"/>
-                <text x="158" y="246" textAnchor="middle" fontSize="7" fill="white" fontFamily="sans-serif" fontWeight="800">III</text>
-                {/* Thuis-indicator */}
-                <rect x="85" y="260" width="50" height="5" rx="2.5" fill="#334155" fillOpacity="0.4"/>
+                <path d="M55 210 Q68 180 90 155 Q108 133 118 108 Q130 85 140 68" stroke="#1d4ed8" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+                <circle cx="55" cy="210" r="5" fill="#1d4ed8" fillOpacity="0.4"/>
+                {/* GPS locatie pulse */}
+                <circle cx="140" cy="68" r="16" fill="#1d9e75" fillOpacity="0.2"/>
+                <circle cx="140" cy="68" r="11" fill="#1d9e75" fillOpacity="0.35"/>
+                <circle cx="140" cy="68" r="7" fill="#1d9e75"/>
+                <circle cx="140" cy="68" r="3.5" fill="white"/>
+                {/* Locatie labels op kaart */}
+                <rect x="72" y="118" width="52" height="14" rx="7" fill="white" fillOpacity="0.95"/>
+                <text x="98" y="129" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontFamily="sans-serif" fontWeight="700">Familie</text>
+                <rect x="30" y="162" width="56" height="14" rx="7" fill="white" fillOpacity="0.95"/>
+                <text x="58" y="173" textAnchor="middle" fontSize="7.5" fill="#334155" fontFamily="sans-serif" fontWeight="700">Vriendschap</text>
+                <rect x="130" y="140" width="48" height="14" rx="7" fill="white" fillOpacity="0.95"/>
+                <text x="154" y="151" textAnchor="middle" fontSize="7.5" fill="#334155" fontFamily="sans-serif" fontWeight="700">Werk</text>
+                {/* App header */}
+                <rect x="16" y="22" width="168" height="32" rx="20" fill="white" fillOpacity="0.97"/>
+                <rect x="16" y="38" width="168" height="16" fill="white" fillOpacity="0.97"/>
+                <circle cx="32" cy="38" r="8" fill="#f1f5f9"/>
+                <text x="32" y="42" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif">←</text>
+                <text x="100" y="43" textAnchor="middle" fontSize="9.5" fill="#0f172a" fontFamily="sans-serif" fontWeight="800">Moral Maps</text>
+                <circle cx="168" cy="38" r="8" fill="#1d9e75"/>
+                <text x="168" y="42" textAnchor="middle" fontSize="8" fill="white" fontFamily="sans-serif" fontWeight="800">●</text>
+                {/* Drie kaart-labels onderaan */}
+                <rect x="16" y="222" width="168" height="36" rx="0" fill="white" fillOpacity="0.97"/>
+                <rect x="16" y="236" width="168" height="22" fill="white" fillOpacity="0.97"/>
+                <rect x="16" y="222" width="168" height="36" rx="16" fill="white" fillOpacity="0.97"/>
+                <rect x="20" y="228" width="50" height="24" rx="8" fill="#f0fdf4"/>
+                <text x="45" y="238" textAnchor="middle" fontSize="7" fill="#166534" fontFamily="sans-serif" fontWeight="700">I: The</text>
+                <text x="45" y="247" textAnchor="middle" fontSize="7" fill="#166534" fontFamily="sans-serif" fontWeight="700">Beginning</text>
+                <rect x="75" y="228" width="50" height="24" rx="8" fill="#fffbeb"/>
+                <text x="100" y="238" textAnchor="middle" fontSize="7" fill="#92400e" fontFamily="sans-serif" fontWeight="700">II:</text>
+                <text x="100" y="247" textAnchor="middle" fontSize="7" fill="#92400e" fontFamily="sans-serif" fontWeight="700">Crossroads</text>
+                <rect x="130" y="228" width="54" height="24" rx="8" fill="#fdf2f8"/>
+                <text x="157" y="238" textAnchor="middle" fontSize="7" fill="#831843" fontFamily="sans-serif" fontWeight="700">III: Final</text>
+                <text x="157" y="247" textAnchor="middle" fontSize="7" fill="#831843" fontFamily="sans-serif" fontWeight="700">Destination</text>
+                {/* Home indicator */}
+                <rect x="75" y="264" width="50" height="5" rx="2.5" fill="#374151" fillOpacity="0.5"/>
               </svg>
             </div>
           </div>
