@@ -359,3 +359,47 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
   - `START_HIER_VERSIONBEHEER_EN_DEPLOY.md`
   - `RUNBOOK_MAPS_LIVEGANG.md`
   - `LOGBOEK.md` (deze sectie)
+
+
+---
+
+## Sessie 2026-05-29 — Integratie trilogie & centrale landing
+
+### Wat is gedaan
+- Volledige repo-structuur in kaart gebracht: alle drie apps zitten in `rvodde-cyber/moral-maps`, Vercel-projecten gekoppeld aan dezelfde repo via aparte Root Directories
+- Claude heeft nu directe GitHub-toegang via Personal Access Token (token verloopt 30 dagen)
+- **Centrale landing** (`src/MoralMaps.jsx` → `TrilogieHome`) verbeterd:
+  - Dubbele/drievoudige telefoon-mockup opgelost
+  - Nieuwe smalle donkere GPS-telefoon mockup gebouwd (SVG, geen externe afbeelding)
+  - Fontys-vermelding toegevoegd: *"Dit project maakt deel uit van de reeks Moreel Vakmanschap van het Fontys Lectoraat Ethisch Werken"* met LinkedIn-link
+  - Caluwé & Vermaak vermelding verwijderd (niet meer relevant)
+- **Tussenpagina's** gebouwd en gekoppeld:
+  - `src/HalteCrossroads.jsx` — toont kernwaarden-samenvatting, aankondiging Crossroads
+  - `src/HalteFinalDestination.jsx` — overzicht deel 1+2, aankondiging Final Destination
+  - Beide gekoppeld aan de juiste knoppen in de flow van MoralMaps.jsx
+- **Vercel deel 2** Root Directory gecorrigeerd naar `apps/moral-maps-2-crossroads`
+- Nieuwe bestanden in `src/`: `MapsLanding.jsx` (reserve), `HalteCrossroads.jsx`, `HalteFinalDestination.jsx`
+
+### Commits deze sessie (selectie)
+- `abcfa66` Restore tall narrow phone mockup with three stops
+- `d7e51ae` Add HalteFinalDestination transition between deel 2 and deel 3
+- `0acb88b` Fix syntax: remove extra brace in HalteCrossroads button
+- `42a3316` Add HalteCrossroads transition between deel 1 and deel 2
+- `37f812d` Fix: remove dark phone wrapper
+- `25cef4c` Fix: remove MapsLanding import, add Fontys credit to TrilogieHome
+
+### Openstaand voor volgende sessie
+1. Deel 2 deploy volledig stabiel maken (Root Directory fix gedaan, testen)
+2. Meer dilemma's toevoegen aan deel 1
+3. Betere PDF-export (vervanging van `window.print()`)
+4. Supabase: `vreemde_ander` en `socialisatie` JSONB kolommen toevoegen
+5. Deel 3 deploy checken op zelfde Root Directory probleem
+
+### Technische staat
+- **Actieve token**: verloopt ~28 juni 2026 — nieuwe aanmaken via github.com/settings/tokens (scope: repo)
+- **Live URLs**:
+  - Deel 1: https://moral-maps.vercel.app
+  - Deel 2: https://moral-maps-2-crossroads.vercel.app
+  - Deel 3: https://moral-maps-3-final-destination.vercel.app
+- **Werkende branch**: `main` (directe deploys)
+- **Supabase project**: `zkiavxldremirlvcmoef`
