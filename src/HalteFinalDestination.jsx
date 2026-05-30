@@ -33,7 +33,7 @@ export default function HalteFinalDestination({ groupCode = "", onContinue }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#080d16", fontFamily: FONT_BODY,
+      minHeight: "100vh", background: "linear-gradient(160deg, #1e2040 0%, #17193a 50%, #0f1230 100%)", fontFamily: FONT_BODY,
       color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center",
       padding: "40px 24px", overflow: "hidden", position: "relative",
     }}>
@@ -66,7 +66,7 @@ export default function HalteFinalDestination({ groupCode = "", onContinue }) {
         ))}
         <div style={{
           position: "absolute", width: 500, height: 300, borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(212,83,126,.1), transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(212,83,126,.18), transparent 70%)",
           bottom: 0, left: "50%", transform: "translateX(-50%)",
         }}/>
         <div style={{
