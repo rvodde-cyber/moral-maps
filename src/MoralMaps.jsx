@@ -1863,15 +1863,11 @@ export default function MoralMaps(){
                 <p style={{fontSize:11,color:"#64748b",margin:"0 0 4px"}}>Jouw gekozen route:</p>
                 <p style={{fontSize:13,color:"#0f172a",fontWeight:700,margin:0}}>{crossroadsChoice || "Niet ingevuld"}</p>
               </div>
-              <div style={{marginBottom:10,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
-                <img src={ASSET_IMAGES.deel2.insightWindow} alt="Reflectiemoment uit het raam als afronding van Deel 2" style={{width:"100%",display:"block",maxHeight:220,objectFit:"cover"}} />
-              </div>
-              <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 14px",marginBottom:10}}>
-                <p style={{fontSize:12,fontWeight:700,color:"#0f172a",margin:"0 0 6px"}}>
-                  Nu je zo ver gekomen bent kijk je uit het raam en denkt na...
-                </p>
-                <p style={{fontSize:11,color:"#64748b",margin:"0 0 8px"}}>Welk inzicht heeft jou het meest gedaan?</p>
-                <textarea value={deel2Inzicht} onChange={(e)=>setDeel2Inzicht(e.target.value)} rows={3} placeholder="Beschrijf je belangrijkste inzicht van Deel 2..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+              <div style={{background:"#f0fdf4",borderRadius:12,border:"1px solid #bbf7d0",padding:"14px 16px",marginBottom:12}}>
+                <p style={{fontSize:13,fontWeight:700,color:"#166534",margin:"0 0 6px"}}>✨ Afrondende reflectie</p>
+                <p style={{fontSize:12,color:"#14532d",margin:"0 0 10px",lineHeight:1.6}}>Welk inzicht heeft jou het meest gedaan onderweg?</p>
+                <textarea value={deel2Inzicht} onChange={(e)=>setDeel2Inzicht(e.target.value)} rows={3} placeholder="Beschrijf je belangrijkste inzicht van Deel 2..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #bbf7d0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
+                <p style={{fontSize:11,color:"#86efac",margin:"6px 0 0"}}>{deel2Inzicht.trim().length > 0 ? "✓ Ingevuld — je kunt nu verder naar Deel 3" : "Optioneel — je kunt ook direct doorgaan"}</p>
               </div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,deel2Inzicht,vreemdeAnderResult,groupCode,age})} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
