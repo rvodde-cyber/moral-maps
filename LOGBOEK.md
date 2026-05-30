@@ -403,3 +403,34 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
   - Deel 3: https://moral-maps-3-final-destination.vercel.app
 - **Werkende branch**: `main` (directe deploys)
 - **Supabase project**: `zkiavxldremirlvcmoef`
+
+
+---
+
+## Sessie 2026-05-29 (avond) — Dilemma's, PDF export, Supabase
+
+### Wat is gedaan
+- **6 dilemma's** in deel 1 — 4 nieuwe rijke dilemma's toegevoegd:
+  - De Promotie en het Geheim
+  - De Gunst van de Directeur
+  - De Gefantaseerde Ervaring
+  - De Online Lynchpartij
+  - (+ 2 bestaande: De Meelifter, Het Vertrouwelijke Gesprek)
+- **Willekeurige selectie**: elke student krijgt 2 van de 6 dilemma's — elke sessie anders
+- **PDF export** volledig herbouwd geïnspireerd op lakmoesproef stijl:
+  - Groene header met dominante kleur
+  - Witte kaarten met lichte borders en schaduwen
+  - Kernwaarden als gekleurde pills
+  - STARR reflectie per veld
+  - Fontys Lectoraat vermelding in footer
+- **Supabase**: `vreemde_ander` en `socialisatie` JSONB kolommen toegevoegd aan `moralmaps_results`
+- **Nieuwe GitHub token**: `ghp_NWlu...` — verloopt ~28 juni 2026
+
+### Technische staat
+- Alle 4 Vercel builds: ✅ success
+- Supabase tabel heeft nu alle kolommen: id, created_at, group_code, age, core_values, dilemma_responses, starr, dominant_color, privilege_positions, socialisatie, participant_code, current_stage, vreemde_ander
+
+### Openstaand
+1. Tussenpagina's testen in de echte flow (deel 1 → halte → deel 2)
+2. Deel 2 en 3 inhoudelijk verder verbeteren
+3. README.md updaten (beschrijft nog de lakmoesproef, niet de MAPS trilogie)
