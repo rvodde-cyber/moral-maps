@@ -1753,9 +1753,6 @@ export default function MoralMaps(){
           {deel2Step===0&&(
             <div>
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
-                <img src={ASSET_IMAGES.deel2.hero} alt="Deel 2 hero visual met kompas en route" style={{width:"100%",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
-              </div>
-              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
                 <img src={ASSET_IMAGES.deel2.phoneMockup} alt="Deel 2 smartphone mockup" style={{width:"100%",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
               </div>
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px 22px"}}>
@@ -1767,9 +1764,6 @@ export default function MoralMaps(){
                 <button onClick={()=>setDeel2Step(1)} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:FONT}}>
                   Start Deel 2 →
                 </button>
-              </div>
-              <div style={{marginTop:12,background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:8}}>
-                <img src={ASSET_IMAGES.deel2.routeProgress} alt="Visuele routekaart van Deel 2 met tussenstops" style={{width:"100%",display:"block",borderRadius:10,maxHeight:220,objectFit:"cover"}} />
               </div>
             </div>
           )}
