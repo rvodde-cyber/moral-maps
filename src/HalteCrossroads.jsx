@@ -42,7 +42,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#080d16", fontFamily: FONT_BODY,
+      minHeight: "100vh", background: "linear-gradient(160deg, #1e2d4a 0%, #162236 50%, #0f1d32 100%)", fontFamily: FONT_BODY,
       color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center",
       padding: "40px 24px", overflow: "hidden", position: "relative",
     }}>
@@ -63,7 +63,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
         <div style={{
           position: "absolute", left: "50%", top: -48, bottom: -48,
-          width: 3, background: "rgba(255,255,255,.04)",
+          width: 3, background: "rgba(255,255,255,.08)",
           transform: "translateX(-50%)",
         }}/>
         {[0,1,2,3,4,5,6,7].map(i => (
@@ -77,7 +77,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
         ))}
         <div style={{
           position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse at center, transparent 40%, #080d16 80%)",
+          background: "radial-gradient(ellipse at center, transparent 50%, rgba(15,29,50,.7) 90%)",
         }}/>
       </div>
 
