@@ -161,42 +161,61 @@ const VALUES = [
 
 const DILEMMAS = [
   {
-    title:"De Meelifter",
-    scenario:"Een collega doet weinig in de projectgroep, maar krijgt wel dezelfde beoordeling. De deadline nadert en het werk is nog niet af.",
-    options:[
-      {text:"Ik meld dit bij de leidinggevende.",color:"blauw"},
-      {text:"Ik ga het gesprek aan met de collega.",color:"groen"},
-      {text:"Ik accepteer het en doe het werk zelf.",color:"rood"}
+    title: "De Promotie en het Geheim",
+    scenario: "Je beste vriend Mark en jij solliciteerden allebei op dezelfde managementfunctie. Gisteravond biechtte Mark je in vertrouwen op dat hij kampt met een beginnende burn-out, maar dat hij deze kans móét grijpen om zijn schulden af te betalen. Vanochtend keek de directeur je recht aan: 'Je kent Mark door en door. Heeft hij de veerkracht die deze loodzware functie eist, of voorzie jij risico's?' Als je de waarheid spreekt, bescherm je het bedrijf én Marks gezondheid — maar steel je de promotie die hij zo hard nodig heeft.",
+    options: [
+      {text: "Ik spreek de waarheid over zijn mentale staat tegenover de directeur.", color: "blauw"},
+      {text: "Ik zeg niets en laat Mark zelf zijn keuzes maken.", color: "rood"},
+      {text: "Ik spreek Mark eerst aan en geef hem de kans het zelf te vertellen.", color: "groen"}
     ]
   },
   {
-    title:"Het Vertrouwelijke Gesprek",
-    scenario:"Een collega vertelt je in vertrouwen dat ze overweegt ontslag te nemen. Je manager vraagt jou direct of je weet waarom deze collega zich anders gedraagt.",
-    options:[
-      {text:"Ik vertel eerlijk wat ik weet aan de manager.",color:"geel"},
-      {text:"Ik houd het vertrouwen en zeg niets.",color:"rood"},
-      {text:"Ik moedig de collega aan om zelf het gesprek te voeren.",color:"groen"}
+    title: "De Gunst van de Directeur",
+    scenario: "Je nieuwe baas heeft een angstcultuur gecreëerd: wie hem tegenspreekt, wordt weggewerkt. Nu heeft hij zijn pijlen gericht op jouw collega Sophie, die geweldig werk levert. Hij neemt je apart en biedt je het budget voor jouw droomproject aan — iets waar je al jaren voor vecht. De voorwaarde: je moet een onterecht negatief prestatierapport over Sophie ondertekenen om haar ontslagdossier sluitend te maken. Weiger je, dan verdwijnt jouw project én ben jij waarschijnlijk het volgende slachtoffer.",
+    options: [
+      {text: "Ik weiger te tekenen en accepteer de consequenties voor mijn eigen positie.", color: "groen"},
+      {text: "Ik teken het rapport — mijn project en positie zijn te belangrijk om te verliezen.", color: "geel"},
+      {text: "Ik meld de situatie bij HR of een hogere leidinggevende.", color: "blauw"}
     ]
   },
   {
-    title:"De Fout in het Systeem",
-    scenario:"Je ontdekt dat een procedure in jouw organisatie structureel nadelig uitpakt voor een kwetsbare groep cliënten. Je leidinggevende weet het, maar wil het 'niet groter maken'.",
-    options:[
-      {text:"Ik volg de procedure — regels zijn er niet voor niets.",color:"blauw"},
-      {text:"Ik zoek intern naar medestanders en maak het bespreekbaar.",color:"groen"},
-      {text:"Ik maak een uitzondering voor de betrokkenen, stil.",color:"rood"}
+    title: "De Gefantaseerde Ervaring",
+    scenario: "Je broer zit al een jaar werkloos thuis en raakt steeds dieper in de problemen. Je hebt hem voorgedragen voor een functie op jouw afdeling. De selectiecommissie is enthousiast. Maar gisteren ontdekte je dat hij zijn werkervaring volledig heeft verzonnen — de grote projecten die hij claimt te hebben geleid, bestaan niet. Hij smeekt je te zwijgen en belooft keihard te rennen om het bij te leren. Morgen moet jij jouw definitieve aanbeveling geven.",
+    options: [
+      {text: "Ik spreek de waarheid tegenover mijn manager, ook al kost het mijn broer de baan.", color: "blauw"},
+      {text: "Ik zwijg en vertrouw erop dat hij zijn belofte nakomt.", color: "rood"},
+      {text: "Ik geef mijn broer 24 uur om zich terug te trekken en dit zelf recht te zetten.", color: "groen"}
     ]
   },
   {
-    title:"De Burn-out Collega",
-    scenario:"Een collega functioneert al weken slecht. Jij weet dat ze thuis veel problemen heeft. De teamleider vraagt jou om eerlijk te zijn over haar functioneren in een evaluatiegesprek.",
-    options:[
-      {text:"Ik ben volledig eerlijk — ook over de problemen.",color:"blauw"},
-      {text:"Ik nuanceer en bescherm haar privacy zoveel mogelijk.",color:"rood"},
-      {text:"Ik stel voor om eerst met haar zelf in gesprek te gaan.",color:"groen"}
+    title: "De Online Lynchpartij",
+    scenario: "Een collega-docent is het doelwit van een online lastercampagne. Een anoniem account beschuldigt hem van grensoverschrijdend gedrag — de video's gaan viraal. Jij weet honderd procent zeker dat een groepje eindexamenleerlingen dit als wraak heeft opgezet voor slechte cijfers; je hebt ze er zelf over horen opscheppen. De docent is inmiddels geschorst. De leerlingen zijn jouw mentorklas en zeiden: 'Als u ons verraadt, is onze toekomst vernietigd.'",
+    options: [
+      {text: "Ik meld wat ik weet bij de directie — de onschuldige docent moet worden vrijgepleit.", color: "blauw"},
+      {text: "Ik confronteer de leerlingen en geef ze de kans zichzelf te melden.", color: "groen"},
+      {text: "Ik zwijg — ik kan mijn mentorklas niet verraden op basis van wat ik heb opgevangen.", color: "rood"}
+    ]
+  },
+  {
+    title: "De Meelifter",
+    scenario: "Een medestudent doet weinig in de projectgroep, maar krijgt wel hetzelfde cijfer. De deadline nadert en het werk is nog niet af.",
+    options: [
+      {text: "Ik meld dit bij de docent.", color: "blauw"},
+      {text: "Ik ga het gesprek aan met de medestudent.", color: "groen"},
+      {text: "Ik accepteer het en doe het werk zelf.", color: "rood"}
+    ]
+  },
+  {
+    title: "Het Vertrouwelijke Gesprek",
+    scenario: "Een collega vertelt je in vertrouwen dat ze overweegt ontslag te nemen. Je manager vraagt jou direct of je weet waarom deze collega zich anders gedraagt.",
+    options: [
+      {text: "Ik vertel eerlijk wat ik weet aan de manager.", color: "geel"},
+      {text: "Ik houd het vertrouwen en zeg niets.", color: "rood"},
+      {text: "Ik moedig de collega aan om zelf het gesprek te gaan voeren.", color: "groen"}
     ]
   },
 ];
+
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
 const FONT = "'DM Sans',system-ui,sans-serif";
@@ -1528,6 +1547,10 @@ export default function MoralMaps(){
   const [coreVals,setCoreVals]=useState([]);
   const [dilResp,setDilResp]=useState([]);
   const [curDil,setCurDil]=useState(0);
+  const [activeDilemmas]=useState(()=>{
+    const shuffled=[...DILEMMAS].sort(()=>Math.random()-.5);
+    return shuffled.slice(0,2);
+  });
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
@@ -1563,7 +1586,7 @@ export default function MoralMaps(){
     if(phase===0)return 2;
     if(phase===1)return 14+(selVals.length/10)*12;
     if(phase===2)return 28+(coreVals.length/3)*12;
-    if(phase===3)return 42+(curDil/DILEMMAS.length)*14;
+    if(phase===3)return 42+(curDil/activeDilemmas.length)*14;
     if(phase===4)return 58;
     if(phase===5)return 76;
     return 100;
@@ -2041,18 +2064,18 @@ export default function MoralMaps(){
               <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Deel 1 smartphone mockup" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {DILEMMAS.length}</span>
+              <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {activeDilemmas.length}</span>
               <div style={{display:"flex",gap:6}}>{DILEMMAS.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
             </div>
             <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:16}}>
               <div style={{background:"#0f172a",padding:"20px 20px 18px"}}>
-                <h3 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📍 {DILEMMAS[curDil].title}</h3>
-                <p style={{color:"#94a3b8",fontSize:13,marginTop:8,lineHeight:1.6}}>{DILEMMAS[curDil].scenario}</p>
+                <h3 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📍 {activeDilemmas[curDil].title}</h3>
+                <p style={{color:"#94a3b8",fontSize:13,marginTop:8,lineHeight:1.6}}>{activeDilemmas[curDil].scenario}</p>
               </div>
               <div style={{background:"#fff",padding:18}}>
                 <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Wat doe jij?</p>
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {DILEMMAS[curDil].options.map((opt,i)=>{const c=CM[opt.color];const isSel=pending?.text===opt.text;return(
+                  {activeDilemmas[curDil].options.map((opt,i)=>{const c=CM[opt.color];const isSel=pending?.text===opt.text;return(
                     <button key={i} disabled={insight}
                       onClick={()=>{setPending(opt);setInsight(true);}}
                       style={{textAlign:"left",padding:"13px 16px",borderRadius:12,border:`2px solid ${isSel?c.border:c.border+"60"}`,background:isSel?c.bg:"#fff",color:c.text,fontWeight:500,fontSize:13,cursor:insight?"not-allowed":"pointer",opacity:insight&&!isSel?0.4:1,display:"flex",alignItems:"flex-start",gap:10,lineHeight:1.5,boxShadow:isSel?`0 0 0 3px ${c.border}30`:"none",fontFamily:FONT}}>
@@ -2082,11 +2105,11 @@ export default function MoralMaps(){
                       setDilResp(prev=>[...prev,pending]);
                       setPending(null);
                       setInsight(false);
-                      if(curDil < DILEMMAS.length - 1) setCurDil(prev=>prev + 1);
+                      if(curDil < activeDilemmas.length - 1) setCurDil(prev=>prev + 1);
                       else setPhase(4);
                     }}
                       style={{marginTop:14,width:"100%",padding:"11px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
-                      {curDil<DILEMMAS.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
+                      {curDil<activeDilemmas.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
                     </button>
                   </div>
                 </div>
