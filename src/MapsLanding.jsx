@@ -208,29 +208,35 @@ export default function MapsLanding({ onStart, onResume, onStartDeel2 }) {
                   <span style={{ fontSize: 9, fontWeight: 800, color: "#1d9e75", flex: 1 }}>Moral Maps</span>
                   <span style={{ fontSize: 8, color: "#94a3b8", fontWeight: 600 }}>3 delen</span>
                 </div>
-                {/* GPS route stops */}
-                <div style={{ position: "relative", zIndex: 2, padding: "8px 10px 0" }}>
-                  {[
-                    { icon: "🗺", label: "The Beginning",    color: "#1d9e75", time: "25 min" },
-                    { icon: "🛣", label: "Crossroads",       color: "#ef9f27", time: "30 min" },
-                    { icon: "🏁", label: "Final Destination",color: "#d4537e", time: "35 min" },
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: s.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0 }}>{s.icon}</div>
-                        {i < 2 && <div style={{ width: 2, height: 16, background: `${s.color}50`, margin: "2px 0" }}/>}
-                      </div>
-                      <div style={{ paddingTop: 3 }}>
-                        <p style={{ fontSize: 9, fontWeight: 700, color: "#1e293b", margin: 0 }}>{s.label}</p>
-                        <p style={{ fontSize: 8, color: "#94a3b8", margin: "1px 0 0" }}>{s.time}</p>
-                      </div>
-                    </div>
-                  ))}
+                {/* Kruispunten visualisatie */}
+                <div style={{ position: "relative", zIndex: 2, padding: "10px 8px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                  {/* Verticale weg */}
+                  <div style={{ width: 3, height: 28, background: "linear-gradient(to bottom, #e2e8f0, #94a3b8)", borderRadius: 2 }}/>
+                  {/* Kruispunt 1 */}
+                  <div style={{ position: "relative", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ position: "absolute", left: 8, right: 8, height: 2, background: "linear-gradient(90deg, transparent, #ef9f2760, transparent)" }}/>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#ef9f27", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 0 12px #ef9f2780", zIndex: 1 }}>🛣</div>
+                    <div style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 7, fontWeight: 700, color: "#ef9f27" }}>Afslag A</div>
+                    <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 7, fontWeight: 700, color: "#94a3b8" }}>Afslag B</div>
+                  </div>
+                  <div style={{ width: 3, height: 22, background: "#94a3b8", borderRadius: 2 }}/>
+                  {/* Kruispunt 2 */}
+                  <div style={{ position: "relative", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ position: "absolute", left: 8, right: 8, height: 2, background: "linear-gradient(90deg, transparent, #1d9e7560, transparent)" }}/>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#1d9e75", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, boxShadow: "0 0 10px #1d9e7560", zIndex: 1 }}>⚡</div>
+                    <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 7, fontWeight: 700, color: "#1d9e75" }}>Energie</div>
+                  </div>
+                  <div style={{ width: 3, height: 22, background: "#94a3b8", borderRadius: 2 }}/>
+                  {/* Kompas indicator */}
+                  <div style={{ background: "rgba(239,159,39,.12)", border: "1px solid rgba(239,159,39,.3)", borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 10 }}>🧭</span>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "#ef9f27" }}>Jouw kompas</span>
+                  </div>
                 </div>
                 {/* GPS bestemming balk */}
-                <div style={{ position: "absolute", bottom: 8, left: 7, right: 7, background: "linear-gradient(135deg, #1d9e75, #0f6e56)", borderRadius: 10, padding: "7px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ color: "#fff", fontSize: 9, fontWeight: 800 }}>Jouw bestemming</span>
-                  <span style={{ color: "rgba(255,255,255,.7)", fontSize: 8, fontWeight: 600 }}>±90 min</span>
+                <div style={{ position: "absolute", bottom: 8, left: 7, right: 7, background: "linear-gradient(135deg, #ef9f27, #ba7517)", borderRadius: 10, padding: "7px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#fff", fontSize: 9, fontWeight: 800 }}>Crossroads</span>
+                  <span style={{ color: "rgba(255,255,255,.7)", fontSize: 8, fontWeight: 600 }}>±30 min</span>
                 </div>
               </div>
             </div>
