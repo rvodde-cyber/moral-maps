@@ -485,7 +485,7 @@ function PrivilegeWheel({onComplete}){
         <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie: <strong>machtscentrum</strong>, <strong>middenzone</strong> of <strong>marginale zone</strong>.</p>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:16}}>
         {/* SVG Wiel */}
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} style={{maxWidth:"100%"}}>
@@ -532,7 +532,7 @@ function PrivilegeWheel({onComplete}){
           </svg>
 
           {/* Legenda */}
-          <div style={{display:"flex",gap:16,marginTop:8}}>
+          <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",justifyContent:"center"}}>
             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#475569"}}>
               <div style={{width:14,height:14,borderRadius:4,background:TEAL}}/>Meer privilege (binnenkant)
             </div>
@@ -2153,9 +2153,11 @@ export default function MoralMaps(){
                   <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Jouw kernwaarden</p>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:99,border:`1.5px solid ${c.border}`,background:c.bg,color:c.text,fontWeight:700,fontSize:12}}><Dot color={cv.color}/>{cv.name}</span>;})}</div>
                 </div>
-                <div style={{background:TEAL_LIGHT,borderRadius:10,border:`1px solid ${TEAL}40`,padding:"12px 16px",display:"flex",gap:10}}>
-                  <span style={{fontSize:16,flexShrink:0}}>✏️</span>
-                  <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}><strong>Opdracht:</strong> Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Beschrijf een situatie in je werk of privéleven waar die waarde zichtbaar werd in jouw keuze of handelen.</p>
+                <div style={{background:TEAL_LIGHT,borderRadius:10,border:`1px solid ${TEAL}40`,padding:"14px 16px",display:"flex",alignItems:"center",gap:14}}>
+                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" flexShrink="0" style={{flexShrink:0}}>
+                    <polygon points="18,3 22.5,13.5 34,13.5 25,20.5 28.5,31 18,24.5 7.5,31 11,20.5 2,13.5 13.5,13.5" fill={TEAL} opacity="0.9"/>
+                  </svg>
+                  <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>Kies een moment uit je leven waarbij jouw waarden echt het verschil maakten. Gebruik de STARR-stappen hieronder om dat moment te beschrijven.</p>
                 </div>
                 {[{key:"situatie",label:"Situatie",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,hint})=>(
                   <div key={key}>
@@ -2178,9 +2180,14 @@ export default function MoralMaps(){
 
         {phase===5&&(
           <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20,background:"#fff"}}>
-            <div style={{background:"linear-gradient(135deg,#7c3aed,#8B5CF6)",padding:"20px 22px"}}>
-              <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🎒 Jouw Rugzak</h2>
-              <p style={{color:"#ddd6fe",fontSize:13,marginTop:8,lineHeight:1.6}}>Reflecteer op hoe socialisatie je waarden en professionele blik vormt.</p>
+            <div style={{background:"linear-gradient(135deg,#7c3aed,#8B5CF6)",padding:"22px 24px"}}>
+              <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>🎒 Jouw Rugzak — Socialisatieverslag</h2>
+              <p style={{color:"#ddd6fe",fontSize:13,marginTop:10,lineHeight:1.75}}>
+                Wie jij bent als professional, is niet zomaar ontstaan. Vanaf je geboorte ben je gevormd door de mensen om je heen, de plek waar je opgroeide en de ervaringen die je opdeed. Dat noemen we <strong style={{color:"#fff"}}>socialisatie</strong> — het proces waardoor je de waarden, normen en gewoonten van jouw omgeving hebt opgepikt, vaak zonder het zelf te merken.
+              </p>
+              <p style={{color:"#c4b5fd",fontSize:12,marginTop:8,lineHeight:1.65}}>
+                In dit onderdeel kijk je terug op drie lagen: je <strong style={{color:"#fff"}}>thuisomgeving</strong> (primair), de wereld buiten je gezin zoals school en vrienden (secundair), en je <strong style={{color:"#fff"}}>professionele omgeving</strong> (tertiair). Door die lagen te herkennen, begrijp je beter waarom je de kernwaarden koos die je koos — en hoe jouw rugzak eruitziet als je een werkveld instapt.
+              </p>
             </div>
             <div style={{padding:20,display:"flex",flexDirection:"column",gap:14}}>
               {[
