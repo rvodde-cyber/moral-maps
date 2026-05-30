@@ -1889,9 +1889,6 @@ export default function MoralMaps(){
           </div>
 
           <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
-            <div style={{marginBottom:12,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
-              <img src={ASSET_IMAGES.deel3.hero} alt="Deel 3 hero visual met bestemming en horizon" style={{width:"100%",height:"auto",display:"block",maxHeight:220,objectFit:"cover"}} />
-            </div>
             <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🌫️ Signature opdracht Deel 3 — De Brug in de Mist</p>
             <div style={{marginBottom:12,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
               <img src={ASSET_IMAGES.deel3.bridgeEvent} alt="De brug in de mist met beperkte draagkracht" style={{width:"100%",height:"auto",display:"block",maxHeight:280,objectFit:"cover"}} />
