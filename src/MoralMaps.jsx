@@ -901,67 +901,83 @@ function Socialisatieverslag({coreVals, onComplete}){
 
 function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age){
   const c = CM[domColor];
-  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-    <title>Moral APS – Deel 1 Verslag</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');
-      *{box-sizing:border-box;margin:0;padding:0}
-      body{font-family:'DM Sans',sans-serif;color:#0f172a;padding:40px;max-width:700px;margin:0 auto;background:#fff}
-      .header{background:linear-gradient(135deg,${TEAL},${TEAL_DARK});color:#fff;border-radius:16px;padding:32px;margin-bottom:28px}
-      .header h1{font-size:28px;font-weight:900;letter-spacing:-1px}
-      .header p{opacity:.8;font-size:13px;margin-top:6px}
-      .section{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px 24px;margin-bottom:20px}
-      .section-title{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
-      .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;margin:3px}
-      .dominant{background:${c.bg};border:2px solid ${c.border};border-radius:14px;padding:18px 24px;text-align:center;margin-bottom:20px}
-      .dominant .label{font-size:28px;font-weight:900;color:${c.text}}
-      .dominant .desc{font-size:12px;color:#64748b;margin-top:4px}
-      .key{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-      .val{font-size:13px;color:#334155;line-height:1.7;margin-bottom:16px}
-      .vblock{border-radius:12px;padding:16px;margin-bottom:14px}
-      .ditem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
-      .ditem:last-child{border-bottom:none}
-      .num{width:26px;height:26px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#64748b;flex-shrink:0}
-      .footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:32px;padding-top:20px;border-top:1px solid #f1f5f9}
-      @media print{body{padding:20px}.header{border-radius:8px}}
-    </style></head><body>
-    <div class="header">
-      <div style="font-size:36px;margin-bottom:12px">🏆</div>
-      <h1>Moral APS — Deel 1 Verslag</h1>
-      <p>Groep: ${groupCode} · Leeftijd: ${age} · ${new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})}</p>
-    </div>
-    <div class="section">
-      <div class="section-title">🧭 Kernwaarden</div>
-      <div>${coreVals.map(cv=>{const cc=CM[cv.color];return`<span class="chip" style="background:${cc.bg};border:1.5px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("")}</div>
-    </div>
-    <div class="dominant">
-      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Dominante veranderkleur</div>
-      <div class="label">${c.label}</div>
-      <div class="desc">${c.desc}</div>
-    </div>
-    <div class="section">
-      <div class="section-title">🛣 Dilemma-keuzes</div>
-      ${DILEMMAS.map((d,i)=>{const r=dilResp[i];const cc=r?CM[r.color]:null;return`<div class="ditem"><div class="num">${i+1}</div><div><div style="font-weight:700;font-size:13px">${d.title}</div>${r&&cc?`<div style="font-size:12px;color:${cc.text};margin-top:3px">${r.text}</div>`:""}</div></div>`;}).join("")}
-    </div>
-    <div class="section">
-      <div class="section-title">✨ STARR Reflectie</div>
-      ${Object.entries(starr).map(([key,val])=>`<div class="key" style="color:${TEAL}">${key.charAt(0).toUpperCase()+key.slice(1)}</div><div class="val">${val||"Niet ingevuld"}</div>`).join("")}
-    </div>
-    ${smsDilemma?.smsChoice ? `
-    <div class="section">
-      <div class="section-title">📩 Einddilemma — SMS uit Roosendaal</div>
-      <div class="key" style="color:${TEAL}">Gekozen reactie</div>
-      <div class="val">${smsDilemma.smsChoice}</div>
-      <div class="key" style="color:${TEAL}">Waardenafweging</div>
-      <div class="val">${smsDilemma.smsReflection || "Niet ingevuld"}</div>
-    </div>` : ""}
-    <div class="footer">Gegenereerd door Moral APS · Geïnspireerd op Caluwé &amp; Vermaak · ${new Date().getFullYear()}</div>
-    </body></html>`;
+  const date = new Date().toLocaleDateString('nl-NL', {day:'numeric',month:'long',year:'numeric'});
 
-  const blob = new Blob([html], {type:"text/html"});
+  const coreValHtml = coreVals.map(cv => {
+    const cc = CM[cv.color];
+    return `<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;border:1.5px solid ${cc.border};background:${cc.bg};color:${cc.text};font-size:12px;font-weight:700;margin:3px;">${cv.name}</span>`;
+  }).join('');
+
+  const dilHtml = (dilResp||[]).map((r,i) => {
+    const cc = CM[r.color]||{bg:'#f1f5f9',border:'#e2e8f0',text:'#334155',label:r.color};
+    return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+      <div style="width:24px;height:24px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#64748b;flex-shrink:0;">${i+1}</div>
+      <div><p style="font-size:12px;color:#64748b;margin:0 0 4px;">${r.title||''}</p>
+      <p style="font-size:13px;color:#0f172a;margin:0;">${r.text} <span style="display:inline-block;padding:2px 8px;border-radius:99px;border:1px solid ${cc.border};background:${cc.bg};color:${cc.text};font-size:10px;font-weight:700;margin-left:4px;">${cc.label||r.color}</span></p></div>
+    </div>`;
+  }).join('');
+
+  const starrHtml = ['situatie','taak','actie','resultaat','reflectie'].map(key => {
+    const val = (starr||{})[key] || '<em style="color:#cbd5e1">Niet ingevuld</em>';
+    return `<div style="margin-bottom:16px;">
+      <p style="font-size:10px;font-weight:800;color:#1b9e77;text-transform:uppercase;letter-spacing:1.2px;margin:0 0 4px;">${key.charAt(0).toUpperCase()+key.slice(1)}</p>
+      <p style="font-size:13px;color:#334155;line-height:1.7;margin:0;">${val}</p>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+    <title>Moral Maps – Reisverslag Deel 1</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'DM Sans',sans-serif;color:#0f172a;background:#f8fafc;padding:32px;max-width:740px;margin:0 auto;}
+      .card{background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+      .label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:10px;}
+      .teal{color:#1b9e77;}
+      h1{font-size:26px;font-weight:900;letter-spacing:-0.5px;color:#0f172a;margin:6px 0 4px;}
+      h2{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:14px;}
+      @media print{body{padding:16px;}@page{margin:1.5cm;}}
+    </style>
+  </head><body>
+
+    <div class="card" style="background:linear-gradient(135deg,#1b9e77,#0f6e56);border:none;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.6);margin-bottom:6px;">Moral Maps · Deel 1</p>
+        <h1 style="color:#fff;">Reisverslag</h1>
+        <p style="color:rgba(255,255,255,.7);font-size:13px;margin-top:4px;">Groep: ${groupCode||'–'} · Leeftijd: ${age||'–'} · ${date}</p>
+      </div>
+      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px;text-align:center;">
+        <p style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Dominante kleur</p>
+        <p style="font-size:20px;font-weight:900;color:#fff;margin-top:2px;">${c.label}</p>
+        <p style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px;">${c.desc}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="label">🧭 Moreel Kompas — Kernwaarden</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${coreValHtml}</div>
+    </div>
+
+    <div class="card">
+      <p class="label">🛣 Dilemma-keuzes</p>
+      ${dilHtml}
+    </div>
+
+    <div class="card">
+      <p class="label">✨ STARR Reflectie</p>
+      ${starrHtml}
+    </div>
+
+    <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:8px;">
+      <p style="font-size:11px;color:#94a3b8;">Dit verslag maakt deel uit van de reeks <strong style="color:#64748b;">Moreel Vakmanschap</strong> · <span style="color:#1b9e77;">Fontys Lectoraat Ethisch Werken</span></p>
+    </div>
+
+  </body></html>`;
+
+  const blob = new Blob([html], {type:'text/html'});
   const url = URL.createObjectURL(blob);
-  const win = window.open(url,"_blank");
-  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+  const win = window.open(url, '_blank');
+  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 600); }; }
 }
 
 function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankstop, omweg, deel2Inzicht, vreemdeAnderResult, groupCode, age}){
