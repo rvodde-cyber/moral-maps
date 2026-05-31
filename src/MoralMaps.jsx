@@ -1587,6 +1587,12 @@ export default function MoralMaps(){
   const [smsReflection,setSmsReflection]=useState("");
   const [deel2Step,setDeel2Step]=useState(0);
   const [deel3Step,setDeel3Step]=useState(0);
+  const [reflectie1,setReflectie1]=useState("");
+  const [reflectie2,setReflectie2]=useState("");
+  const [reflectie3,setReflectie3]=useState("");
+  const [showReflectie1,setShowReflectie1]=useState(false);
+  const [showReflectie2,setShowReflectie2]=useState(false);
+  const [showReflectie3,setShowReflectie3]=useState(false);
   const [crossroadsChoice,setCrossroadsChoice]=useState("");
   const [crossroadsReflectie,setCrossroadsReflectie]=useState("");
   const [tankstop,setTankstop]=useState({energie:"",lek:"",nodig:""});
@@ -1676,7 +1682,7 @@ export default function MoralMaps(){
     setPhase(6);
     setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1729,9 +1735,63 @@ export default function MoralMaps(){
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
 
+
+  if(showReflectie3) return (
+    <div style={{minHeight:"100vh",background:"#0f172a",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
+      <div style={{maxWidth:560,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:48,marginBottom:12}}>🏁</div>
+          <p style={{fontSize:11,fontWeight:700,color:"#d4537e",textTransform:"uppercase",letterSpacing:2,marginBottom:10}}>Afsluiting Deel 3</p>
+          <h2 style={{color:"#fff",fontWeight:900,fontSize:24,letterSpacing:-.5,lineHeight:1.3,margin:"0 0 16px"}}>Je hebt de brug overgestoken</h2>
+          <p style={{color:"#94a3b8",fontSize:15,lineHeight:1.8,margin:"0 0 8px"}}>
+            Je hebt losgelaten, meegenomen en vooruitgekeken. Je bestemming is nooit écht een eindpunt — het is het moment waarop je beseft wie je bent geworden.
+          </p>
+          <p style={{color:"#e2e8f0",fontSize:17,lineHeight:1.8,fontStyle:"italic",margin:"20px 0 28px",padding:"0 8px"}}>
+            "Wat neem je van deze reis mee als je morgen een werkveld instapt? En wat wil je dat anderen over tien jaar van jou zeggen?"
+          </p>
+        </div>
+        <textarea value={reflectie3} onChange={e=>setReflectie3(e.target.value)} rows={5}
+          placeholder="Schrijf hier je antwoord..."
+          style={{width:"100%",padding:"14px 16px",borderRadius:14,border:"1.5px solid rgba(212,83,126,.4)",background:"rgba(255,255,255,.06)",color:"#e2e8f0",fontSize:14,lineHeight:1.7,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:16}}/>
+        <button onClick={()=>{setShowReflectie3(false);setScreen("trilogie-home");}}
+          style={{width:"100%",padding:"14px",borderRadius:99,border:"none",background:"#d4537e",color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
+          Terug naar het begin ↺
+        </button>
+        <p style={{textAlign:"center",color:"#475569",fontSize:11,marginTop:10}}>Je sessie is opgeslagen — goed gedaan!</p>
+      </div>
+    </div>
+  );
+
   if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
   if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
+
+  if(showReflectie1) return (
+    <div style={{minHeight:"100vh",background:"#0f172a",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
+      <div style={{maxWidth:560,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:48,marginBottom:12}}>✨</div>
+          <p style={{fontSize:11,fontWeight:700,color:TEAL,textTransform:"uppercase",letterSpacing:2,marginBottom:10}}>Afsluiting Deel 1</p>
+          <h2 style={{color:"#fff",fontWeight:900,fontSize:24,letterSpacing:-.5,lineHeight:1.3,margin:"0 0 16px"}}>Je weet nu waar je staat</h2>
+          <p style={{color:"#94a3b8",fontSize:15,lineHeight:1.8,margin:"0 0 8px"}}>
+            Je weet nu waar je staat in de wereld, waar je vandaan komt, wat je heeft gevormd en wat je kernwaarden zijn.
+          </p>
+          <p style={{color:"#e2e8f0",fontSize:17,lineHeight:1.8,fontStyle:"italic",margin:"20px 0 28px",padding:"0 8px"}}>
+            "Maar wat motiveert jou om deze reis te ondernemen — van binnenuit? En wat kan jou motiveren van buitenaf?"
+          </p>
+        </div>
+        <textarea value={reflectie1} onChange={e=>setReflectie1(e.target.value)} rows={5}
+          placeholder="Schrijf hier je antwoord..."
+          style={{width:"100%",padding:"14px 16px",borderRadius:14,border:`1.5px solid ${TEAL}60`,background:"rgba(255,255,255,.06)",color:"#e2e8f0",fontSize:14,lineHeight:1.7,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:16}}/>
+        <button onClick={()=>{setShowReflectie1(false);setShowHalteCrossroads(true);}}
+          style={{width:"100%",padding:"14px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
+          Verder naar Deel 2 →
+        </button>
+        <p style={{textAlign:"center",color:"#475569",fontSize:11,marginTop:10}}>Optioneel — je kunt ook direct doorgaan</p>
+      </div>
+    </div>
+  );
+
   if(showHalteCrossroads)return <HalteCrossroads coreValues={coreVals} groupCode={groupCode} onContinue={()=>{setShowHalteCrossroads(false);setScreen("deel2");setDeel2Step(0);}}/>;
   if(screen==="deel2"){
     const crossroadsOptions = [
@@ -1867,7 +1927,7 @@ export default function MoralMaps(){
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button onClick={()=>exportPDFDeel2({coreVals,crossroadsChoice,crossroadsReflectie,tankstop,omweg,deel2Inzicht,vreemdeAnderResult,groupCode,age})} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF/Print Deel 2</button>
                 <button onClick={()=>setDeel2Step(0)} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw Deel 2</button>
-                <button onClick={async ()=>{await saveProgress("deel2_done");setShowHalteFinal(true);}} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Naar Deel 3</button>
+                <button onClick={async ()=>{await saveProgress("deel2_done");setShowReflectie2(true);}} style={{flex:"1 1 220px",padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>✨ Afsluiten & verder →</button>
               </div>
             </div>
           )}
@@ -1875,6 +1935,33 @@ export default function MoralMaps(){
       </div>
     );
   }
+
+
+  if(showReflectie2) return (
+    <div style={{minHeight:"100vh",background:"#0f172a",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
+      <div style={{maxWidth:560,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:48,marginBottom:12}}>🛣</div>
+          <p style={{fontSize:11,fontWeight:700,color:"#ef9f27",textTransform:"uppercase",letterSpacing:2,marginBottom:10}}>Afsluiting Deel 2</p>
+          <h2 style={{color:"#fff",fontWeight:900,fontSize:24,letterSpacing:-.5,lineHeight:1.3,margin:"0 0 16px"}}>Je staat midden op de weg</h2>
+          <p style={{color:"#94a3b8",fontSize:15,lineHeight:1.8,margin:"0 0 8px"}}>
+            Je hebt keuzes gemaakt op het kruispunt. Je hebt gezien hoe je reageert onder druk, waar je kompas naartoe wijst — en waar het soms wankelt.
+          </p>
+          <p style={{color:"#e2e8f0",fontSize:17,lineHeight:1.8,fontStyle:"italic",margin:"20px 0 28px",padding:"0 8px"}}>
+            "Achter je liggen keuzes die je hebt gemaakt — bewust of niet. Maar wat maakt dat jij blijft doorlopen, ook als de route onduidelijk is? En wanneer ben jij geneigd om af te slaan — wat trekt je dan van je pad af?"
+          </p>
+        </div>
+        <textarea value={reflectie2} onChange={e=>setReflectie2(e.target.value)} rows={5}
+          placeholder="Schrijf hier je antwoord..."
+          style={{width:"100%",padding:"14px 16px",borderRadius:14,border:"1.5px solid rgba(239,159,39,.4)",background:"rgba(255,255,255,.06)",color:"#e2e8f0",fontSize:14,lineHeight:1.7,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:16}}/>
+        <button onClick={()=>{setShowReflectie2(false);setShowHalteFinal(true);}}
+          style={{width:"100%",padding:"14px",borderRadius:99,border:"none",background:"#ef9f27",color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
+          Verder naar Deel 3 →
+        </button>
+        <p style={{textAlign:"center",color:"#475569",fontSize:11,marginTop:10}}>Optioneel — je kunt ook direct doorgaan</p>
+      </div>
+    </div>
+  );
 
   if(showHalteFinal)return <HalteFinalDestination groupCode={groupCode} onContinue={()=>{setShowHalteFinal(false);setScreen("deel3");}}/>;
   if(screen==="deel3"){
@@ -2006,7 +2093,7 @@ export default function MoralMaps(){
               </div>
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16}}>
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  <button onClick={async()=>{await saveProgress("deel3_done");}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:D3_PINK,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>💾 Opslaan Deel 3</button>
+                  <button onClick={async()=>{await saveProgress("deel3_done");setShowReflectie3(true);}} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:D3_PINK,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>✨ Afsluiten & opslaan</button>
                   <button onClick={()=>exportPDFDeel3Portfolio({coreVals,dilResp,starr,smsDilemma:{smsChoice,smsReflection},bridge,deel3Terugblik,deel3Vooruitblik,deel3Synthese,deel3Grow,domColor,socialisatie,profile:contentProfile,groupCode,age})} style={{flex:1,padding:"11px",borderRadius:999,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↓ PDF Totaalportfolio</button>
                 </div>
               </div>
@@ -2329,7 +2416,7 @@ export default function MoralMaps(){
               ))}
             </div>
             <div style={{display:"flex",gap:12}}>
-              <button onClick={()=>setShowHalteCrossroads(true)} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #d1d5db",background:"#fff",color:"#111827",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>→ Start Deel 2</button>
+              <button onClick={()=>setShowReflectie1(true)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>✨ Afsluiten & verder →</button>
               <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
