@@ -238,9 +238,9 @@ const ASSET_IMAGES = {
     hero: "/deel3-hero-bestemming-horizon.jpg",
     bridgeEvent: "/brug-in-de-mist.jpg",
     phoneMockup: "/mockup-deel3-bridge.jpg",
-    socialisatieUi: "/socialisatie-ui-analyse.jpg",
-    socialisatieMatrix: "/werkblad-socialisatiematrix-identiteitsdimensies.jpg",
-    commitmentCheckpoint: "/deel3-commitment-checkpoint.jpg",
+    socialisatieUi: "/deel3-terugblik.png",
+    socialisatieMatrix: "/deel3-vooruitblik.png",
+    commitmentCheckpoint: "/deel3-grow.png",
   },
 };
 
