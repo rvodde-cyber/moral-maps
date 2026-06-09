@@ -8,7 +8,7 @@ Werkversie gebaseerd op jouw huidige richting: zoveel mogelijk bestaande opdrach
 |---|---|---|---|---|
 | Deel 1 | Begin | Zelf leren kennen | Waarden en startpositie zichtbaar maken | Vertrekpunt |
 | Deel 2 | Onderweg | Botsing en duiding | Kiezen onder druk en morele spanning | Kruispunten |
-| Deel 3 | Bestemming | Terug- en vooruitkijken | Patroon zien en kompasrichting kiezen | Aankomst + horizon |
+| Deel 3 | Bestemming | Terug- en vooruitkijken | Patroon zien en GPS-richting kiezen | Aankomst + horizon |
 
 ## Opdrachten per deel
 
@@ -21,10 +21,10 @@ Werkversie gebaseerd op jouw huidige richting: zoveel mogelijk bestaande opdrach
 | Deel 1 | Onverwachte SMS (Roosendaal) vlak voor PDF-print | Behouden | Afsluitende test Deel 1 |
 | Deel 2 | Crossroads keuzedilemma met 4 afslagen | Behouden | Start Onderweg |
 | Deel 2 | Waarde onder druk + handelen vs achteraf | Behouden | Midden Onderweg |
-| Deel 2 | Vreemde ander + kompas-bijstelling | Behouden | Einde Onderweg |
+| Deel 2 | Vreemde ander + GPS-bijstelling | Behouden | Einde Onderweg |
 | Deel 3 | Terugblik: scharnierpunt, patroon, ware noorden | Behouden (uit brainstorm) | Terugkijkend op bestemming |
 | Deel 3 | Vooruitblik: nalatenschap, richting, belofte | Behouden (uit brainstorm) | Vooruitkijkend vanaf bestemming |
-| Deel 3 | Synthese: Reisverslag 3.0 / persoonlijk kompasplan | Behouden (uit brainstorm) | Slot van trilogie |
+| Deel 3 | Synthese: Reisverslag 3.0 / persoonlijke routekaart | Behouden (uit brainstorm) | Slot van trilogie |
 
 ## Aanbevolen flow in 1 regel
 

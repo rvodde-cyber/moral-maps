@@ -31,9 +31,9 @@ export const stepMeta: Record<
   },
   reisverslag: {
     title: "Reisverslag 3.0",
-    subtitle: "Synthese van je inzichten en kompas",
+    subtitle: "Synthese van je inzichten en routekaart",
     imageSrc: "/images/maps3-reisverslag.jpg",
-    imageAlt: "Samenvattend reisverslag met persoonlijk kompas",
+    imageAlt: "Samenvattend reisverslag met persoonlijke routekaart",
   },
 };
 

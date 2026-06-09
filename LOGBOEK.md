@@ -21,7 +21,7 @@
 - Bestaande opdrachten uit Moral Maps 1 opnieuw als leidend kader bevestigd.
 - Flow in `src/MoralMaps.jsx` opnieuw uitgelijnd op trilogie-gedachte (Deel 1 -> Deel 2 -> Deel 3).
 - Deel 1-route hersteld met:
-  - Privilegewiel, waarden, kompas, 4 dilemma's, STARR, rugzak, reisverslag.
+  - Privilegewiel, waarden, GPS, 4 dilemma's, STARR, rugzak, reisverslag.
   - Signature SMS-opdracht terug in de afsluiting.
 - Deel 2 en Deel 3 in route opgenomen met eigen voortgang en exportmomenten.
 - Basis voor hervatten met participant code toegevoegd:
@@ -110,7 +110,7 @@
 #### Deel 1 - The Beginning (zelforiëntatie)
 - Heb ik in deze keuzes trouw gehandeld aan mijn kernwaarden?
 - Welke keuze voelde goed, maar wringt achteraf toch een beetje?
-- Waar week ik af van mijn kompas en waarom deed ik dat?
+- Waar week ik af van mijn GPS en waarom deed ik dat?
 - Welke waarde wil ik in het volgende deel bewuster vasthouden?
 
 #### Deel 2 - Crossroads (onderweg, spanning, bijsturing)
@@ -131,7 +131,7 @@
   - Tankstop: dashboard/brandstofmeter visual.
   - Omweg: wegafsluiting/omleiding visual.
   - Vreemde Ander: ontmoeting/brug visual.
-- Compacte "Kompas in beeld"-badge naast elke opdracht met de 3 kernwaarden.
+- Compacte "GPS in beeld"-badge naast elke opdracht met de 3 kernwaarden.
 
 ### Voorstel visuele verrijking Deel 3
 - Hero met horizon/uitkijkpunt na brug-moment (visuele afsluiting van reis).
@@ -162,7 +162,7 @@ Bron/implementatiepad:
 - Flow:
   1. Privilegewiel (positionering/zelfbeeld).
   2. Waarden kiezen.
-  3. Kernwaarden (kompas) bepalen.
+  3. Kernwaarden (GPS) bepalen.
   4. 4 morele dilemma's.
   5. STARR-reflectie.
   6. Rugzak/socialisatie.
@@ -209,16 +209,16 @@ Bron/implementatiepad:
 
 ### Deel 3 - Final Destination (Bestemming)
 - Hoofdthema:
-  - Integratie en vooruitkijken: patroon zien, kompas aanscherpen, commitment maken.
+  - Integratie en vooruitkijken: patroon zien, GPS aanscherpen, commitment maken.
 - Flow:
   1. Signature opdracht: Brug in de Mist.
   2. Terugblik (scharnierpunt, patroon, ware noorden).
   3. Vooruitblik (nalatenschap, richting, belofte).
-  4. Synthese (persoonlijk kompasplan / Reisverslag 3.0).
+  4. Synthese (persoonlijke routekaart / Reisverslag 3.0).
   5. Eindopdracht GROW (Goal, Reality, Options, Will).
   6. Opslaan + totaalportfolio export.
 - Opdrachten:
-  - Brug in de Mist (ballast, meenemen, hoop, kompaswaarde).
+  - Brug in de Mist (ballast, meenemen, hoop, kernwaarde op je GPS).
   - Terugblik/vooruitblik/synthese.
   - GROW-actieplan met concrete commitment.
 - PDF/print output:

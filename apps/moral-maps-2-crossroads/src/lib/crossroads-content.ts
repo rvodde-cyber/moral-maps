@@ -130,13 +130,13 @@ export const stages: Stage[] = [
     id: "mist",
     label: "Mist & Zicht",
     icon: "🌫️",
-    summary: "Wanneer zicht ontbreekt, bepaalt je interne kompas je koers.",
+    summary: "Wanneer zicht ontbreekt, bepaalt je moreale GPS je koers.",
     prompts: [
       {
         id: "mist-rijden",
         title: "Rijden in de Mist",
         question:
-          "Op welk intern kompas vertrouw je wanneer externe zekerheden wegvallen?",
+          "Op welke moreale GPS vertrouw je wanneer externe zekerheden wegvallen?",
         imageSrc:
           "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Weg in dichte mist met zacht licht",
@@ -199,7 +199,7 @@ export const stages: Stage[] = [
         id: "insluiting-onderweg",
         title: "Insluiting onderweg",
         question:
-          "Wat kun je concreet doen om deze reisgenoot beter te begrijpen en in te sluiten, zonder je eigen kompas te verliezen?",
+          "Wat kun je concreet doen om deze reisgenoot beter te begrijpen en in te sluiten, zonder je eigen GPS te verliezen?",
         imageSrc:
           "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Mensen die samen een brug oversteken",

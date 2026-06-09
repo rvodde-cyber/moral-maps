@@ -24,7 +24,7 @@ export default function StepPage() {
         ballast: "",
         meenemen: "",
         vinden: "",
-        kompas: "",
+        gps: "",
       },
   );
   const [terugblik, setTerugblik] = useState(
@@ -66,7 +66,7 @@ export default function StepPage() {
       bridge.ballast,
       bridge.meenemen,
       bridge.vinden,
-      bridge.kompas,
+      bridge.gps,
       terugblik.scharnierpunt,
       terugblik.patroon,
       terugblik.noorden,
@@ -152,10 +152,10 @@ export default function StepPage() {
                 />
                 <input
                   className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                  placeholder="Kernwaarde als kompas"
-                  value={bridge.kompas}
+                  placeholder="Welke kernwaarde stuurt je GPS?"
+                  value={bridge.gps}
                   onChange={(e) =>
-                    setBridge((prev) => ({ ...prev, kompas: e.target.value }))
+                    setBridge((prev) => ({ ...prev, gps: e.target.value }))
                   }
                 />
               </div>

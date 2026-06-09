@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Moral Maps 3: Je ware koers",
   description:
-    "Deel 3 van Moral Maps: Je ware koers met brug-opdracht, terugblik, vooruitblik en persoonlijk kompas.",
+    "Deel 3 van Moral Maps: Je ware koers met brug-opdracht, terugblik, vooruitblik en persoonlijke routekaart.",
 };
 
 export default function RootLayout({

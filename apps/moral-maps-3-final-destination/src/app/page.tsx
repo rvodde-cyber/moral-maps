@@ -10,7 +10,7 @@ export default function Home() {
   const [travelerName, setTravelerName] = useState(stored.travelerName ?? "");
   const [destination, setDestination] = useState(stored.destination ?? "");
   const [bridge] = useState(
-    stored.bridge ?? { ballast: "", meenemen: "", vinden: "", kompas: "" },
+    stored.bridge ?? { ballast: "", meenemen: "", vinden: "", gps: "" },
   );
   const [terugblik] = useState(
     stored.terugblik ?? { scharnierpunt: "", patroon: "", noorden: "" },
@@ -41,7 +41,7 @@ export default function Home() {
       bridge.ballast,
       bridge.meenemen,
       bridge.vinden,
-      bridge.kompas,
+      bridge.gps,
       terugblik.scharnierpunt,
       terugblik.patroon,
       terugblik.noorden,
