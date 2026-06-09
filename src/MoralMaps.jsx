@@ -262,6 +262,21 @@ function calcDomColor(coreVals, dilResp) {
   return Object.keys(c).reduce((a, b) => (c[a] >= c[b] ? a : b));
 }
 
+function formatAnkerzin(coreVals) {
+  if (!coreVals?.length) return "";
+  const names = coreVals.map((v) => v.name);
+  if (names.length === 1) return `Mijn morele anker is ${names[0]}.`;
+  const kopie = [...names];
+  const last = kopie.pop();
+  return `Mijn morele ankers zijn ${kopie.join(", ")} en ${last}.`;
+}
+
+function dominanteKleurInzicht(domColor, coreVals) {
+  const c = CM[domColor] || CM.blauw;
+  const ankers = (coreVals || []).map((v) => v.name).join(", ") || "jouw kernwaarden";
+  return `In jouw keuzes komt ${c.label} (${c.desc.toLowerCase()}) het meest naar voren. Dat beschrijft een neiging in je handelen — geen label. Je ankers blijven: ${ankers}.`;
+}
+
 function openPrintWindow(html) {
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
@@ -1106,7 +1121,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
               <p style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,margin:"0 0 6px"}}>Moral Maps Trilogie</p>
               <h1 style={{margin:0,fontSize:32,fontWeight:900,letterSpacing:-.8,color:"#0f172a"}}>Welkom bij je morele reis</h1>
               <p style={{margin:"10px 0 0",fontSize:14,color:"#475569",lineHeight:1.7}}>
-                Kies het deel waar je vandaag aan wilt werken. Je verslagen worden per deel opgebouwd en na Deel 3 gekoppeld tot een totaalportfolio.
+                Kies het deel waar je vandaag aan wilt werken. Je ontdekt je waarden, reflecteert op je keuzes en formuleert richting — stap voor stap, in je eigen tempo.
               </p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#eef2ff",color:"#3730a3",fontWeight:700}}>I: The Beginning</span>
@@ -1641,7 +1656,7 @@ export default function MoralMaps(){
             Je weet nu waar je staat in de wereld, waar je vandaan komt, wat je heeft gevormd en wat je kernwaarden zijn.
           </p>
           <p style={{color:"#e2e8f0",fontSize:17,lineHeight:1.8,fontStyle:"italic",margin:"20px 0 28px",padding:"0 8px"}}>
-            "Maar wat motiveert jou om deze reis te ondernemen — van binnenuit? En wat kan jou motiveren van buitenaf?"
+            "Welk concreet doel neem je mee de komende maand — en welke van jouw ankers helpt je daar het meest bij?"
           </p>
         </div>
         <textarea value={reflectie1} onChange={e=>setReflectie1(e.target.value)} rows={5}
@@ -2024,6 +2039,13 @@ export default function MoralMaps(){
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{selVals.map(v=>{const c=CM[v.color];return<button key={v.id} onClick={()=>setSelVals(selVals.filter(s=>s.id!==v.id))} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:99,border:`1px solid ${c.border}`,background:c.bg,color:c.text,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:FONT}}>{v.name} ×</button>;})}</div>
               </div>
             )}
+            {selVals.length>=10&&(
+              <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 16px",marginBottom:14}}>
+                <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>
+                  <strong>Even stilstaan:</strong> welke gekozen waarde verraste je? En welke laat je bewust los? Zelfkennis begint bij die afweging.
+                </p>
+              </div>
+            )}
             {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end"}}><button onClick={()=>setPhase(2)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Smeed je Kompas →</button></div>}
           </div>
         )}
@@ -2034,7 +2056,7 @@ export default function MoralMaps(){
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px",marginBottom:16,textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:8}}>🧭</div>
               <h2 style={{fontWeight:800,fontSize:17,margin:0}}>Het Kompas</h2>
-              <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Kies <strong>3 kernwaarden</strong> als ankerpunten van jouw moreel kompas.</p>
+              <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Kies <strong>3 kernwaarden</strong> als morele ankers — waarden die je richting geven als het spannend of onduidelijk wordt.</p>
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
               <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center"}}>
@@ -2051,6 +2073,13 @@ export default function MoralMaps(){
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
                 <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,textAlign:"center",marginBottom:14}}>Jouw moreel kompas</p>
                 <div style={{display:"flex",justifyContent:"center",gap:14,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{textAlign:"center",padding:"16px 20px",borderRadius:16,border:`2px solid ${c.border}`,background:c.bg}}><div style={{fontSize:24,marginBottom:4}}>🧭</div><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginTop:2}}>{c.label}</p></div>;})}</div>
+              </div>
+            )}
+            {coreVals.length===3&&(
+              <div style={{background:"#fff",borderRadius:14,border:`1.5px solid ${TEAL}40`,padding:"16px 18px",marginBottom:16}}>
+                <p style={{fontSize:10,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,margin:"0 0 8px"}}>⚓ Jouw morele ankers</p>
+                <p style={{fontSize:14,color:"#0f172a",fontWeight:700,lineHeight:1.6,margin:"0 0 8px"}}>{formatAnkerzin(coreVals)}</p>
+                <p style={{fontSize:12,color:"#64748b",lineHeight:1.7,margin:0}}>Vraag jezelf: wanneer werd één van deze waarden voor het laatst op de proef gesteld — en wat deed je toen?</p>
               </div>
             )}
             <div style={{textAlign:"center"}}>
@@ -2099,7 +2128,7 @@ export default function MoralMaps(){
                     <strong style={{color:isM?TEAL_DARK:"#854d0e",fontSize:14}}>{isM?"Koersvast!":"Interessant!"}</strong>
                   </div>
                   <div style={{padding:"14px 18px"}}>
-                    {isM?<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Deze keuze sluit aan bij jouw kernwaarde <strong style={{color:c.text}}>{match.name}</strong>. Je handelt vanuit je kompas.</p>:<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Je kiest hier voor <strong style={{color:c.text}}>{c.label}</strong>, terwijl je kompas op andere waarden staat. Wat gaf dit de doorslag?</p>}
+                    {isM?<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Deze keuze sluit aan bij jouw anker <strong style={{color:c.text}}>{match.name}</strong>. Moreel besef groeit wanneer je herkent <em>waarom</em> je zo handelt.</p>:<p style={{fontSize:13,color:"#334155",lineHeight:1.6}}>Je kiest hier voor <strong style={{color:c.text}}>{c.label}</strong>, terwijl je ankers elders liggen. Geen fout — wel een moment van zelfkennis: wat gaf hier de doorslag, en welk doel stond op de achtergrond?</p>}
                     <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                       <span style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase"}}>Kompas:</span>
                       {coreVals.map(cv=>{const cc=CM[cv.color];const act=cv.color===pending.color;return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${act?cc.border:"#e2e8f0"}`,background:act?cc.bg:"#f8fafc",color:act?cc.text:"#64748b"}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
@@ -2236,7 +2265,8 @@ export default function MoralMaps(){
             <div style={{background:"#0f172a",borderRadius:16,padding:"28px 24px",textAlign:"center",marginBottom:20}}>
               <div style={{fontSize:44,marginBottom:8}}>🏆</div>
               <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
-              <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Overzicht van je volledige route in Moral Maps 1</p>
+              <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Wat je hebt ontdekt over je waarden, keuzes en richting</p>
+              <p style={{color:"#e2e8f0",fontSize:14,marginTop:14,lineHeight:1.7,fontStyle:"italic"}}>{formatAnkerzin(coreVals)}</p>
               {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
               {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
             </div>
@@ -2274,8 +2304,11 @@ export default function MoralMaps(){
               </div>
             )}
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Kernwaarden</p>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"10px 14px",borderRadius:12,border:`1.5px solid ${c.border}`,background:c.bg}}><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p></div>;})}</div>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>🧠 Moreel besef</p>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.75,margin:"0 0 14px"}}>{dominanteKleurInzicht(domColor,coreVals)}</p>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Jouw ankers</p>
+              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"10px 14px",borderRadius:12,border:`1.5px solid ${c.border}`,background:c.bg}}><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#64748b",margin:"4px 0 0"}}>{c.label}</p></div>;})}</div>
+              <p style={{fontSize:12,color:"#64748b",lineHeight:1.7,margin:"14px 0 0"}}>Formuleer voor jezelf één doel voor de komende week: <em>wanneer ik onder druk sta, wil ik handelen vanuit…</em></p>
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🎒 Rugzak reflectie</p>
