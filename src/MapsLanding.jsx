@@ -18,7 +18,7 @@ const PARTS = [
     tag: "The Beginning",
     title: "Moral Maps",
     subtitle: "Wie ben je?",
-    desc: "Breng je waarden in kaart, stel je moreale GPS in en navigeer je eerste dilemma's. De reis begint met zelfkennis.",
+    desc: "Breng je waarden in kaart, stel je morele GPS in en navigeer je eerste dilemma's. De reis begint met zelfkennis.",
     duration: "± 25 min",
     url: "https://moral-maps.vercel.app",
     accent: "#1d9e75",

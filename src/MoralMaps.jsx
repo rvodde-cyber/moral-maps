@@ -980,7 +980,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
     </div>
 
     <div class="card">
-      <p class="label">📍 Moreale GPS — Kernwaarden</p>
+      <p class="label">📍 Morele GPS — Kernwaarden</p>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">${coreValHtml}</div>
     </div>
 
@@ -1377,7 +1377,7 @@ function Landing({onStart, onResume, onStartDeel2}){
   const STEPS=[
     {color:TEAL,sc:TEAL_DARK,icon:"🌸",num:"00",label:"Privilege Wiel",tag:"Bewustwording",desc:"Verken jouw eigen rugzak. Reflecteer op privilege als startpunt voor bewustwording."},
     {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 10 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
-    {color:"#EAB308",sc:"#a16207",icon:"📍",num:"02",label:"De GPS",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten op jouw moreale GPS."},
+    {color:"#EAB308",sc:"#a16207",icon:"📍",num:"02",label:"De GPS",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten op jouw morele GPS."},
     {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op vier realistische dilemma's en ontdek of je keuzes overeenkomen met jouw GPS."},
     {color:"#22C55E",sc:"#15803d",icon:"✨",num:"04",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
   ];
@@ -2231,7 +2231,7 @@ export default function MoralMaps(){
             </div>
             {coreVals.length>0&&(
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-                <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,textAlign:"center",marginBottom:14}}>Jouw moreale GPS</p>
+                <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,textAlign:"center",marginBottom:14}}>Jouw morele GPS</p>
                 <div style={{display:"flex",justifyContent:"center",gap:14,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{textAlign:"center",padding:"16px 20px",borderRadius:16,border:`2px solid ${c.border}`,background:c.bg}}><div style={{fontSize:24,marginBottom:4}}>📍</div><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginTop:2}}>{c.label}</p></div>;})}</div>
               </div>
             )}

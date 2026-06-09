@@ -125,7 +125,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
             borderRadius: 16, padding: "20px 24px", marginBottom: 32,
           }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: "#334155", textTransform: "uppercase", marginBottom: 14 }}>
-              Jouw moreale GPS
+              Jouw morele GPS
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               {coreValues.map((v, i) => {

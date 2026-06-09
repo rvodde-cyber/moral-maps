@@ -130,13 +130,13 @@ export const stages: Stage[] = [
     id: "mist",
     label: "Mist & Zicht",
     icon: "🌫️",
-    summary: "Wanneer zicht ontbreekt, bepaalt je moreale GPS je koers.",
+    summary: "Wanneer zicht ontbreekt, bepaalt je morele GPS je koers.",
     prompts: [
       {
         id: "mist-rijden",
         title: "Rijden in de Mist",
         question:
-          "Op welke moreale GPS vertrouw je wanneer externe zekerheden wegvallen?",
+          "Op welke morele GPS vertrouw je wanneer externe zekerheden wegvallen?",
         imageSrc:
           "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1400&q=80",
         imageAlt: "Weg in dichte mist met zacht licht",
