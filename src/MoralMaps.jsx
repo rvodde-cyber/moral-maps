@@ -8,7 +8,7 @@
 //  3. Voer supabase_setup.sql uit in de Supabase SQL Editor
 // ============================================================
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import HalteCrossroads from "./HalteCrossroads";
 import HalteFinalDestination from "./HalteFinalDestination";
@@ -77,6 +77,12 @@ async function dbSave(entry) {
   return { ok: false, error: message };
 }
 
+function parseJsonField(value, fallback) {
+  if (value == null) return fallback;
+  if (typeof value === "object") return value;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
 async function dbLoad(groupCode) {
   if (!supabase) {
     console.error("Supabase load: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
@@ -93,11 +99,11 @@ async function dbLoad(groupCode) {
     currentStage:       r.current_stage,
     groupCode:         r.group_code,
     age:               r.age,
-    coreValues:        r.core_values,
-    dilemmaResponses:  r.dilemma_responses,
-    starr:             r.starr,
+    coreValues:        parseJsonField(r.core_values, []),
+    dilemmaResponses:  parseJsonField(r.dilemma_responses, []),
+    starr:             parseJsonField(r.starr, {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""}),
     dominantColor:     r.dominant_color,
-    socialisatie:      r.socialisatie,
+    socialisatie:      parseJsonField(r.socialisatie, {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""}),
     ts:                new Date(r.created_at).getTime(),
   }));
 }
@@ -121,11 +127,11 @@ async function dbLoadByParticipantCode(participantCode) {
     currentStage: data.current_stage,
     groupCode: data.group_code,
     age: data.age,
-    coreValues: data.core_values || [],
-    dilemmaResponses: data.dilemma_responses || [],
-    starr: data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""},
+    coreValues: parseJsonField(data.core_values, []),
+    dilemmaResponses: parseJsonField(data.dilemma_responses, []),
+    starr: parseJsonField(data.starr, {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""}),
     dominantColor: data.dominant_color,
-    socialisatie: data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""},
+    socialisatie: parseJsonField(data.socialisatie, {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""}),
   };
 }
 
@@ -219,6 +225,58 @@ const DILEMMAS = [
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
 const FONT = "'DM Sans',system-ui,sans-serif";
+const STARR_MIN_CHARS = 15;
+const SOCIALISATIE_MIN_CHARS = 10;
+
+const RESPONSIVE_CSS = `
+@media (max-width:768px){
+  .mm-hero-grid{grid-template-columns:1fr!important;gap:24px!important}
+  .mm-hero-phone{display:none!important}
+  .mm-trilogie-grid{grid-template-columns:1fr!important}
+  .mm-trilogie-parts{grid-template-columns:1fr!important}
+  .mm-form-grid{grid-template-columns:1fr!important}
+  .mm-privilege-grid{grid-template-columns:1fr!important}
+  .mm-values-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important}
+}
+`;
+
+function isStarrComplete(starr) {
+  return ["situatie", "taak", "actie", "resultaat", "reflectie"].every(
+    (k) => (starr[k] || "").trim().length >= STARR_MIN_CHARS
+  );
+}
+
+function isSocialisatieComplete(soc) {
+  return ["primair", "secundair", "transcultureel", "professioneel", "reflectie"].every(
+    (k) => (soc[k] || "").trim().length >= SOCIALISATIE_MIN_CHARS
+  );
+}
+
+function calcDomColor(coreVals, dilResp) {
+  const c = { geel: 0, blauw: 0, rood: 0, groen: 0, wit: 0 };
+  [...coreVals, ...dilResp].forEach((x) => {
+    if (x?.color) c[x.color]++;
+  });
+  const max = Math.max(...Object.values(c));
+  if (max === 0) return "blauw";
+  return Object.keys(c).reduce((a, b) => (c[a] >= c[b] ? a : b));
+}
+
+function openPrintWindow(html) {
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  if (win) {
+    win.onload = () => {
+      setTimeout(() => {
+        win.print();
+        URL.revokeObjectURL(url);
+      }, 600);
+    };
+  } else {
+    URL.revokeObjectURL(url);
+  }
+}
 // Centrale plek voor alle visuele assets per deel/signature-event.
 const ASSET_IMAGES = {
   deel1: {
@@ -250,30 +308,6 @@ function generateParticipantCode(){
   for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
   return out;
 }
-
-const ORG_QUESTIONS = [
-  { id: 1, title: "Ethische visie", subtitle: "Richting en betekenis", explanation: "In welke mate is de missie van de organisatie expliciet gekoppeld aan maatschappelijke waarde en verantwoord handelen?" },
-  { id: 2, title: "Voorbeeldgedrag leiderschap", subtitle: "Walk the talk", explanation: "In welke mate laten leidinggevenden in keuzes en gedrag zien wat zij van anderen verwachten?" },
-  { id: 3, title: "Psychologische veiligheid", subtitle: "Ruimte om te spreken", explanation: "In welke mate ervaren medewerkers veiligheid om dilemma's, fouten en zorgen bespreekbaar te maken?" },
-  { id: 4, title: "Waarden in besluitvorming", subtitle: "Niet alleen op papier", explanation: "In welke mate worden waarden zichtbaar meegewogen naast rendement, tijd en risico?" },
-  { id: 5, title: "Transparantie", subtitle: "Uitlegbaar handelen", explanation: "In welke mate worden belangrijke beslissingen helder onderbouwd en gedeeld?" },
-  { id: 6, title: "Aanspreekcultuur", subtitle: "Professionele feedback", explanation: "In welke mate spreken collega's en leidinggevenden elkaar constructief aan op gedrag?" },
-  { id: 7, title: "Leren van fouten", subtitle: "Van incident naar verbetering", explanation: "In welke mate worden fouten systematisch benut om processen en gedrag te verbeteren?" },
-  { id: 8, title: "Rechtvaardigheid", subtitle: "Eerlijk en consistent", explanation: "In welke mate worden mensen en teams gelijkwaardig behandeld in kansen, beoordeling en beloning?" },
-  { id: 9, title: "Inclusie", subtitle: "Iedere stem telt", explanation: "In welke mate wordt actief ruimte gecreeerd voor verschillende perspectieven en achtergronden?" },
-  { id: 10, title: "Verantwoordelijkheid", subtitle: "Eigenaarschap op elk niveau", explanation: "In welke mate voelen professionals zich eigenaar van ethische kwaliteit in hun dagelijkse werk?" },
-  { id: 11, title: "Stakeholderbewustzijn", subtitle: "Brede impact meenemen", explanation: "In welke mate wordt de impact op klanten, burgers, partners en samenleving meegewogen?" },
-  { id: 12, title: "Korte vs lange termijn", subtitle: "Duurzame afwegingen", explanation: "In welke mate wordt structureel gekozen voor duurzame oplossingen boven snelle winst?" },
-  { id: 13, title: "Integrale samenwerking", subtitle: "Silo's doorbreken", explanation: "In welke mate werken afdelingen samen aan gedeelde ethische en organisatorische doelen?" },
-  { id: 14, title: "Signalering en opvolging", subtitle: "Melden heeft effect", explanation: "In welke mate worden signalen over risico's of misstanden serieus opgepakt en opgevolgd?" },
-  { id: 15, title: "Professionele reflectie", subtitle: "Tijd voor moreel beraad", explanation: "In welke mate is er structurele ruimte voor reflectie op complexe casuistiek?" },
-  { id: 16, title: "Kennis en competenties", subtitle: "Ethisch vakmanschap", explanation: "In welke mate worden medewerkers getraind in morele oordeelsvorming en professioneel handelen?" },
-  { id: 17, title: "Grenzen en normen", subtitle: "Heldere kaders", explanation: "In welke mate zijn normen, grensoverschrijdend gedrag en consequenties eenduidig geformuleerd?" },
-  { id: 18, title: "Datagedreven verbeteren", subtitle: "Meten is leren", explanation: "In welke mate gebruikt de organisatie data en feedback om ethisch werken te versterken?" },
-  { id: 19, title: "Mensen boven systemen", subtitle: "Menselijke maat", explanation: "In welke mate blijft de menselijke maat leidend in beleid, processen en klantcontact?" },
-  { id: 20, title: "Externe verantwoording", subtitle: "Open naar buiten", explanation: "In welke mate legt de organisatie actief verantwoording af over maatschappelijke en ethische keuzes?" },
-  { id: 21, title: "Continue verbetering", subtitle: "Van scan naar actie", explanation: "In welke mate vertaalt de organisatie inzichten uit metingen naar een concreet verbeterplan?" },
-];
 
 // ── Privilege Wiel Data ────────────────────────────────────────
 
@@ -359,17 +393,20 @@ function Spinner(){
   );
 }
 
-function PBar({step,pct}){
+function PBar({step,pct,onStepClick}){
   const L=["Positie","Waarden","Kompas","Dilemma's","STARR","Rugzak","Verslag"];
   return(
-    <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20}}>
+    <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20}} role="navigation" aria-label="Voortgang Deel 1">
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
-        {L.map((p,i)=>(
+        {L.map((p,i)=>{
+          const done=i<step, current=i===step, canGoBack=done&&onStepClick;
+          return(
           <div key={p} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:i<=step?TEAL:"#f1f5f9",color:i<=step?"#fff":"#94a3b8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,boxShadow:i===step?`0 0 0 4px ${TEAL_GLOW}`:"none",transition:"all .3s"}}>{i<step?"✓":i+1}</div>
+            <button type="button" disabled={!canGoBack} onClick={()=>canGoBack&&onStepClick(i)} aria-label={`${p}${done?" (afgerond, klik om terug te gaan)":current?" (huidige stap)":""}`} aria-current={current?"step":undefined}
+              style={{width:28,height:28,borderRadius:"50%",background:i<=step?TEAL:"#f1f5f9",color:i<=step?"#fff":"#94a3b8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,boxShadow:current?`0 0 0 4px ${TEAL_GLOW}`:"none",transition:"all .3s",border:"none",cursor:canGoBack?"pointer":"default",fontFamily:FONT,padding:0}}>{done?"✓":i+1}</button>
             <span style={{fontSize:9,fontWeight:600,color:i<=step?TEAL:"#94a3b8",textAlign:"center"}}>{p}</span>
           </div>
-        ))}
+        );})}
       </div>
       <div style={{height:4,borderRadius:99,background:"#f1f5f9",overflow:"hidden"}}>
         <div style={{height:"100%",width:`${pct}%`,background:TEAL,transition:"width .6s ease"}}/>
@@ -485,7 +522,7 @@ function PrivilegeWheel({onComplete}){
         <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie: <strong>machtscentrum</strong>, <strong>middenzone</strong> of <strong>marginale zone</strong>.</p>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:16}}>
+      <div className="mm-privilege-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:16}}>
         {/* SVG Wiel */}
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} style={{maxWidth:"100%"}}>
@@ -756,147 +793,6 @@ function VreemdeAnder({coreVals, onComplete}){
   );
 }
 
-// ── Socialisatieverslag ────────────────────────────────────────
-
-function Socialisatieverslag({coreVals, onComplete}){
-  const [antwoorden, setAntwoorden] = useState({
-    primair:"", secundair:"", tertiair:"", koppeling:""
-  });
-  const [showIntro, setShowIntro] = useState(true);
-
-  const isComplete = Object.values(antwoorden).every(v => v.trim().length > 20);
-
-  const lagen = [
-    {
-      key: "primair",
-      icon: "🏠",
-      label: "Primaire socialisatie",
-      kleur: "#f43f5e",
-      lichtkleur: "#ffe4e6",
-      borderkleur: "#f43f5e",
-      uitleg: "Primaire socialisatie vindt plaats in je vroege jeugd, vooral in het gezin. De waarden, normen en gewoonten die je thuis hebt meegekregen vormen de basis van wie je bent.",
-      hint: "Welke waarden of normen heb je van huis uit meegekregen? Denk aan opvattingen over eerlijkheid, hard werken, zorgen voor anderen, of juist onafhankelijkheid. Herken je die in jouw drie kernwaarden?",
-    },
-    {
-      key: "secundair",
-      icon: "🏫",
-      label: "Secundaire socialisatie",
-      kleur: "#f59e0b",
-      lichtkleur: "#fffbeb",
-      borderkleur: "#fcd34d",
-      uitleg: "Secundaire socialisatie gebeurt buiten het gezin: op school, in verenigingen, bij vrienden, via media. Je leert hoe grotere sociale verbanden werken en welke waarden daar gelden.",
-      hint: "Welke omgevingen buiten je gezin hebben jouw waarden gevormd? Denk aan school, sport, religie, sociale media of vriendschapsgroepen. Wat leerde je daar — en botste dat soms met thuis?",
-    },
-    {
-      key: "tertiair",
-      icon: "💼",
-      label: "Tertiaire socialisatie",
-      kleur: TEAL,
-      lichtkleur: TEAL_LIGHT,
-      borderkleur: TEAL,
-      uitleg: "Tertiaire socialisatie vindt plaats in je professionele context: werk, team en beroepsgroep. Je leert de normen en waarden van een specifiek werkveld of organisatie.",
-      hint: "Hoe heeft je werkomgeving jouw professionele waarden gevormd of uitgedaagd? Zijn er waarden die je bewust hebt overgenomen — of juist afgewezen — in jouw beroepsidentiteit?",
-    },
-    {
-      key: "koppeling",
-      icon: "🧭",
-      label: "Koppeling aan jouw kompas",
-      kleur: "#6366f1",
-      lichtkleur: "#eef2ff",
-      borderkleur: "#a5b4fc",
-      uitleg: "Je kernwaarden zijn niet zomaar ontstaan — ze hebben een geschiedenis. In dit laatste veld breng je de drie lagen samen en koppel je ze aan jouw moreel kompas.",
-      hint: `Hoe verklaren jouw socialisatielagen de keuze voor jouw kernwaarden ${coreVals.map(v=>v.name).join(", ")}? Welke laag heeft het meeste invloed gehad? En wat betekent dit voor jouw professioneel handelen?`,
-    },
-  ];
-
-  if(showIntro){
-    return(
-      <div style={{maxWidth:560,margin:"0 auto"}}>
-        <div style={{background:"#fff",borderRadius:20,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:16}}>
-          <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"28px 28px 24px"}}>
-            <div style={{fontSize:40,marginBottom:12}}>📖</div>
-            <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0,letterSpacing:-.5}}>Het Socialisatieverslag</h2>
-            <p style={{color:"rgba(255,255,255,.7)",fontSize:13,marginTop:8,lineHeight:1.7}}>Waar komen jouw waarden vandaan?</p>
-          </div>
-          <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Jouw kernwaarden zijn niet toevallig. Ze zijn gevormd door de omgevingen waarin je bent opgegroeid en gewerkt. Dit verslag helpt je die wortels te begrijpen.</p>
-            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-              {[
-                {icon:"🏠",label:"Primaire socialisatie",sub:"Gezin en vroege jeugd",kleur:"#f43f5e"},
-                {icon:"🏫",label:"Secundaire socialisatie",sub:"School, vrienden, media",kleur:"#f59e0b"},
-                {icon:"💼",label:"Tertiaire socialisatie",sub:"Werk en beroepsomgeving",kleur:TEAL},
-                {icon:"🧭",label:"Koppeling aan jouw kompas",sub:"Alles samen",kleur:"#6366f1"},
-              ].map(({icon,label,sub,kleur})=>(
-                <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:12,border:`1px solid ${kleur}30`,background:`${kleur}08`}}>
-                  <div style={{width:32,height:32,borderRadius:8,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{icon}</div>
-                  <div><p style={{fontWeight:700,fontSize:13,color:"#1e293b",margin:0}}>{label}</p><p style={{fontSize:11,color:"#94a3b8",margin:0}}>{sub}</p></div>
-                </div>
-              ))}
-            </div>
-            <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"12px 16px",marginBottom:24}}>
-              <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>💡 Jouw kernwaarden: <strong>{coreVals.map(v=>v.name).join(", ")}</strong>. Zie je de rode draad terug in jouw socialisatiegeschiedenis?</p>
-            </div>
-            <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:"#0f172a",color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",fontFamily:FONT}}>
-              Begin het verslag →
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return(
-    <div style={{maxWidth:680,margin:"0 auto"}}>
-      <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden",marginBottom:20}}>
-        <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",padding:"20px 22px"}}>
-          <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📖 Het Socialisatieverslag</h2>
-          <p style={{color:"rgba(255,255,255,.6)",fontSize:12,marginTop:6,lineHeight:1.5}}>Reflecteer op de drie lagen van jouw socialisatie en de wortels van jouw waarden.</p>
-        </div>
-        <div style={{background:"#fff",padding:20,display:"flex",flexDirection:"column",gap:20}}>
-
-          {/* Kernwaarden reminder */}
-          <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 16px",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>Jouw kompas:</span>
-            {coreVals.map(cv=>{const c=CM[cv.color];return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${c.border}`,color:c.text,background:c.bg}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
-          </div>
-
-          {lagen.map(({key,icon,label,kleur,borderkleur,uitleg,hint})=>(
-            <div key={key} style={{borderRadius:14,border:`1.5px solid ${borderkleur}`,overflow:"hidden"}}>
-              <div style={{background:`${kleur}10`,borderBottom:`1px solid ${borderkleur}50`,padding:"14px 18px",display:"flex",gap:12,alignItems:"flex-start"}}>
-                <div style={{width:36,height:36,borderRadius:10,background:kleur,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{icon}</div>
-                <div>
-                  <p style={{fontWeight:800,fontSize:14,color:kleur,margin:"0 0 4px"}}>{label}</p>
-                  <p style={{fontSize:12,color:"#475569",lineHeight:1.6,margin:0}}>{uitleg}</p>
-                </div>
-              </div>
-              <div style={{padding:"14px 18px",background:"#fff"}}>
-                <p style={{fontSize:11,color:"#94a3b8",marginBottom:8,lineHeight:1.6,fontStyle:"italic"}}>{hint}</p>
-                <textarea
-                  value={antwoorden[key]}
-                  onChange={e=>setAntwoorden({...antwoorden,[key]:e.target.value})}
-                  placeholder="Schrijf hier je reflectie…"
-                  rows={4}
-                  style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
-                  onFocus={e=>e.target.style.borderColor=kleur}
-                  onBlur={e=>e.target.style.borderColor="#e2e8f0"}
-                />
-                <div style={{textAlign:"right",fontSize:10,color:antwoorden[key].trim().length>20?TEAL:"#94a3b8",marginTop:4}}>
-                  {antwoorden[key].trim().length>20 ? "✓ Voldoende" : `Nog ${20-antwoorden[key].trim().length} tekens`}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          <button onClick={()=>onComplete(antwoorden)} disabled={!isComplete}
-            style={{padding:"13px",borderRadius:99,border:"none",background:isComplete?"#0f172a":"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:isComplete?"pointer":"not-allowed",fontFamily:FONT,transition:"all .2s"}}>
-            {isComplete ? "Naar het Reisverslag →" : "Vul alle vier de velden in om verder te gaan"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── PDF Export ─────────────────────────────────────────────────
 
 function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age){
@@ -974,10 +870,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
 
   </body></html>`;
 
-  const blob = new Blob([html], {type:'text/html'});
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank');
-  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 600); }; }
+  openPrintWindow(html);
 }
 
 function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankstop, omweg, deel2Inzicht, vreemdeAnderResult, groupCode, age}){
@@ -1035,10 +928,7 @@ function exportPDFDeel2({coreVals, crossroadsChoice, crossroadsReflectie, tankst
     <div class="footer">Gegenereerd voor Deel 2 - printbaar portfolio-fragment</div>
     </body></html>`;
 
-  const blob = new Blob([html], {type:"text/html"});
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url,"_blank");
-  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+  openPrintWindow(html);
 }
 
 function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, deel3Terugblik, deel3Vooruitblik, deel3Synthese, deel3Grow, domColor, socialisatie, profile, groupCode, age}){
@@ -1081,10 +971,7 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
     <div class="footer">Portfolio-export - bruikbaar voor presentatie of persoonlijk verhaal</div>
     </body></html>`;
 
-  const blob = new Blob([html], {type:"text/html"});
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url,"_blank");
-  if(win){ win.onload = ()=>{ setTimeout(()=>win.print(), 500); }; }
+  openPrintWindow(html);
 }
 
 // ── Dashboard ──────────────────────────────────────────────────
@@ -1101,7 +988,7 @@ function WordCloud({results}){
     <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",padding:"12px 0"}}>
       {words.map(({name,color,count})=>{
         const c=CM[color],s=0.75+(count/mx)*1.0;
-        return <span key={name} style={{fontSize:Math.round(11*s),fontWeight:count===mx?800:600,color:c.solid,background:c.bg,border:`1.5px solid ${c.border}`,borderRadius:8,padding:"3px 9px"}}>{name}<sup style={{fontSize:8,opacity:.5,marginLeft:2}}>{count}</sup></span>;
+        return <span key={`${name}|${color}`} style={{fontSize:Math.round(11*s),fontWeight:count===mx?800:600,color:c.text,background:c.bg,border:`1.5px solid ${c.border}`,borderRadius:8,padding:"3px 9px"}}>{name}<sup style={{fontSize:8,opacity:.5,marginLeft:2}}>{count}</sup></span>;
       })}
     </div>
   );
@@ -1110,15 +997,32 @@ function WordCloud({results}){
 function Dashboard({groupCode,onBack}){
   const [results,setResults]=useState([]);
   const [loading,setLoading]=useState(true);
+  const [refreshing,setRefreshing]=useState(false);
   const [error,setError]=useState(null);
+  const requestIdRef=useRef(0);
 
-  const fetchData = useCallback(async ()=>{
-    setLoading(true);setError(null);
-    try{setResults(await dbLoad(groupCode));}
-    catch{setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");}
-    finally{setLoading(false);}
+  const loadResults=useCallback(async(isRefresh=false)=>{
+    const reqId=++requestIdRef.current;
+    if(isRefresh)setRefreshing(true); else setLoading(true);
+    setError(null);
+    try{
+      const data=await dbLoad(groupCode);
+      if(reqId!==requestIdRef.current)return;
+      setResults(data);
+    }catch{
+      if(reqId!==requestIdRef.current)return;
+      setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");
+    }finally{
+      if(reqId!==requestIdRef.current)return;
+      setLoading(false);
+      setRefreshing(false);
+    }
   },[groupCode]);
-  useEffect(()=>{fetchData();},[fetchData]);
+
+  useEffect(()=>{
+    loadResults(false);
+    return()=>{requestIdRef.current++;};
+  },[loadResults]);
 
   const byAge=useMemo(()=>{const m={};AGE_CATS.forEach(a=>{m[a]=[];});results.forEach(r=>{if(m[r.age])m[r.age].push(r);});return m;},[results]);
   function top3(es){const c={};es.forEach(r=>(r.coreValues||[]).forEach(v=>{if(!c[v.name])c[v.name]={count:0,color:v.color};c[v.name].count++;}));return Object.entries(c).sort(([,a],[,b])=>b.count-a.count).slice(0,3).map(([n,{color}])=>({name:n,color}));}
@@ -1128,12 +1032,16 @@ function Dashboard({groupCode,onBack}){
     <div style={{maxWidth:700,margin:"0 auto",padding:"24px 16px 60px",fontFamily:FONT}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
-        <button onClick={onBack} style={{background:"#f1f5f9",border:"none",borderRadius:99,padding:"8px 16px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#334155",fontFamily:FONT}}>← Terug</button>
+        <button type="button" onClick={onBack} aria-label="Terug naar start" style={{background:"#f1f5f9",border:"none",borderRadius:99,padding:"8px 16px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#334155",fontFamily:FONT}}>← Terug</button>
         <div><h2 style={{fontWeight:900,fontSize:20,margin:0}}>Dashboard</h2><p style={{margin:0,fontSize:12,color:"#64748b"}}>Groep: <strong>{groupCode}</strong>{!loading&&<span> · {results.length} deelnemers</span>}</p></div>
-        <button onClick={fetchData} style={{marginLeft:"auto",background:TEAL_LIGHT,border:`1px solid ${TEAL}40`,borderRadius:99,padding:"6px 14px",cursor:"pointer",fontWeight:600,fontSize:12,color:TEAL,fontFamily:FONT}}>↻ Vernieuwen</button>
+        <button type="button" onClick={()=>loadResults(true)} disabled={loading||refreshing} aria-label="Dashboard vernieuwen" style={{marginLeft:"auto",background:TEAL_LIGHT,border:`1px solid ${TEAL}40`,borderRadius:99,padding:"6px 14px",cursor:loading||refreshing?"wait":"pointer",fontWeight:600,fontSize:12,color:TEAL,fontFamily:FONT,opacity:refreshing?.6:1}}>{refreshing?"↻ Laden…":"↻ Vernieuwen"}</button>
       </div>
-      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"14px 18px",marginBottom:20,color:"#b91c1c",fontSize:13}}>⚠️ {error}</div>}
-      {loading?<Spinner/>:<>
+      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"14px 18px",marginBottom:20,color:"#b91c1c",fontSize:13}} role="alert">⚠️ {error}</div>}
+      {loading?<Spinner/>:results.length===0?<div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"40px 24px",textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:12}}>📭</div>
+          <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:800,color:"#0f172a"}}>Nog geen resultaten</h3>
+          <p style={{margin:0,fontSize:14,color:"#64748b",lineHeight:1.7}}>Voor groepscode <strong>{groupCode}</strong> zijn nog geen opgeslagen reisverslagen gevonden. Laat studenten Deel 1 afronden of controleer de spelling van de code.</p>
+        </div>:<>
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
           <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Wordcloud – Kernwaarden</p>
           <WordCloud results={results}/>
@@ -1171,78 +1079,6 @@ function Dashboard({groupCode,onBack}){
   );
 }
 
-function OrganizationLakmoesproef({ onBack }) {
-  const [orgName, setOrgName] = useState("");
-  const [role, setRole] = useState("");
-  const [answers, setAnswers] = useState({});
-  const [notes, setNotes] = useState("");
-
-  const completed = Object.keys(answers).length;
-  const allDone = completed === ORG_QUESTIONS.length;
-  const score = allDone
-    ? Math.round(
-        (Object.values(answers).reduce((sum, val) => sum + val, 0) /
-          (ORG_QUESTIONS.length * 5)) *
-          100
-      )
-    : 0;
-
-  return (
-    <div style={{ background: "#f8fafc", minHeight: "100vh", fontFamily: FONT }}>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 60px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900, letterSpacing: -0.4 }}>Organisatie lakmoesproef</h2>
-          <button onClick={onBack} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 999, padding: "8px 14px", cursor: "pointer", fontWeight: 700, color: "#334155" }}>← Terug</button>
-        </div>
-
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 18, marginBottom: 14 }}>
-          <p style={{ margin: "0 0 10px", color: "#475569", lineHeight: 1.7, fontSize: 14 }}>
-            Een professionele organisatiescan op basis van 21 vragen over voorbeeldig organiseren. Beoordeel per vraag de huidige praktijk op een schaal van 1 (zwak) tot 5 (sterk).
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Organisatie (optioneel)" style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #cbd5e1", fontFamily: FONT }} />
-            <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Jouw rol/functie (optioneel)" style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #cbd5e1", fontFamily: FONT }} />
-          </div>
-          <p style={{ margin: "10px 0 0", fontSize: 12, color: "#64748b" }}>{completed}/{ORG_QUESTIONS.length} vragen ingevuld</p>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {ORG_QUESTIONS.map((q) => (
-            <div key={q.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 16 }}>
-              <p style={{ margin: 0, fontSize: 11, color: "#94a3b8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>Vraag {q.id}</p>
-              <h3 style={{ margin: "4px 0 2px", fontSize: 18, fontWeight: 800 }}>{q.title}</h3>
-              <p style={{ margin: "0 0 8px", fontSize: 12, color: TEAL, fontWeight: 700 }}>{q.subtitle}</p>
-              <p style={{ margin: "0 0 12px", fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{q.explanation}</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: n }))} style={{ minWidth: 42, padding: "8px 12px", borderRadius: 10, border: `1.5px solid ${answers[q.id] === n ? TEAL : "#cbd5e1"}`, background: answers[q.id] === n ? TEAL : "#fff", color: answers[q.id] === n ? "#fff" : "#334155", fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 14, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 16 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>Kernobservaties en verbetersporen (optioneel)</label>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Welke 2-3 thema's verdienen direct aandacht? Welke acties zijn kansrijk?" style={{ width: "100%", borderRadius: 10, border: "1px solid #cbd5e1", padding: 12, fontFamily: FONT, resize: "vertical" }} />
-          <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <p style={{ margin: 0, fontSize: 13, color: allDone ? TEAL : "#64748b", fontWeight: 700 }}>
-              {allDone ? `Integriteitsscore organisatie: ${score}%` : "Vul alle vragen in voor een totaalscore"}
-            </p>
-          </div>
-          {allDone && (
-            <p style={{ margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.6 }}>
-              {score >= 80 ? "Sterk fundament: borg de werkwijze en houd focus op continue verbetering." : score >= 60 ? "Goede basis: prioriteer 3 verbeterpunten met duidelijke eigenaarschap en planning." : "Versterking nodig: start met leiderschap, aanspreekcultuur en veilige dialoog als eerste interventies."}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Landing ────────────────────────────────────────────────────
 
 function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
@@ -1262,9 +1098,10 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
 
   return(
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#eef2ff,#f8fafc 38%)",fontFamily:FONT}}>
+      <style>{RESPONSIVE_CSS}</style>
       <div style={{maxWidth:980,margin:"0 auto",padding:"32px 16px 56px"}}>
         <div style={{background:"#fff",borderRadius:24,border:"1px solid #e2e8f0",padding:"24px 24px 20px",marginBottom:16,boxShadow:"0 14px 38px rgba(15,23,42,.08)"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"center"}}>
+          <div className="mm-trilogie-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"center"}}>
             <div>
               <p style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,margin:"0 0 6px"}}>Moral Maps Trilogie</p>
               <h1 style={{margin:0,fontSize:32,fontWeight:900,letterSpacing:-.8,color:"#0f172a"}}>Welkom bij je morele reis</h1>
@@ -1277,7 +1114,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#f0fdf4",color:"#166534",fontWeight:700}}>III: Final Destination</span>
               </div>
             </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 0"}}>
+            <div className="mm-hero-phone" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 0"}}>
               <div style={{width:180,height:360,background:"linear-gradient(170deg,#1e293b,#0f172a)",borderRadius:32,border:"2px solid #2d3f55",boxShadow:"0 32px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)",padding:8,flexShrink:0}}>
                 <div style={{width:56,height:14,background:"#0a0f1e",borderRadius:99,margin:"0 auto 6px",border:"1px solid #1e2d3d"}}/>
                 <div style={{background:"#f8fafc",borderRadius:22,height:310,overflow:"hidden",position:"relative"}}>
@@ -1317,7 +1154,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
         </div>
 
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:18,marginBottom:16}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          <div className="mm-form-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
             <div>
               <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Groepscode</label>
               <input value={gc} onChange={e=>setGc(e.target.value)} placeholder="bijv. HBO25A" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
@@ -1335,8 +1172,8 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
           {startHint && <p style={{margin:"8px 0 0",fontSize:11,color:"#b45309",fontWeight:700}}>⚠ {startHint}</p>}
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3, minmax(0, 1fr))",gap:12,marginBottom:16}}>
-          <button onClick={()=>runStart(onStartDeel1)} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:"pointer",fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
+        <div className="mm-trilogie-parts" style={{display:"grid",gridTemplateColumns:"repeat(3, minmax(0, 1fr))",gap:12,marginBottom:16}}>
+          <button type="button" onClick={()=>runStart(onStartDeel1)} style={{padding:"16px 14px",borderRadius:16,border:"1px solid #e2e8f0",background:"#fff",textAlign:"left",cursor:"pointer",fontFamily:FONT,boxShadow:"0 8px 24px rgba(15,23,42,.05)"}}>
             <p style={{margin:0,fontSize:10,fontWeight:800,color:"#6366f1",textTransform:"uppercase",letterSpacing:1}}>I: The Beginning</p>
             <p style={{margin:"5px 0 0",fontSize:14,fontWeight:900,color:"#0f172a"}}>Start Deel I</p>
             <p style={{margin:"6px 0 0",fontSize:12,color:"#64748b",lineHeight:1.6}}>Begin, waarden en eerste reisverslag.</p>
@@ -1400,13 +1237,13 @@ function Landing({onStart, onResume, onStartDeel2}){
 
   return(
     <div style={{minHeight:"100vh",fontFamily:FONT,background:GM_BG}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes floatPhone{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(-3deg)}}@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulsePin{0%{box-shadow:0 0 0 0 rgba(26,115,232,.45)}100%{box-shadow:0 0 0 16px rgba(26,115,232,0)}}.phone{animation:floatPhone 5s ease-in-out infinite}.shimmer{animation:shimmer 2.5s ease-in-out infinite}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes floatPhone{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(-3deg)}}@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulsePin{0%{box-shadow:0 0 0 0 rgba(26,115,232,.45)}100%{box-shadow:0 0 0 16px rgba(26,115,232,0)}}.phone{animation:floatPhone 5s ease-in-out infinite}.shimmer{animation:shimmer 2.5s ease-in-out infinite}${RESPONSIVE_CSS}`}</style>
 
       {/* HERO */}
       <section style={{background:"linear-gradient(180deg,#e8f0fe,#f1f3f4 60%,#f8f9fa)",position:"relative",overflow:"hidden",borderBottom:`1px solid ${GM_BORDER}`}}>
         <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(95,99,104,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(95,99,104,.08) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none"}}/>
         <div style={{position:"absolute",width:420,height:420,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,115,232,.25),transparent 70%)",top:-120,left:-90,pointerEvents:"none"}}/>
-        <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 24px 56px",display:"grid",gridTemplateColumns:"1fr auto",gap:40,alignItems:"start",position:"relative",zIndex:1}}>
+        <div className="mm-hero-grid" style={{maxWidth:1000,margin:"0 auto",padding:"48px 24px 56px",display:"grid",gridTemplateColumns:"1fr auto",gap:40,alignItems:"start",position:"relative",zIndex:1}}>
 
           {/* Left */}
           <div style={{maxWidth:480}}>
@@ -1470,7 +1307,7 @@ function Landing({onStart, onResume, onStartDeel2}){
           </div>
 
           {/* Right: smartphone mockup */}
-          <div style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8,perspective:900}}>
+          <div className="mm-hero-phone" style={{display:"flex",alignItems:"center",paddingTop:20,paddingRight:8,perspective:900}}>
             <div className="phone" style={{width:242,height:472,background:"linear-gradient(170deg,#232a36,#0c1119)",borderRadius:42,border:"2px solid #3b4350",boxShadow:"0 42px 95px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.22)",padding:11,flexShrink:0,transform:"rotate(-2deg)",transition:"transform .25s ease"}}>
               <div style={{width:72,height:18,background:"#0b1119",borderRadius:99,margin:"0 auto 8px",border:"1px solid #263142"}}/>
               <div style={{background:"#dfe6df",borderRadius:30,height:408,overflow:"hidden",position:"relative",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.22), inset 0 -20px 35px rgba(0,0,0,.08)"}}>
@@ -1605,21 +1442,31 @@ export default function MoralMaps(){
     extraAssignment:"",
   });
 
+  const [saving,setSaving]=useState(false);
+  const saveGenRef=useRef(0);
+
   const pct=useMemo(()=>{
+    const dilCount=activeDilemmas.length||1;
     if(phase===0)return 2;
     if(phase===1)return 14+(selVals.length/10)*12;
     if(phase===2)return 28+(coreVals.length/3)*12;
-    if(phase===3)return 42+(curDil/activeDilemmas.length)*14;
+    if(phase===3)return 42+(curDil/dilCount)*14;
     if(phase===4)return 58;
     if(phase===5)return 76;
     return 100;
-  },[phase,selVals.length,coreVals.length,curDil]);
+  },[phase,selVals.length,coreVals.length,curDil,activeDilemmas.length]);
 
-  const domColor=useMemo(()=>{
-    const c={geel:0,blauw:0,rood:0,groen:0,wit:0};
-    [...coreVals,...dilResp].forEach(x=>{if(x.color)c[x.color]++;});
-    return Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
-  },[coreVals,dilResp]);
+  const domColor=useMemo(()=>calcDomColor(coreVals,dilResp),[coreVals,dilResp]);
+  const starrReady=isStarrComplete(starr);
+  const socialisatieReady=isSocialisatieComplete(socialisatie);
+
+  function goToPhase(target){
+    if(target>=phase||target<0||phase>=6)return;
+    setPhase(target);
+    setPending(null);
+    setInsight(false);
+    if(target<3)setCurDil(0);
+  }
 
   function start(gc,ag,dc){
     if(dc){setDashCode(dc);setScreen("dashboard");return;}
@@ -1678,9 +1525,16 @@ export default function MoralMaps(){
       setDeel2Step(0);
       return;
     }
+    const phaseMatch = stage.match(/phase[_-]?(\d)/);
+    if(phaseMatch) {
+      setScreen("app");
+      setPhase(Math.min(6, Number(phaseMatch[1])));
+      if(Number(phaseMatch[1]) >= 6) setSaved(true);
+      return;
+    }
     setScreen("app");
-    setPhase(6);
-    setSaved(true);
+    setPhase(stage.includes("done") ? 6 : 0);
+    if(stage.includes("done")) setSaved(true);
   }
   function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
@@ -1699,6 +1553,13 @@ export default function MoralMaps(){
     if(!result.ok) console.error("Save progress failed:", result.error);
   }
   async function saveAndFinish(){
+    if(saving)return;
+    if(!socialisatieReady){
+      setSaveErr(`Vul alle rugzak-velden in (minimaal ${SOCIALISATIE_MIN_CHARS} tekens per veld).`);
+      return;
+    }
+    const gen=++saveGenRef.current;
+    setSaving(true);
     setSaveErr(null);
     setSavedLocal(false);
     const payload = {
@@ -1715,9 +1576,11 @@ export default function MoralMaps(){
     const result = await dbSave({
       ...payload
     });
+    if(gen!==saveGenRef.current)return;
     if(result.ok){
       setSaved(true);
       setPhase(6);
+      setSaving(false);
       return;
     }
     try{
@@ -1731,6 +1594,7 @@ export default function MoralMaps(){
     }catch{
       setSaveErr(`Opslaan mislukt: ${result.error}`);
     }
+    setSaving(false);
   }
 
   const filtered=filter?VALUES.filter(v=>v.color===filter):VALUES;
@@ -2109,7 +1973,7 @@ export default function MoralMaps(){
   // ── APP ──
   return(
     <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box}textarea,input{font-family:inherit}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box}textarea,input{font-family:inherit}@keyframes spin{to{transform:rotate(360deg)}}${RESPONSIVE_CSS}`}</style>
       <div style={{maxWidth:680,margin:"0 auto",padding:"20px 16px 60px"}}>
 
         {/* Header */}
@@ -2121,7 +1985,7 @@ export default function MoralMaps(){
           <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
         </div>
 
-        <PBar step={phase} pct={pct}/>
+        <PBar step={phase} pct={pct} onStepClick={phase<6?goToPhase:undefined}/>
 
         {/* P0 — Privilege Wiel */}
         {phase===0 && <PrivilegeWheel onComplete={()=>setPhase(1)}/>}
@@ -2144,7 +2008,7 @@ export default function MoralMaps(){
               ))}
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginBottom:16}}>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))",gap:8}}>
+              <div className="mm-values-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))",gap:8}}>
                 {filtered.map(v=>{const sel=selVals.some(s=>s.id===v.id);const c=CM[v.color];return(
                   <button key={v.id} disabled={!sel&&selVals.length>=10}
                     onClick={()=>{if(sel)setSelVals(selVals.filter(s=>s.id!==v.id));else if(selVals.length<10)setSelVals([...selVals,v]);}}
@@ -2204,7 +2068,7 @@ export default function MoralMaps(){
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {activeDilemmas.length}</span>
-              <div style={{display:"flex",gap:6}}>{DILEMMAS.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
+              <div style={{display:"flex",gap:6}} role="progressbar" aria-valuenow={curDil+1} aria-valuemin={1} aria-valuemax={activeDilemmas.length}>{activeDilemmas.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
             </div>
             <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:16}}>
               <div style={{background:"#0f172a",padding:"20px 20px 18px"}}>
@@ -2241,7 +2105,8 @@ export default function MoralMaps(){
                       {coreVals.map(cv=>{const cc=CM[cv.color];const act=cv.color===pending.color;return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${act?cc.border:"#e2e8f0"}`,background:act?cc.bg:"#f8fafc",color:act?cc.text:"#64748b"}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
                     </div>
                     <button onClick={()=>{
-                      setDilResp(prev=>[...prev,pending]);
+                      const dilemmaTitle=activeDilemmas[curDil]?.title||"";
+                      setDilResp(prev=>[...prev,{...pending,title:dilemmaTitle}]);
                       setPending(null);
                       setInsight(false);
                       if(curDil < activeDilemmas.length - 1) setCurDil(prev=>prev + 1);
@@ -2286,15 +2151,19 @@ export default function MoralMaps(){
                   <div key={key}>
                     <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>{label}</label>
                     <p style={{fontSize:11,color:"#94a3b8",marginBottom:6}}>{hint}</p>
-                    <textarea value={starr[key]} onChange={e=>setStarr({...starr,[key]:e.target.value})} placeholder={`Beschrijf de ${label.toLowerCase()}…`} rows={3}
+                    <textarea value={starr[key]} onChange={e=>setStarr({...starr,[key]:e.target.value})} placeholder={`Beschrijf de ${label.toLowerCase()}…`} rows={3} aria-label={`STARR ${label}`}
                       style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}
                       onFocus={e=>e.target.style.borderColor=TEAL} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                    <div style={{textAlign:"right",fontSize:10,color:starr[key].trim().length>=STARR_MIN_CHARS?TEAL:"#94a3b8",marginTop:4}}>
+                      {starr[key].trim().length>=STARR_MIN_CHARS ? "✓ Voldoende" : `Nog ${Math.max(0, STARR_MIN_CHARS - starr[key].trim().length)} tekens`}
+                    </div>
                   </div>
                 ))}
-                {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
-                <button onClick={()=>setPhase(5)}
-                  style={{padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  🎒 Naar Jouw Rugzak →
+                {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}} role="alert">⚠️ {saveErr}</div>}
+                <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf STARR-velden in (minimaal {STARR_MIN_CHARS} tekens per veld).</p>
+                <button type="button" disabled={!starrReady} onClick={()=>starrReady&&setPhase(5)} aria-disabled={!starrReady}
+                  style={{padding:"13px",borderRadius:99,border:"none",background:starrReady?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:starrReady?"pointer":"not-allowed",boxShadow:starrReady?`0 4px 12px ${TEAL_GLOW}`:"none",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  {starrReady?"🎒 Naar Jouw Rugzak →":"Vul alle STARR-velden in om verder te gaan"}
                 </button>
               </div>
             </div>
@@ -2352,9 +2221,11 @@ export default function MoralMaps(){
                   />
                 </div>
               ))}
-              {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}}>⚠️ {saveErr}</div>}
-              <button onClick={saveAndFinish} style={{padding:"13px",borderRadius:99,border:"none",background:"#7c3aed",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:FONT}}>
-                🏁 Naar Reisverslag →
+              {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}} role="alert">⚠️ {saveErr}</div>}
+              <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf rugzak-velden in (minimaal {SOCIALISATIE_MIN_CHARS} tekens per veld).</p>
+              <button type="button" onClick={saveAndFinish} disabled={!socialisatieReady||saving} aria-busy={saving}
+                style={{padding:"13px",borderRadius:99,border:"none",background:socialisatieReady&&!saving?"#7c3aed":"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:socialisatieReady&&!saving?"pointer":"not-allowed",fontFamily:FONT}}>
+                {saving?"Opslaan…":socialisatieReady?"🏁 Naar Reisverslag →":"Vul alle rugzak-velden in"}
               </button>
             </div>
           </div>
