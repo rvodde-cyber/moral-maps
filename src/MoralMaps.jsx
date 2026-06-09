@@ -240,16 +240,97 @@ const RESPONSIVE_CSS = `
 }
 `;
 
+const EMPTY_MICRO_JOURNAL = {
+  privilege: "", kaart: "", kompas: "", dilemma: "", starr: "", rugzak: "",
+};
+
+const MICRO_JOURNAL_LABELS = {
+  privilege: "het privilege wiel",
+  kaart: "De Kaart",
+  kompas: "Het Kompas",
+  dilemma: "De Route",
+  starr: "STARR",
+  rugzak: "Jouw Rugzak",
+};
+
 function isStarrComplete(starr) {
-  return ["situatie", "taak", "actie", "resultaat", "reflectie"].every(
+  const veldenOk = ["situatie", "taak", "actie", "resultaat", "reflectie"].every(
     (k) => (starr[k] || "").trim().length >= STARR_MIN_CHARS
   );
+  return veldenOk && Boolean(starr.leidendeWaardeId);
 }
 
 function isSocialisatieComplete(soc) {
   return ["primair", "secundair", "transcultureel", "professioneel", "reflectie"].every(
     (k) => (soc[k] || "").trim().length >= SOCIALISATIE_MIN_CHARS
   );
+}
+
+function buildSocialisatieSave(soc, { ankerzin, weekdoel, microJournal }) {
+  return {
+    primair: soc.primair || "",
+    secundair: soc.secundair || "",
+    transcultureel: soc.transcultureel || "",
+    professioneel: soc.professioneel || "",
+    reflectie: soc.reflectie || "",
+    ankerzin: ankerzin || "",
+    weekdoel: weekdoel || "",
+    microJournal: { ...EMPTY_MICRO_JOURNAL, ...(microJournal || {}) },
+  };
+}
+
+function hydrateFromSocialisatie(data) {
+  const leeg = { primair:"", secundair:"", transcultureel:"", professioneel:"", reflectie:"" };
+  if (!data || typeof data !== "object") {
+    return { soc: leeg, ankerzin:"", weekdoel:"", microJournal:{ ...EMPTY_MICRO_JOURNAL } };
+  }
+  return {
+    soc: { ...leeg, primair:data.primair||"", secundair:data.secundair||"", transcultureel:data.transcultureel||"", professioneel:data.professioneel||"", reflectie:data.reflectie||"" },
+    ankerzin: data.ankerzin || "",
+    weekdoel: data.weekdoel || "",
+    microJournal: { ...EMPTY_MICRO_JOURNAL, ...(data.microJournal || {}) },
+  };
+}
+
+function leidendeWaardeLabel(starr, coreVals) {
+  const id = starr?.leidendeWaardeId;
+  const v = (coreVals || []).find((c) => c.id === id);
+  return v ? v.name : null;
+}
+
+function downloadAnkerReminder({ participantCode, ankerzin, weekdoel }) {
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://moral-maps.vercel.app";
+  const start = new Date();
+  start.setDate(start.getDate() + 14);
+  start.setHours(9, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(10, 0, 0, 0);
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const desc = [
+    "Herinner jezelf aan je morele ankers uit Moral Maps.",
+    ankerzin ? `Ankerzin: ${ankerzin}` : "",
+    weekdoel ? `Weekdoel: ${weekdoel}` : "",
+    participantCode ? `Hervat met code: ${participantCode}` : "",
+    `Open: ${appUrl}`,
+  ].filter(Boolean).join("\\n");
+  const ics = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Moral Maps//NL", "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:moral-maps-${participantCode || "reminder"}-${Date.now()}@moral-maps.vercel.app`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    "SUMMARY:Moral Maps — Herinner je anker",
+    `DESCRIPTION:${desc}`,
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "moral-maps-herinnering.ics";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function calcDomColor(coreVals, dilResp) {
@@ -404,6 +485,28 @@ function Spinner(){
   return(
     <div style={{display:"flex",justifyContent:"center",padding:40}}>
       <div style={{width:32,height:32,borderRadius:"50%",border:`3px solid #e2e8f0`,borderTopColor:TEAL,animation:"spin .7s linear infinite"}}/>
+    </div>
+  );
+}
+
+function MicroJournalBox({ journalKey, value, onChange }) {
+  const label = MICRO_JOURNAL_LABELS[journalKey] || journalKey;
+  return (
+    <div style={{ background:"#f8fafc", borderRadius:12, border:"1px solid #e2e8f0", padding:"12px 14px", marginTop:12 }}>
+      <label style={{ display:"block", fontSize:10, fontWeight:800, color:"#64748b", textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>
+        📓 Micro-journal (optioneel)
+      </label>
+      <p style={{ fontSize:11, color:"#94a3b8", margin:"0 0 8px", lineHeight:1.5 }}>
+        In één zin: wat neem je mee uit {label}?
+      </p>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        maxLength={200}
+        placeholder="Bijv. ik merk dat…"
+        style={{ width:"100%", padding:"9px 12px", borderRadius:10, border:"1.5px solid #e2e8f0", fontSize:13, fontFamily:FONT, outline:"none" }}
+      />
     </div>
   );
 }
@@ -810,9 +913,11 @@ function VreemdeAnder({coreVals, onComplete}){
 
 // ── PDF Export ─────────────────────────────────────────────────
 
-function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age){
+function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, age, extras = {}){
+  const { ankerzin, weekdoel, microJournal } = extras;
   const c = CM[domColor];
   const date = new Date().toLocaleDateString('nl-NL', {day:'numeric',month:'long',year:'numeric'});
+  const leidend = leidendeWaardeLabel(starr, coreVals);
 
   const coreValHtml = coreVals.map(cv => {
     const cc = CM[cv.color];
@@ -865,6 +970,12 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
     </div>
 
     <div class="card">
+      <p class="label">⚓ Mijn kompas in één zin</p>
+      <p style="font-size:14px;color:#0f172a;line-height:1.7;font-weight:600;">${ankerzin || formatAnkerzin(coreVals) || "<em style='color:#cbd5e1'>Niet ingevuld</em>"}</p>
+      ${weekdoel ? `<p style="font-size:12px;color:#64748b;margin-top:10px;"><strong>Weekdoel:</strong> ${weekdoel}</p>` : ""}
+    </div>
+
+    <div class="card">
       <p class="label">🧭 Moreel Kompas — Kernwaarden</p>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">${coreValHtml}</div>
     </div>
@@ -876,8 +987,11 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
 
     <div class="card">
       <p class="label">✨ STARR Reflectie</p>
+      ${leidend ? `<p style="font-size:12px;color:#1b9e77;font-weight:700;margin-bottom:12px;">Leidende kernwaarde: ${leidend}</p>` : ""}
       ${starrHtml}
     </div>
+
+    ${microJournal && Object.values(microJournal).some(v => v && v.trim()) ? `<div class="card"><p class="label">📓 Micro-journal — tijdlijn</p>${Object.entries(microJournal).filter(([,v])=>v&&v.trim()).map(([k,v])=>`<p style="font-size:12px;color:#334155;margin-bottom:8px;line-height:1.6;"><strong>${MICRO_JOURNAL_LABELS[k]||k}:</strong> ${v}</p>`).join("")}</div>` : ""}
 
     <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;margin-top:8px;">
       <p style="font-size:11px;color:#94a3b8;">Dit verslag maakt deel uit van de reeks <strong style="color:#64748b;">Moreel Vakmanschap</strong> · <span style="color:#1b9e77;">Fontys Lectoraat Ethisch Werken</span></p>
@@ -1042,6 +1156,7 @@ function Dashboard({groupCode,onBack}){
   const byAge=useMemo(()=>{const m={};AGE_CATS.forEach(a=>{m[a]=[];});results.forEach(r=>{if(m[r.age])m[r.age].push(r);});return m;},[results]);
   function top3(es){const c={};es.forEach(r=>(r.coreValues||[]).forEach(v=>{if(!c[v.name])c[v.name]={count:0,color:v.color};c[v.name].count++;}));return Object.entries(c).sort(([,a],[,b])=>b.count-a.count).slice(0,3).map(([n,{color}])=>({name:n,color}));}
   const cdist=useMemo(()=>{const d={geel:0,blauw:0,rood:0,groen:0,wit:0};results.forEach(r=>(r.coreValues||[]).forEach(v=>{d[v.color]=(d[v.color]||0)+1;}));const t=Object.values(d).reduce((a,b)=>a+b,0)||1;return Object.entries(d).map(([c,n])=>({color:c,pct:Math.round(n/t*100)}));},[results]);
+  const groepAnkers=useMemo(()=>top3(results),[results]);
 
   return(
     <div style={{maxWidth:700,margin:"0 auto",padding:"24px 16px 60px",fontFamily:FONT}}>
@@ -1057,6 +1172,19 @@ function Dashboard({groupCode,onBack}){
           <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:800,color:"#0f172a"}}>Nog geen resultaten</h3>
           <p style={{margin:0,fontSize:14,color:"#64748b",lineHeight:1.7}}>Voor groepscode <strong>{groupCode}</strong> zijn nog geen opgeslagen reisverslagen gevonden. Laat studenten Deel 1 afronden of controleer de spelling van de code.</p>
         </div>:<>
+        {groepAnkers.length>0&&(
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+            <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>⚓ Meest gekozen ankers in deze groep</p>
+            <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:"0 0 12px"}}>Gespreksstarter voor de klas: welke waarden leven het sterkst — en waarom?</p>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              {groepAnkers.map((v,i)=>(
+                <span key={v.name} style={{display:"inline-flex",alignItems:"center",gap:6,background:CM[v.color].bg,border:`1.5px solid ${CM[v.color].border}`,color:CM[v.color].text,borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:700}}>
+                  <span style={{fontSize:10,opacity:.7}}>#{i+1}</span><Dot color={v.color} size={8}/>{v.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
           <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Wordcloud – Kernwaarden</p>
           <WordCloud results={results}/>
@@ -1422,8 +1550,11 @@ export default function MoralMaps(){
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
-  const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
+  const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});
   const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
+  const [ankerzin,setAnkerzin]=useState("");
+  const [weekdoel,setWeekdoel]=useState("");
+  const [microJournal,setMicroJournal]=useState({...EMPTY_MICRO_JOURNAL});
   const [bridge,setBridge]=useState({ballast:"",meenemen:"",vinden:"",kompas:""});
   const [deel3Terugblik,setDeel3Terugblik]=useState({scharnierpunt:"",patroon:"",noorden:""});
   const [deel3Vooruitblik,setDeel3Vooruitblik]=useState({nalatenschap:"",richting:"",belofte:""});
@@ -1474,6 +1605,21 @@ export default function MoralMaps(){
   const domColor=useMemo(()=>calcDomColor(coreVals,dilResp),[coreVals,dilResp]);
   const starrReady=isStarrComplete(starr);
   const socialisatieReady=isSocialisatieComplete(socialisatie);
+
+  const socialisatiePayload=useMemo(
+    ()=>buildSocialisatieSave(socialisatie,{ankerzin,weekdoel,microJournal}),
+    [socialisatie,ankerzin,weekdoel,microJournal]
+  );
+
+  useEffect(()=>{
+    if(coreVals.length===3&&!ankerzin.trim()){
+      setAnkerzin(formatAnkerzin(coreVals));
+    }
+  },[coreVals,ankerzin]);
+
+  function setJournalKey(key,val){
+    setMicroJournal((prev)=>({...prev,[key]:val}));
+  }
 
   function goToPhase(target){
     if(target>=phase||target<0||phase>=6)return;
@@ -1528,8 +1674,12 @@ export default function MoralMaps(){
     setAge(data.age || "");
     setCoreVals(data.coreValues || []);
     setDilResp(data.dilemmaResponses || []);
-    setStarr(data.starr || {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});
-    setSocialisatie(data.socialisatie || {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
+    const hydrated=hydrateFromSocialisatie(data.socialisatie);
+    setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null,...(data.starr||{})});
+    setSocialisatie(hydrated.soc);
+    setAnkerzin(hydrated.ankerzin);
+    setWeekdoel(hydrated.weekdoel);
+    setMicroJournal(hydrated.microJournal);
     const stage = (data.currentStage || "").toLowerCase();
     if(stage.startsWith("deel3")) {
       setScreen("deel3");
@@ -1551,7 +1701,7 @@ export default function MoralMaps(){
     setPhase(stage.includes("done") ? 6 : 0);
     if(stage.includes("done")) setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:""});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",kompas:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   async function saveProgress(currentStage){
     if(!participantCode || !groupCode) return;
     const result = await dbSave({
@@ -1563,7 +1713,7 @@ export default function MoralMaps(){
       dilemmaResponses: dilResp,
       starr,
       dominantColor: domColor,
-      socialisatie,
+      socialisatie: socialisatiePayload,
     });
     if(!result.ok) console.error("Save progress failed:", result.error);
   }
@@ -1586,7 +1736,7 @@ export default function MoralMaps(){
       dilemmaResponses:dilResp,
       starr,
       dominantColor:domColor,
-      socialisatie
+      socialisatie: socialisatiePayload,
     };
     const result = await dbSave({
       ...payload
@@ -2003,7 +2153,12 @@ export default function MoralMaps(){
         <PBar step={phase} pct={pct} onStepClick={phase<6?goToPhase:undefined}/>
 
         {/* P0 — Privilege Wiel */}
-        {phase===0 && <PrivilegeWheel onComplete={()=>setPhase(1)}/>}
+        {phase===0 && (
+          <>
+            <PrivilegeWheel onComplete={()=>setPhase(1)}/>
+            <MicroJournalBox journalKey="privilege" value={microJournal.privilege} onChange={(v)=>setJournalKey("privilege",v)}/>
+          </>
+        )}
 
         {/* P1 — De Kaart */}
         {phase===1&&(
@@ -2046,7 +2201,8 @@ export default function MoralMaps(){
                 </p>
               </div>
             )}
-            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end"}}><button onClick={()=>setPhase(2)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Smeed je Kompas →</button></div>}
+            {selVals.length>=10&&<MicroJournalBox journalKey="kaart" value={microJournal.kaart} onChange={(v)=>setJournalKey("kaart",v)}/>}
+            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}><button onClick={()=>setPhase(2)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Smeed je Kompas →</button></div>}
           </div>
         )}
 
@@ -2082,6 +2238,7 @@ export default function MoralMaps(){
                 <p style={{fontSize:12,color:"#64748b",lineHeight:1.7,margin:0}}>Vraag jezelf: wanneer werd één van deze waarden voor het laatst op de proef gesteld — en wat deed je toen?</p>
               </div>
             )}
+            {coreVals.length===3&&<MicroJournalBox journalKey="kompas" value={microJournal.kompas} onChange={(v)=>setJournalKey("kompas",v)}/>}
             <div style={{textAlign:"center"}}>
               <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}><strong style={{color:TEAL}}>{coreVals.length}</strong> / 3 kernwaarden</p>
               {coreVals.length===3&&<button onClick={()=>setPhase(3)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>}
@@ -2160,7 +2317,8 @@ export default function MoralMaps(){
         {/* P4 — STARR */}
         {phase===4&&(
           <div>
-            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20}}>
+            <MicroJournalBox journalKey="dilemma" value={microJournal.dilemma} onChange={(v)=>setJournalKey("dilemma",v)}/>
+            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:20,marginTop:12}}>
               <div style={{background:TEAL,padding:"20px 22px"}}>
                 <h2 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>✨ STARR Reflectie</h2>
                 <p style={{color:"rgba(255,255,255,.85)",fontSize:13,marginTop:8,lineHeight:1.6}}>Geef een voorbeeld uit je eigen verleden waarbij je ook voor (één van) je drie kernwaarden hebt gekozen. Gebruik de STARR-methode om deze situatie te beschrijven.</p>
@@ -2176,6 +2334,18 @@ export default function MoralMaps(){
                   </svg>
                   <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>Kies een moment uit je leven waarbij jouw waarden echt het verschil maakten. Gebruik de STARR-stappen hieronder om dat moment te beschrijven.</p>
                 </div>
+                <div>
+                  <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Leidende kernwaarde</label>
+                  <p style={{fontSize:11,color:"#94a3b8",marginBottom:8,lineHeight:1.5}}>Welke van jouw drie ankers was in dit verhaal het meest leidend?</p>
+                  <select
+                    value={starr.leidendeWaardeId || ""}
+                    onChange={(e)=>setStarr({...starr,leidendeWaardeId:e.target.value?Number(e.target.value):null})}
+                    style={{width:"100%",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${starr.leidendeWaardeId?TEAL:"#e2e8f0"}`,fontSize:13,fontFamily:FONT,background:"#fff"}}
+                  >
+                    <option value="">Kies een kernwaarde…</option>
+                    {coreVals.map((cv)=><option key={cv.id} value={cv.id}>{cv.name} ({CM[cv.color].label})</option>)}
+                  </select>
+                </div>
                 {[{key:"situatie",label:"Situatie",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,hint})=>(
                   <div key={key}>
                     <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>{label}</label>
@@ -2189,10 +2359,11 @@ export default function MoralMaps(){
                   </div>
                 ))}
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}} role="alert">⚠️ {saveErr}</div>}
-                <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf STARR-velden in (minimaal {STARR_MIN_CHARS} tekens per veld).</p>
+                <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf STARR-velden in (minimaal {STARR_MIN_CHARS} tekens) en kies je leidende kernwaarde.</p>
+                <MicroJournalBox journalKey="starr" value={microJournal.starr} onChange={(v)=>setJournalKey("starr",v)}/>
                 <button type="button" disabled={!starrReady} onClick={()=>starrReady&&setPhase(5)} aria-disabled={!starrReady}
                   style={{padding:"13px",borderRadius:99,border:"none",background:starrReady?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:starrReady?"pointer":"not-allowed",boxShadow:starrReady?`0 4px 12px ${TEAL_GLOW}`:"none",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  {starrReady?"🎒 Naar Jouw Rugzak →":"Vul alle STARR-velden in om verder te gaan"}
+                  {!starr.leidendeWaardeId?"Kies je leidende kernwaarde":starrReady?"🎒 Naar Jouw Rugzak →":"Vul alle STARR-velden in om verder te gaan"}
                 </button>
               </div>
             </div>
@@ -2251,6 +2422,7 @@ export default function MoralMaps(){
                 </div>
               ))}
               {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}} role="alert">⚠️ {saveErr}</div>}
+              <MicroJournalBox journalKey="rugzak" value={microJournal.rugzak} onChange={(v)=>setJournalKey("rugzak",v)}/>
               <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf rugzak-velden in (minimaal {SOCIALISATIE_MIN_CHARS} tekens per veld).</p>
               <button type="button" onClick={saveAndFinish} disabled={!socialisatieReady||saving} aria-busy={saving}
                 style={{padding:"13px",borderRadius:99,border:"none",background:socialisatieReady&&!saving?"#7c3aed":"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:socialisatieReady&&!saving?"pointer":"not-allowed",fontFamily:FONT}}>
@@ -2266,7 +2438,6 @@ export default function MoralMaps(){
               <div style={{fontSize:44,marginBottom:8}}>🏆</div>
               <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
               <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Wat je hebt ontdekt over je waarden, keuzes en richting</p>
-              <p style={{color:"#e2e8f0",fontSize:14,marginTop:14,lineHeight:1.7,fontStyle:"italic"}}>{formatAnkerzin(coreVals)}</p>
               {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
               {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
             </div>
@@ -2304,24 +2475,54 @@ export default function MoralMaps(){
               </div>
             )}
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+              <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>⚓ Mijn kompas in één zin</p>
+              <p style={{fontSize:11,color:"#64748b",marginBottom:8,lineHeight:1.5}}>Formuleer jouw morele ankers in eigen woorden — dit wordt opgeslagen en staat in je PDF.</p>
+              <textarea value={ankerzin} onChange={(e)=>setAnkerzin(e.target.value)} rows={2} placeholder={formatAnkerzin(coreVals)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:`1.5px solid ${TEAL}60`,fontSize:14,lineHeight:1.6,resize:"vertical",fontFamily:FONT,marginBottom:12}}/>
+              <label style={{fontSize:11,fontWeight:700,color:"#64748b",display:"block",marginBottom:6}}>Weekdoel — wanneer ik onder druk sta, wil ik handelen vanuit…</label>
+              <input type="text" value={weekdoel} onChange={(e)=>setWeekdoel(e.target.value)} maxLength={200} placeholder="Bijv. empathie en eerlijkheid, ook als het ongemakkelijk is" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,fontFamily:FONT}}/>
+              {participantCode&&(
+                <button type="button" onClick={()=>saveProgress("deel1_done")} style={{marginTop:12,padding:"8px 14px",borderRadius:99,border:`1px solid ${TEAL}50`,background:TEAL_LIGHT,color:TEAL,fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>
+                  💾 Sla ankerzin & doel op
+                </button>
+              )}
+            </div>
+            {Object.values(microJournal).some((v)=>v&&v.trim())&&(
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
+                <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>📓 Micro-journal — jouw reis in zinnen</p>
+                {Object.entries(microJournal).filter(([,v])=>v&&v.trim()).map(([key,val])=>(
+                  <div key={key} style={{marginBottom:10,paddingBottom:10,borderBottom:"1px solid #f1f5f9"}}>
+                    <span style={{fontSize:10,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1}}>{MICRO_JOURNAL_LABELS[key]||key}</span>
+                    <p style={{fontSize:13,color:"#334155",margin:"4px 0 0",lineHeight:1.6}}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>🧠 Moreel besef</p>
               <p style={{fontSize:13,color:"#334155",lineHeight:1.75,margin:"0 0 14px"}}>{dominanteKleurInzicht(domColor,coreVals)}</p>
+              {leidendeWaardeLabel(starr,coreVals)&&<p style={{fontSize:12,color:TEAL,fontWeight:700,margin:"0 0 12px"}}>Leidende waarde in je STARR-verhaal: {leidendeWaardeLabel(starr,coreVals)}</p>}
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🧭 Jouw ankers</p>
               <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>{coreVals.map(cv=>{const c=CM[cv.color];return<div key={cv.id} style={{padding:"10px 14px",borderRadius:12,border:`1.5px solid ${c.border}`,background:c.bg}}><p style={{fontWeight:700,fontSize:13,color:c.text,margin:0}}>{cv.name}</p><p style={{fontSize:10,color:"#64748b",margin:"4px 0 0"}}>{c.label}</p></div>;})}</div>
-              <p style={{fontSize:12,color:"#64748b",lineHeight:1.7,margin:"14px 0 0"}}>Formuleer voor jezelf één doel voor de komende week: <em>wanneer ik onder druk sta, wil ik handelen vanuit…</em></p>
+            </div>
+            <div style={{background:TEAL_LIGHT,borderRadius:16,border:`1px solid ${TEAL}40`,padding:18,marginBottom:16}}>
+              <p style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,margin:"0 0 6px"}}>🔔 Doel-check over 2 weken</p>
+              <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:"0 0 12px"}}>Plan een herinnering in je agenda. Over twee weken vraag je jezelf: leef ik nog bij mijn ankerzin?</p>
+              <button type="button" onClick={()=>downloadAnkerReminder({participantCode,ankerzin:ankerzin||formatAnkerzin(coreVals),weekdoel})} style={{padding:"10px 16px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:FONT}}>
+                📅 Download agenda-herinnering (.ics)
+              </button>
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:20}}>
               <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>🎒 Rugzak reflectie</p>
-              {Object.entries(socialisatie).map(([key,val])=>(
+              {["primair","secundair","transcultureel","professioneel","reflectie"].map((key)=>(
                 <div key={key} style={{marginBottom:10}}>
                   <span style={{fontSize:10,fontWeight:800,color:"#7c3aed",textTransform:"uppercase",letterSpacing:1}}>{key}</span>
-                  <p style={{fontSize:13,color:val?"#334155":"#cbd5e1",marginTop:2,lineHeight:1.6}}>{val||"Niet ingevuld"}</p>
+                  <p style={{fontSize:13,color:socialisatie[key]?"#334155":"#cbd5e1",marginTop:2,lineHeight:1.6}}>{socialisatie[key]||"Niet ingevuld"}</p>
                 </div>
               ))}
             </div>
-            <div style={{display:"flex",gap:12}}>
-              <button onClick={()=>setShowReflectie1(true)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>✨ Afsluiten & verder →</button>
-              <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>↓ Download PDF</button>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+              <button onClick={()=>setShowReflectie1(true)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT,minWidth:140}}>✨ Afsluiten & verder →</button>
+              <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age,{ankerzin:ankerzin||formatAnkerzin(coreVals),weekdoel,microJournal})} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,minWidth:140}}>↓ Download PDF</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
             </div>
           </div>
