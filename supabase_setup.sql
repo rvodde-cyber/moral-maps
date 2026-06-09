@@ -48,8 +48,8 @@ create policy "anon_select_moralmaps_results"
 comment on table public.moralmaps_results is 'Anonieme Moral Maps sessieresultaten per deelnemer/groep';
 
 -- Uitbreiding via socialisatie JSONB (geen migratie nodig):
---   ankerzin      — persoonlijke kompaszin in één zin
+--   ankerzin      — persoonlijke GPS-zin in één zin
 --   weekdoel      — concreet weekdoel gekoppeld aan ankers
---   microJournal  — { privilege, kaart, kompas, dilemma, starr, rugzak }
+--   microJournal  — { privilege, kaart, gps, dilemma, starr, rugzak }
 -- Uitbreiding via starr JSONB:
 --   leidendeWaardeId — id van de leidende kernwaarde in STARR-verhaal

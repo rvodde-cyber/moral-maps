@@ -107,8 +107,8 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
           fontWeight: 900, lineHeight: 1.1, letterSpacing: -1.5,
           color: "#f1f5f9", marginBottom: 16,
         }}>
-          Je kompas is<br/>
-          <em style={{ color: "#ef9f27", fontStyle: "italic" }}>gekalibreerd.</em>
+          Je GPS is<br/>
+          <em style={{ color: "#ef9f27", fontStyle: "italic" }}>ingesteld.</em>
         </h1>
 
         <p className="fade2" style={{
@@ -125,7 +125,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
             borderRadius: 16, padding: "20px 24px", marginBottom: 32,
           }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: "#334155", textTransform: "uppercase", marginBottom: 14 }}>
-              Jouw moreel kompas
+              Jouw moreale GPS
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               {coreValues.map((v, i) => {

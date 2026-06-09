@@ -18,7 +18,7 @@ const PARTS = [
     tag: "The Beginning",
     title: "Moral Maps",
     subtitle: "Wie ben je?",
-    desc: "Breng je waarden in kaart, smeed je moreel kompas en navigeer je eerste dilemma's. De reis begint met zelfkennis.",
+    desc: "Breng je waarden in kaart, stel je moreale GPS in en navigeer je eerste dilemma's. De reis begint met zelfkennis.",
     duration: "± 25 min",
     url: "https://moral-maps.vercel.app",
     accent: "#1d9e75",
@@ -204,7 +204,7 @@ export default function MapsLanding({ onStart, onResume, onStartDeel2 }) {
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(248,250,252,.97))" }}/>
                 {/* Header balk */}
                 <div style={{ position: "relative", zIndex: 2, background: "#fff", margin: "7px 7px 0", borderRadius: 10, padding: "6px 10px", boxShadow: "0 2px 8px rgba(0,0,0,.1)", display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 10 }}>🧭</span>
+                  <span style={{ fontSize: 10 }}>📍</span>
                   <span style={{ fontSize: 9, fontWeight: 800, color: "#1d9e75", flex: 1 }}>Moral Maps</span>
                   <span style={{ fontSize: 8, color: "#94a3b8", fontWeight: 600 }}>3 delen</span>
                 </div>
@@ -227,10 +227,10 @@ export default function MapsLanding({ onStart, onResume, onStartDeel2 }) {
                     <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 7, fontWeight: 700, color: "#1d9e75" }}>Energie</div>
                   </div>
                   <div style={{ width: 3, height: 22, background: "#94a3b8", borderRadius: 2 }}/>
-                  {/* Kompas indicator */}
+                  {/* GPS indicator */}
                   <div style={{ background: "rgba(239,159,39,.12)", border: "1px solid rgba(239,159,39,.3)", borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 10 }}>🧭</span>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#ef9f27" }}>Jouw kompas</span>
+                    <span style={{ fontSize: 10 }}>📍</span>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "#ef9f27" }}>Jouw GPS</span>
                   </div>
                 </div>
                 {/* GPS bestemming balk */}

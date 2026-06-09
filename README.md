@@ -21,7 +21,7 @@ Alle drie de apps leven in deze repository, in aparte mappen. Vercel deployt elk
 Studenten en professionals doorlopen een morele reis:
 
 1. **De Kaart** — 10 waarden kiezen uit 35
-2. **Het Kompas** — 3 kernwaarden aanwijzen
+2. **De GPS** — 3 kernwaarden aanwijzen
 3. **De Route** — reageren op morele dilemma's (2 van 6, willekeurig)
 4. **STARR Reflectie** — eigen ervaring beschrijven
 5. **Reisverslag** — exporteerbaar als PDF
