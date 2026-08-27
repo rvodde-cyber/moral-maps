@@ -110,35 +110,64 @@ function parseProgressBag(raw) {
 }
 
 const LOCAL_SESSION_PREFIX = "moralmaps_session_";
+const LOCAL_SESSION_MAP_KEY = "moralmaps_sessions";
+const LOCAL_LAST_CODE_KEY = "moralmaps_last_code";
 
 function localSessionKey(code) {
   return `${LOCAL_SESSION_PREFIX}${String(code || "").trim().toUpperCase()}`;
 }
 
+function normalizeSessionRecord(parsed) {
+  if (!parsed || typeof parsed !== "object") return null;
+  return {
+    ...parsed,
+    participantCode: String(parsed.participantCode || "").trim().toUpperCase(),
+    vreemdeAnder: parseProgressBag(parsed.vreemdeAnder),
+  };
+}
+
 function writeLocalSession(snapshot) {
-  const code = snapshot?.participantCode;
+  const code = String(snapshot?.participantCode || "").trim().toUpperCase();
   if (!code || typeof localStorage === "undefined") return false;
+  const record = {
+    ...snapshot,
+    participantCode: code,
+    savedAt: new Date().toISOString(),
+  };
   try {
-    const packed = JSON.stringify({
-      ...snapshot,
-      savedAt: new Date().toISOString(),
-    });
-    const key = localSessionKey(code);
-    localStorage.setItem(key, packed);
-    localStorage.setItem("moralmaps_last_code", String(code).toUpperCase());
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem(LOCAL_SESSION_MAP_KEY) || "{}") || {}; }
+    catch { map = {}; }
+    map[code] = record;
+    localStorage.setItem(LOCAL_SESSION_MAP_KEY, JSON.stringify(map));
+    localStorage.setItem(localSessionKey(code), JSON.stringify(record));
+    localStorage.setItem(LOCAL_LAST_CODE_KEY, code);
     return true;
   } catch {
-    return false;
+    try {
+      localStorage.setItem(localSessionKey(code), JSON.stringify(record));
+      localStorage.setItem(LOCAL_LAST_CODE_KEY, code);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 
 function readLocalSession(code) {
   if (typeof localStorage === "undefined") return null;
   const wanted = String(code || "").trim().toUpperCase();
+  try {
+    const map = JSON.parse(localStorage.getItem(LOCAL_SESSION_MAP_KEY) || "{}") || {};
+    if (wanted && map[wanted]) return normalizeSessionRecord(map[wanted]);
+    const last = String(localStorage.getItem(LOCAL_LAST_CODE_KEY) || "").trim().toUpperCase();
+    if (!wanted && last && map[last]) return normalizeSessionRecord(map[last]);
+  } catch { /* fall through to legacy keys */ }
+
   const keys = [];
   if (wanted) keys.push(localSessionKey(wanted));
   try {
-    const last = localStorage.getItem("moralmaps_last_code");
+    const last = localStorage.getItem(LOCAL_LAST_CODE_KEY);
     if (last) keys.push(localSessionKey(last));
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);
@@ -151,16 +180,10 @@ function readLocalSession(code) {
     if (!key || seen.has(key)) continue;
     seen.add(key);
     try {
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") continue;
-      const storedCode = String(parsed.participantCode || "").trim().toUpperCase();
-      if (wanted && storedCode && storedCode !== wanted && key !== localSessionKey(wanted)) continue;
-      return {
-        ...parsed,
-        vreemdeAnder: parseProgressBag(parsed.vreemdeAnder),
-      };
+      const parsed = normalizeSessionRecord(JSON.parse(localStorage.getItem(key) || "null"));
+      if (!parsed) continue;
+      if (wanted && parsed.participantCode && parsed.participantCode !== wanted) continue;
+      return parsed;
     } catch { /* try next key */ }
   }
   return null;
@@ -543,14 +566,15 @@ function SaveStatusChip({ status }) {
 
 function SessionCodeBar({ code, groupCode, age, saveStatus, onReset }) {
   const [copied, setCopied] = useState(false);
-  if (!code) return null;
+  const displayCode = String(code || "").trim().toUpperCase();
+  if (!displayCode) return null;
   async function copyCode() {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(code);
+        await navigator.clipboard.writeText(displayCode);
       } else {
         const el = document.createElement("textarea");
-        el.value = code;
+        el.value = displayCode;
         document.body.appendChild(el);
         el.select();
         document.execCommand("copy");
@@ -590,7 +614,7 @@ function SessionCodeBar({ code, groupCode, age, saveStatus, onReset }) {
           }}>
             <div>
               <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase", color: "#94a3b8" }}>Jouw code</div>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontWeight: 900, fontSize: 16, letterSpacing: 1 }}>{code}</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontWeight: 900, fontSize: 16, letterSpacing: 1 }}>{displayCode}</div>
             </div>
             <button type="button" onClick={copyCode} aria-label="Kopieer deelnemerscode"
               style={{
@@ -1860,8 +1884,8 @@ export default function MoralMaps(){
 
   async function persistSession(currentStage, overrides = {}) {
     const s = snapshotRef.current;
-    const participant = overrides.participantCode ?? s.participantCode;
-    const group = overrides.groupCode ?? s.groupCode;
+    const participant = String(overrides.participantCode ?? s.participantCode ?? "").trim().toUpperCase();
+    const group = String(overrides.groupCode ?? s.groupCode ?? "").trim().toUpperCase();
     if (!participant || !group) return { ok: false, error: "missing codes" };
 
     const coreValues = overrides.coreValues ?? s.coreVals;
@@ -2043,33 +2067,38 @@ export default function MoralMaps(){
   }
   async function resumeWithCode(code){
     const normalized = String(code || "").trim().toUpperCase();
-    const local = readLocalSession(normalized);
-    let remote = null;
     try {
-      remote = await dbLoadByParticipantCode(normalized);
+      const local = readLocalSession(normalized);
+      let remote = null;
+      try {
+        remote = await dbLoadByParticipantCode(normalized);
+      } catch (err) {
+        console.error("Resume remote load failed:", err);
+      }
+      if(!remote && !local){
+        alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal één stap af en probeer daarna opnieuw.");
+        return;
+      }
+      const data = local
+        ? {
+            participantCode: local.participantCode || remote?.participantCode || normalized,
+            currentStage: local.currentStage || remote?.currentStage,
+            groupCode: local.groupCode || remote?.groupCode,
+            age: local.age || remote?.age,
+            coreValues: (local.coreValues && local.coreValues.length ? local.coreValues : remote?.coreValues) || [],
+            dilemmaResponses: local.dilemmaResponses || remote?.dilemmaResponses || [],
+            starr: local.starr || remote?.starr,
+            dominantColor: local.dominantColor || remote?.dominantColor,
+            socialisatie: local.socialisatie || remote?.socialisatie,
+            vreemdeAnder: local.vreemdeAnder || remote?.vreemdeAnder || {},
+          }
+        : remote;
+      applyLoadedSession(data);
+      setSaveStatus(remote && !local ? "saved" : "local");
     } catch (err) {
-      console.error("Resume remote load failed:", err);
+      console.error("Resume failed:", err);
+      alert(`Hervatten mislukt (${err?.message || "onbekende fout"}). Probeer de code opnieuw of start een nieuwe sessie.`);
     }
-    if(!remote && !local){
-      alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal één stap af en probeer daarna opnieuw.");
-      return;
-    }
-    const data = local
-      ? {
-          participantCode: local.participantCode || remote?.participantCode || normalized,
-          currentStage: local.currentStage || remote?.currentStage,
-          groupCode: local.groupCode || remote?.groupCode,
-          age: local.age || remote?.age,
-          coreValues: (local.coreValues && local.coreValues.length ? local.coreValues : remote?.coreValues) || [],
-          dilemmaResponses: local.dilemmaResponses || remote?.dilemmaResponses || [],
-          starr: local.starr || remote?.starr,
-          dominantColor: local.dominantColor || remote?.dominantColor,
-          socialisatie: local.socialisatie || remote?.socialisatie,
-          vreemdeAnder: local.vreemdeAnder || remote?.vreemdeAnder || {},
-        }
-      : remote;
-    applyLoadedSession(data);
-    setSaveStatus(remote && !local ? "saved" : "local");
   }
   function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(retryTimerRef.current)clearTimeout(retryTimerRef.current);retryCountRef.current=0;}
   async function saveProgress(currentStage){
