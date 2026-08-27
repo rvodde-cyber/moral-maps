@@ -54,7 +54,7 @@ const PARTS = [
   },
 ];
 
-export default function MapsLanding({ onStart, onResume, onStartDeel2 }) {
+export default function MapsLanding({ onStart }) {
   const [code, setCode] = useState("");
   const [hover, setHover] = useState(null);
 

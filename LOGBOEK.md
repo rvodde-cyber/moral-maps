@@ -434,3 +434,17 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 1. Tussenpagina's testen in de echte flow (deel 1 → halte → deel 2)
 2. Deel 2 en 3 inhoudelijk verder verbeteren
 3. README.md updaten (beschrijft nog de lakmoesproef, niet de MAPS trilogie)
+
+---
+
+## 2026-08-27 — Tussentijdse opslag, sticky code, privacy
+
+### Opgeleverd
+- Autosave na elke afgeronde fase in Deel 1 (wiel, kaart, GPS, elk dilemma, STARR, rugzak), Deel 2 (crossroads, tankstop, omweg, Vreemde Ander-stappen) en Deel 3 (brug, terugblik, vooruitblik, GROW-velden).
+- Upsert op `participant_code` ongewijzigd; voortgang extra in `vreemde_ander` JSONB + `localStorage` per deelnemerscode.
+- Statuschip: Opgeslagen / Lokaal bewaard, met retry als online save faalt.
+- Hervatten: eerst Supabase, anders localStorage.
+- Sticky deelnemerscode met kopieerknop in Deel 1–3.
+- Privacy-zin op TrilogieHome en vóór STARR.
+- `supabase_setup.sql`: unique index + anon UPDATE-policy (nodig voor upsert).
+

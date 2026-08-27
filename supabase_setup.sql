@@ -24,6 +24,11 @@ create index if not exists moralmaps_results_group_code_idx
 create index if not exists moralmaps_results_participant_code_idx
   on public.moralmaps_results (participant_code);
 
+-- Unique participant_code so upsert onConflict works without duplicate rows.
+-- NULL-waarden blijven toegestaan (legacy rijen zonder code).
+create unique index if not exists moralmaps_results_participant_code_key
+  on public.moralmaps_results (participant_code);
+
 alter table public.moralmaps_results enable row level security;
 
 -- Anon users may insert their own anonymous session rows (no PII beyond group/age).
@@ -42,8 +47,18 @@ create policy "anon_select_moralmaps_results"
   to anon
   using (true);
 
--- No update/delete for anon — prevents tampering with existing rows from the client.
--- Docenten die rijen willen verwijderen doen dat via Supabase dashboard (service role).
+-- Upsert (tussentijdse opslag) vereist UPDATE voor anon. Zonder deze policy
+-- faalt elke tweede save stil bij een participant_code-conflict.
+drop policy if exists "anon_update_moralmaps_results" on public.moralmaps_results;
+create policy "anon_update_moralmaps_results"
+  on public.moralmaps_results
+  for update
+  to anon
+  using (true)
+  with check (true);
+
+-- Geen DELETE voor anon. Docenten die rijen willen verwijderen doen dat via
+-- het Supabase dashboard (service role).
 
 comment on table public.moralmaps_results is 'Anonieme Moral Maps sessieresultaten per deelnemer/groep';
 
