@@ -119,10 +119,13 @@ function writeLocalSession(snapshot) {
   const code = snapshot?.participantCode;
   if (!code || typeof localStorage === "undefined") return false;
   try {
-    localStorage.setItem(localSessionKey(code), JSON.stringify({
+    const packed = JSON.stringify({
       ...snapshot,
       savedAt: new Date().toISOString(),
-    }));
+    });
+    const key = localSessionKey(code);
+    localStorage.setItem(key, packed);
+    localStorage.setItem("moralmaps_last_code", String(code).toUpperCase());
     return true;
   } catch {
     return false;
@@ -130,19 +133,37 @@ function writeLocalSession(snapshot) {
 }
 
 function readLocalSession(code) {
-  if (!code || typeof localStorage === "undefined") return null;
+  if (typeof localStorage === "undefined") return null;
+  const wanted = String(code || "").trim().toUpperCase();
+  const keys = [];
+  if (wanted) keys.push(localSessionKey(wanted));
   try {
-    const raw = localStorage.getItem(localSessionKey(code));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    return {
-      ...parsed,
-      vreemdeAnder: parseProgressBag(parsed.vreemdeAnder),
-    };
-  } catch {
-    return null;
+    const last = localStorage.getItem("moralmaps_last_code");
+    if (last) keys.push(localSessionKey(last));
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(LOCAL_SESSION_PREFIX)) keys.push(key);
+    }
+  } catch { /* ignore */ }
+
+  const seen = new Set();
+  for (const key of keys) {
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") continue;
+      const storedCode = String(parsed.participantCode || "").trim().toUpperCase();
+      if (wanted && storedCode && storedCode !== wanted && key !== localSessionKey(wanted)) continue;
+      return {
+        ...parsed,
+        vreemdeAnder: parseProgressBag(parsed.vreemdeAnder),
+      };
+    } catch { /* try next key */ }
   }
+  return null;
 }
 
 async function dbLoad(groupCode) {
@@ -1538,7 +1559,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpe
           <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Verder met code</label>
           <div style={{display:"flex",gap:8}}>
             <input value={resumeCode} onChange={e=>setResumeCode(e.target.value.toUpperCase())} placeholder="bijv. MM-8K4P2X" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
-            <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
+            <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim().toUpperCase())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
           </div>
         </div>
 
@@ -1883,7 +1904,7 @@ export default function MoralMaps(){
 
     const gen = ++saveGenRef.current;
     setSaveStatus("saving");
-    writeLocalSession(payload);
+    const localOk = writeLocalSession(payload);
 
     const result = await dbSave(payload);
     if (gen !== saveGenRef.current) return result;
@@ -1895,9 +1916,9 @@ export default function MoralMaps(){
       return result;
     }
 
-    setSaveStatus("local");
-    setSavedLocal(true);
-    if (retryCountRef.current < 3) {
+    setSaveStatus(localOk ? "local" : null);
+    setSavedLocal(localOk);
+    if (localOk && retryCountRef.current < 3) {
       retryCountRef.current += 1;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
       retryTimerRef.current = setTimeout(() => {
@@ -2022,18 +2043,33 @@ export default function MoralMaps(){
   }
   async function resumeWithCode(code){
     const normalized = String(code || "").trim().toUpperCase();
-    const remote = await dbLoadByParticipantCode(normalized);
     const local = readLocalSession(normalized);
+    let remote = null;
+    try {
+      remote = await dbLoadByParticipantCode(normalized);
+    } catch (err) {
+      console.error("Resume remote load failed:", err);
+    }
     if(!remote && !local){
       alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal één stap af en probeer daarna opnieuw.");
       return;
     }
-    const remoteBag = remote?.vreemdeAnder && Object.keys(remote.vreemdeAnder).length ? remote.vreemdeAnder : null;
-    const data = remote
-      ? { ...remote, vreemdeAnder: remoteBag || local?.vreemdeAnder || {} }
-      : local;
+    const data = local
+      ? {
+          participantCode: local.participantCode || remote?.participantCode || normalized,
+          currentStage: local.currentStage || remote?.currentStage,
+          groupCode: local.groupCode || remote?.groupCode,
+          age: local.age || remote?.age,
+          coreValues: (local.coreValues && local.coreValues.length ? local.coreValues : remote?.coreValues) || [],
+          dilemmaResponses: local.dilemmaResponses || remote?.dilemmaResponses || [],
+          starr: local.starr || remote?.starr,
+          dominantColor: local.dominantColor || remote?.dominantColor,
+          socialisatie: local.socialisatie || remote?.socialisatie,
+          vreemdeAnder: local.vreemdeAnder || remote?.vreemdeAnder || {},
+        }
+      : remote;
     applyLoadedSession(data);
-    setSaveStatus(remote ? "saved" : "local");
+    setSaveStatus(remote && !local ? "saved" : "local");
   }
   function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(retryTimerRef.current)clearTimeout(retryTimerRef.current);retryCountRef.current=0;}
   async function saveProgress(currentStage){
