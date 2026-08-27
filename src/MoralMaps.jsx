@@ -67,7 +67,13 @@ async function dbSave(entry) {
 
   let lastError = null;
   for (const payload of attempts) {
-    const { error } = await supabase.from("moralmaps_results").insert(payload);
+    // Payloads die participant_code bevatten: upsert op die kolom, zodat
+    // een hervatte sessie de bestaande rij bijwerkt in plaats van een
+    // dubbele rij aan te maken. Oudere schema-varianten zonder die kolom
+    // (fallback) blijven gewoon inserten.
+    const { error } = payload.participant_code
+      ? await supabase.from("moralmaps_results").upsert(payload, { onConflict: "participant_code" })
+      : await supabase.from("moralmaps_results").insert(payload);
     if (!error) return { ok: true, error: null };
     lastError = error;
   }
@@ -1228,11 +1234,12 @@ function Dashboard({groupCode,onBack}){
 
 // ── Landing ────────────────────────────────────────────────────
 
-function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
+function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpenDashboard}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [resumeCode,setResumeCode]=useState("");
   const [startHint, setStartHint] = useState("");
+  const [dashCodeInput, setDashCodeInput] = useState("");
   const canStart = gc.trim() && age;
   function runStart(action){
     if(!canStart){
@@ -1342,6 +1349,14 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
           <div style={{display:"flex",gap:8}}>
             <input value={resumeCode} onChange={e=>setResumeCode(e.target.value.toUpperCase())} placeholder="bijv. MM-8K4P2X" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
             <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
+          </div>
+        </div>
+
+        <div style={{background:"#f8fafc",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginTop:12}}>
+          <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>📊 Begeleider? Bekijk het groepsdashboard</label>
+          <div style={{display:"flex",gap:8}}>
+            <input value={dashCodeInput} onChange={e=>setDashCodeInput(e.target.value.toUpperCase())} placeholder="Voer groepscode in…" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
+            <button onClick={()=>dashCodeInput.trim()&&onOpenDashboard(dashCodeInput.trim())} style={{padding:"10px 16px",borderRadius:10,border:"none",background:TEAL,color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Open →</button>
           </div>
         </div>
       <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #f1f5f9",textAlign:"center"}}>
@@ -1642,29 +1657,38 @@ export default function MoralMaps(){
     setPhase(0);
   }
   function startDeel2Direct(gc, ag){
-    setParticipantCode(generateParticipantCode());
-    setGroupCode(gc);
-    setAge(ag);
-    // Minimale demo-kernwaarden zodat Deel 2 context direct bruikbaar is.
-    setCoreVals([
-      { id: 12, name: "Integriteit", color: "blauw" },
-      { id: 16, name: "Empathie", color: "rood" },
-      { id: 24, name: "Reflectie", color: "groen" },
-    ]);
-    setScreen("deel2");
-    setDeel2Step(0);
-  }
-  function startDeel3Direct(gc, ag){
-    setParticipantCode(generateParticipantCode());
-    setGroupCode(gc);
-    setAge(ag);
     if(coreVals.length===0){
+      const ok = window.confirm(
+        "Je hebt Deel I nog niet doorlopen. Deel II start dan met voorbeeld-kernwaarden (Integriteit, Empathie, Reflectie) in plaats van jouw eigen waarden.\n\nDit is alleen bedoeld voor een testronde — niet voor een echte deelnemer.\n\nToch doorgaan met voorbeeldwaarden?"
+      );
+      if(!ok) return;
       setCoreVals([
         { id: 12, name: "Integriteit", color: "blauw" },
         { id: 16, name: "Empathie", color: "rood" },
         { id: 24, name: "Reflectie", color: "groen" },
       ]);
     }
+    setParticipantCode(generateParticipantCode());
+    setGroupCode(gc);
+    setAge(ag);
+    setScreen("deel2");
+    setDeel2Step(0);
+  }
+  function startDeel3Direct(gc, ag){
+    if(coreVals.length===0){
+      const ok = window.confirm(
+        "Je hebt Deel I en II nog niet doorlopen. Deel III start dan met voorbeeld-kernwaarden (Integriteit, Empathie, Reflectie) in plaats van jouw eigen waarden.\n\nDit is alleen bedoeld voor een testronde — niet voor een echte deelnemer.\n\nToch doorgaan met voorbeeldwaarden?"
+      );
+      if(!ok) return;
+      setCoreVals([
+        { id: 12, name: "Integriteit", color: "blauw" },
+        { id: 16, name: "Empathie", color: "rood" },
+        { id: 24, name: "Reflectie", color: "groen" },
+      ]);
+    }
+    setParticipantCode(generateParticipantCode());
+    setGroupCode(gc);
+    setAge(ag);
     setScreen("deel3");
   }
   async function resumeWithCode(code){
@@ -1795,7 +1819,7 @@ export default function MoralMaps(){
     </div>
   );
 
-  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
+  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode} onOpenDashboard={(code)=>{setDashCode(code.toUpperCase());setScreen("dashboard");}}/>;
   if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
   if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
 
@@ -2444,6 +2468,13 @@ export default function MoralMaps(){
               <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Wat je hebt ontdekt over je waarden, keuzes en richting</p>
               {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
               {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
+              {participantCode&&(
+                <div style={{marginTop:16,background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 18px"}}>
+                  <p style={{margin:0,fontSize:10,fontWeight:800,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1.2}}>⚠ Schrijf dit op of maak een screenshot</p>
+                  <p style={{margin:"6px 0 0",fontSize:24,fontWeight:900,color:"#fff",fontFamily:"'DM Mono',monospace",letterSpacing:1}}>{participantCode}</p>
+                  <p style={{margin:"6px 0 0",fontSize:11,color:"#94a3b8"}}>Zonder deze code kun je je reis niet hervatten in Deel II of III.</p>
+                </div>
+              )}
             </div>
             {!showSmsDilemma&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2e8f0",padding:"16px 18px",marginBottom:14}}>
