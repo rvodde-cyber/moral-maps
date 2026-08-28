@@ -47,6 +47,7 @@ async function dbSave(entry) {
     ...basePayload,
     participant_code: entry.participantCode,
     current_stage: entry.currentStage,
+    vreemde_ander: entry.vreemdeAnder ?? {},
   };
 
   const { socialisatie: _dropSocialisatie, ...payloadNoSocialisatie } = basePayload;
@@ -87,6 +88,105 @@ function parseJsonField(value, fallback) {
   if (value == null) return fallback;
   if (typeof value === "object") return value;
   try { return JSON.parse(value); } catch { return fallback; }
+}
+
+function parseProgressBag(raw) {
+  const bag = parseJsonField(raw, {}) || {};
+  if (!bag || typeof bag !== "object") return {};
+  const looksLegacyVa = (bag.spiegel || bag.tussenruimte || bag.insluiting)
+    && bag.vreemdeAnderResult == null
+    && bag.deel2Step == null
+    && bag.screen == null;
+  if (looksLegacyVa) {
+    return {
+      vreemdeAnderResult: {
+        spiegel: bag.spiegel || "",
+        tussenruimte: bag.tussenruimte || "",
+        insluiting: bag.insluiting || "",
+      },
+    };
+  }
+  return bag;
+}
+
+const LOCAL_SESSION_PREFIX = "moralmaps_session_";
+const LOCAL_SESSION_MAP_KEY = "moralmaps_sessions";
+const LOCAL_LAST_CODE_KEY = "moralmaps_last_code";
+
+function localSessionKey(code) {
+  return `${LOCAL_SESSION_PREFIX}${String(code || "").trim().toUpperCase()}`;
+}
+
+function normalizeSessionRecord(parsed) {
+  if (!parsed || typeof parsed !== "object") return null;
+  return {
+    ...parsed,
+    participantCode: String(parsed.participantCode || "").trim().toUpperCase(),
+    vreemdeAnder: parseProgressBag(parsed.vreemdeAnder),
+  };
+}
+
+function writeLocalSession(snapshot) {
+  const code = String(snapshot?.participantCode || "").trim().toUpperCase();
+  if (!code || typeof localStorage === "undefined") return false;
+  const record = {
+    ...snapshot,
+    participantCode: code,
+    savedAt: new Date().toISOString(),
+  };
+  try {
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem(LOCAL_SESSION_MAP_KEY) || "{}") || {}; }
+    catch { map = {}; }
+    map[code] = record;
+    localStorage.setItem(LOCAL_SESSION_MAP_KEY, JSON.stringify(map));
+    localStorage.setItem(localSessionKey(code), JSON.stringify(record));
+    localStorage.setItem(LOCAL_LAST_CODE_KEY, code);
+    return true;
+  } catch {
+    try {
+      localStorage.setItem(localSessionKey(code), JSON.stringify(record));
+      localStorage.setItem(LOCAL_LAST_CODE_KEY, code);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function readLocalSession(code) {
+  if (typeof localStorage === "undefined") return null;
+  const wanted = String(code || "").trim().toUpperCase();
+  try {
+    const map = JSON.parse(localStorage.getItem(LOCAL_SESSION_MAP_KEY) || "{}") || {};
+    if (wanted && map[wanted]) return normalizeSessionRecord(map[wanted]);
+    const last = String(localStorage.getItem(LOCAL_LAST_CODE_KEY) || "").trim().toUpperCase();
+    if (!wanted && last && map[last]) return normalizeSessionRecord(map[last]);
+  } catch { /* fall through to legacy keys */ }
+
+  const keys = [];
+  if (wanted) keys.push(localSessionKey(wanted));
+  try {
+    const last = localStorage.getItem(LOCAL_LAST_CODE_KEY);
+    if (last) keys.push(localSessionKey(last));
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(LOCAL_SESSION_PREFIX)) keys.push(key);
+    }
+  } catch { /* ignore */ }
+
+  const seen = new Set();
+  for (const key of keys) {
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    try {
+      const parsed = normalizeSessionRecord(JSON.parse(localStorage.getItem(key) || "null"));
+      if (!parsed) continue;
+      if (wanted && parsed.participantCode && parsed.participantCode !== wanted) continue;
+      return parsed;
+    } catch { /* try next key */ }
+  }
+  return null;
 }
 
 async function dbLoad(groupCode) {
@@ -138,6 +238,7 @@ async function dbLoadByParticipantCode(participantCode) {
     starr: parseJsonField(data.starr, {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""}),
     dominantColor: data.dominant_color,
     socialisatie: parseJsonField(data.socialisatie, {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""}),
+    vreemdeAnder: parseProgressBag(data.vreemde_ander),
   };
 }
 
@@ -243,6 +344,7 @@ const RESPONSIVE_CSS = `
   .mm-form-grid{grid-template-columns:1fr!important}
   .mm-privilege-grid{grid-template-columns:1fr!important}
   .mm-values-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important}
+  .mm-session-bar-inner{flex-direction:column!important;align-items:stretch!important}
 }
 `;
 
@@ -413,6 +515,127 @@ function generateParticipantCode(){
   let out = "MM-";
   for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
   return out;
+}
+
+function restoreDilemmas(titles) {
+  if (!Array.isArray(titles) || !titles.length) return null;
+  const restored = titles.map((t) => DILEMMAS.find((d) => d.title === t)).filter(Boolean);
+  return restored.length ? restored : null;
+}
+
+function PrivacyNote({ context = "start" }) {
+  const isStarr = context === "starr";
+  return (
+    <div style={{
+      background: "#f8fafc",
+      borderRadius: 10,
+      padding: "10px 12px",
+      border: "1px solid #e2e8f0",
+      marginTop: isStarr ? 0 : 12,
+    }}>
+      <p style={{ margin: 0, fontSize: 11, color: "#64748b", lineHeight: 1.65 }}>
+        🔒 <strong style={{ color: "#0f172a" }}>Anoniem:</strong>{" "}
+        {isStarr
+          ? "Geen naam, geen login. Zet geen herkenbare namen van collega's, cliënten of leerlingen in je STARR-verhaal — alleen groepscode, leeftijd en je eigen woorden worden opgeslagen."
+          : "Geen naam, geen login. We slaan alleen groepscode, leeftijdscategorie en je antwoorden op. Zet geen herkenbare namen van anderen in je teksten."}
+      </p>
+    </div>
+  );
+}
+
+function SaveStatusChip({ status }) {
+  if (!status) return null;
+  const map = {
+    saving: { bg: "#f1f5f9", color: "#475569", label: "Opslaan…" },
+    saved: { bg: TEAL_LIGHT, color: TEAL_DARK, label: "Opgeslagen" },
+    local: { bg: "#fef9c3", color: "#854d0e", label: "Lokaal bewaard" },
+  };
+  const m = map[status];
+  if (!m) return null;
+  return (
+    <span role="status" style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      background: m.bg, color: m.color, borderRadius: 99,
+      padding: "4px 10px", fontSize: 11, fontWeight: 700, fontFamily: FONT,
+      whiteSpace: "nowrap",
+    }}>
+      {status === "saving" ? "…" : status === "saved" ? "✓" : "⚠"} {m.label}
+    </span>
+  );
+}
+
+function SessionCodeBar({ code, groupCode, age, saveStatus, onReset }) {
+  const [copied, setCopied] = useState(false);
+  const displayCode = String(code || "").trim().toUpperCase();
+  if (!displayCode) return null;
+  async function copyCode() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(displayCode);
+      } else {
+        const el = document.createElement("textarea");
+        el.value = displayCode;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch { /* ignore */ }
+  }
+  return (
+    <div className="mm-session-bar" style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 40,
+      background: "rgba(255,255,255,.97)",
+      backdropFilter: "blur(8px)",
+      borderBottom: "1px solid #e2e8f0",
+      boxShadow: "0 8px 20px rgba(15,23,42,.06)",
+    }}>
+      <div className="mm-session-bar-inner" style={{
+        maxWidth: 880, margin: "0 auto", padding: "12px 16px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: TEAL, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📍</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", fontFamily: FONT }}>Moral Maps Trilogie</div>
+            <div style={{ fontSize: 10, color: "#94a3b8" }}>Groep: {groupCode || "—"}{age ? ` · ${age}` : ""}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <SaveStatusChip status={saveStatus} />
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "#0f172a", color: "#fff", borderRadius: 12,
+            padding: "8px 10px 8px 12px",
+          }}>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase", color: "#94a3b8" }}>Jouw code</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontWeight: 900, fontSize: 16, letterSpacing: 1 }}>{displayCode}</div>
+            </div>
+            <button type="button" onClick={copyCode} aria-label="Kopieer deelnemerscode"
+              style={{
+                border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer",
+                background: copied ? TEAL : "rgba(255,255,255,.12)", color: "#fff",
+                fontWeight: 700, fontSize: 11, fontFamily: FONT, whiteSpace: "nowrap",
+              }}>
+              {copied ? "Gekopieerd" : "Kopieer"}
+            </button>
+          </div>
+          {onReset && (
+            <button type="button" onClick={onReset} style={{
+              background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 99,
+              padding: "6px 14px", fontSize: 12, fontWeight: 600, color: "#64748b",
+              cursor: "pointer", fontFamily: FONT,
+            }}>↺ Opnieuw</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Privilege Wiel Data ────────────────────────────────────────
@@ -835,8 +1058,12 @@ function PrivilegeWheel({onComplete}){
 
 // ── De Vreemde Ander ───────────────────────────────────────────
 
-function VreemdeAnder({coreVals, onComplete}){
-  const [vreemd, setVreemd] = useState({spiegel:"", tussenruimte:"", insluiting:""});
+function VreemdeAnder({coreVals, onComplete, onStepSave, initial}){
+  const [vreemd, setVreemd] = useState(() => ({
+    spiegel: initial?.spiegel || "",
+    tussenruimte: initial?.tussenruimte || "",
+    insluiting: initial?.insluiting || "",
+  }));
   const [showIntro, setShowIntro] = useState(true);
   const isComplete = Object.values(vreemd).every(v => v.trim().length > 20);
 
@@ -904,7 +1131,13 @@ function VreemdeAnder({coreVals, onComplete}){
                 <textarea value={vreemd[key]} onChange={e=>setVreemd({...vreemd,[key]:e.target.value})}
                   placeholder="Schrijf hier je reflectie…" rows={4}
                   style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
-                  onFocus={e=>e.target.style.borderColor=kleur} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                  onFocus={e=>e.target.style.borderColor=kleur}
+                  onBlur={e=>{
+                    e.target.style.borderColor="#e2e8f0";
+                    const next={...vreemd,[key]:e.target.value};
+                    setVreemd(next);
+                    if(next[key].trim().length>20 && onStepSave) onStepSave(next,key);
+                  }}/>
                 <div style={{textAlign:"right",fontSize:10,color:vreemd[key].trim().length>20?TEAL:"#94a3b8",marginTop:4}}>
                   {vreemd[key].trim().length>20 ? "✓ Voldoende" : `Nog ${20-vreemd[key].trim().length} tekens`}
                 </div>
@@ -1152,9 +1385,10 @@ function Dashboard({groupCode,onBack}){
       if(reqId!==requestIdRef.current)return;
       setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");
     }finally{
-      if(reqId!==requestIdRef.current)return;
-      setLoading(false);
-      setRefreshing(false);
+      if(reqId===requestIdRef.current){
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   },[groupCode]);
 
@@ -1323,6 +1557,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpe
             </div>
           </div>
           <p style={{margin:0,fontSize:11,color:"#64748b"}}>Vul groepscode + leeftijd in om direct een deel te starten.</p>
+          <PrivacyNote />
           {startHint && <p style={{margin:"8px 0 0",fontSize:11,color:"#b45309",fontWeight:700}}>⚠ {startHint}</p>}
         </div>
 
@@ -1348,7 +1583,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpe
           <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>Verder met code</label>
           <div style={{display:"flex",gap:8}}>
             <input value={resumeCode} onChange={e=>setResumeCode(e.target.value.toUpperCase())} placeholder="bijv. MM-8K4P2X" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
-            <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
+            <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim().toUpperCase())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
           </div>
         </div>
 
@@ -1562,7 +1797,7 @@ export default function MoralMaps(){
   const [coreVals,setCoreVals]=useState([]);
   const [dilResp,setDilResp]=useState([]);
   const [curDil,setCurDil]=useState(0);
-  const [activeDilemmas]=useState(()=>{
+  const [activeDilemmas,setActiveDilemmas]=useState(()=>{
     const shuffled=[...DILEMMAS].sort(()=>Math.random()-.5);
     return shuffled.slice(0,2);
   });
@@ -1608,7 +1843,11 @@ export default function MoralMaps(){
   });
 
   const [saving,setSaving]=useState(false);
+  const [saveStatus,setSaveStatus]=useState(null);
   const saveGenRef=useRef(0);
+  const snapshotRef=useRef({});
+  const retryTimerRef=useRef(null);
+  const retryCountRef=useRef(0);
 
   const pct=useMemo(()=>{
     const dilCount=activeDilemmas.length||1;
@@ -1631,13 +1870,148 @@ export default function MoralMaps(){
   );
 
   useEffect(()=>{
-    if(coreVals.length===3&&!ankerzin.trim()){
-      setAnkerzin(formatAnkerzin(coreVals));
-    }
-  },[coreVals,ankerzin]);
+    snapshotRef.current = {
+      participantCode, groupCode, age, screen, phase, selVals, coreVals, dilResp, curDil,
+      activeDilemmas, starr, socialisatiePayload, bridge, deel3Terugblik, deel3Vooruitblik,
+      deel3Synthese, deel3Grow, deel2Step, deel3Step, crossroadsChoice, crossroadsReflectie,
+      tankstop, omweg, deel2Inzicht, vreemdeAnderResult, smsChoice, smsReflection, domColor,
+    };
+  });
 
   function setJournalKey(key,val){
     setMicroJournal((prev)=>({...prev,[key]:val}));
+  }
+
+  async function persistSession(currentStage, overrides = {}) {
+    const s = snapshotRef.current;
+    const participant = String(overrides.participantCode ?? s.participantCode ?? "").trim().toUpperCase();
+    const group = String(overrides.groupCode ?? s.groupCode ?? "").trim().toUpperCase();
+    if (!participant || !group) return { ok: false, error: "missing codes" };
+
+    const coreValues = overrides.coreValues ?? s.coreVals;
+    const dilemmaResponses = overrides.dilemmaResponses ?? s.dilResp;
+    const progress = {
+      screen: overrides.screen ?? s.screen,
+      phase: overrides.phase ?? s.phase,
+      deel2Step: overrides.deel2Step ?? s.deel2Step,
+      deel3Step: overrides.deel3Step ?? s.deel3Step,
+      selVals: overrides.selVals ?? s.selVals,
+      curDil: overrides.curDil ?? s.curDil,
+      activeDilemmaTitles: (overrides.activeDilemmas ?? s.activeDilemmas ?? []).map((d) => d.title),
+      crossroadsChoice: overrides.crossroadsChoice ?? s.crossroadsChoice,
+      crossroadsReflectie: overrides.crossroadsReflectie ?? s.crossroadsReflectie,
+      tankstop: overrides.tankstop ?? s.tankstop,
+      omweg: overrides.omweg ?? s.omweg,
+      deel2Inzicht: overrides.deel2Inzicht ?? s.deel2Inzicht,
+      vreemdeAnderResult: overrides.vreemdeAnderResult ?? s.vreemdeAnderResult,
+      bridge: overrides.bridge ?? s.bridge,
+      deel3Terugblik: overrides.deel3Terugblik ?? s.deel3Terugblik,
+      deel3Vooruitblik: overrides.deel3Vooruitblik ?? s.deel3Vooruitblik,
+      deel3Synthese: overrides.deel3Synthese ?? s.deel3Synthese,
+      deel3Grow: overrides.deel3Grow ?? s.deel3Grow,
+      smsChoice: overrides.smsChoice ?? s.smsChoice,
+      smsReflection: overrides.smsReflection ?? s.smsReflection,
+    };
+
+    const payload = {
+      participantCode: participant,
+      currentStage,
+      groupCode: group,
+      age: overrides.age ?? s.age,
+      coreValues,
+      dilemmaResponses,
+      starr: overrides.starr ?? s.starr,
+      dominantColor: calcDomColor(coreValues, dilemmaResponses),
+      socialisatie: overrides.socialisatie ?? s.socialisatiePayload,
+      vreemdeAnder: progress,
+    };
+
+    const gen = ++saveGenRef.current;
+    setSaveStatus("saving");
+    const localOk = writeLocalSession(payload);
+
+    const result = await dbSave(payload);
+    if (gen !== saveGenRef.current) return result;
+
+    if (result.ok) {
+      retryCountRef.current = 0;
+      setSaveStatus("saved");
+      setSavedLocal(false);
+      return result;
+    }
+
+    setSaveStatus(localOk ? "local" : null);
+    setSavedLocal(localOk);
+    if (localOk && retryCountRef.current < 3) {
+      retryCountRef.current += 1;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        persistSession(currentStage, overrides);
+      }, 8000);
+    }
+    return result;
+  }
+
+  function applyLoadedSession(data) {
+    const bag = parseProgressBag(data.vreemdeAnder);
+    setParticipantCode(data.participantCode || "");
+    setGroupCode(data.groupCode || "");
+    setAge(data.age || "");
+    setCoreVals(data.coreValues || []);
+    setDilResp(data.dilemmaResponses || []);
+    const hydrated = hydrateFromSocialisatie(data.socialisatie);
+    setStarr({ situatie:"", taak:"", actie:"", resultaat:"", reflectie:"", leidendeWaardeId:null, ...(data.starr || {}) });
+    setSocialisatie(hydrated.soc);
+    setAnkerzin(hydrated.ankerzin);
+    setWeekdoel(hydrated.weekdoel);
+    setMicroJournal(hydrated.microJournal);
+    if (bag.selVals) setSelVals(bag.selVals);
+    if (typeof bag.curDil === "number") setCurDil(bag.curDil);
+    const restored = restoreDilemmas(bag.activeDilemmaTitles);
+    if (restored) setActiveDilemmas(restored);
+    if (bag.crossroadsChoice) setCrossroadsChoice(bag.crossroadsChoice);
+    if (bag.crossroadsReflectie != null) setCrossroadsReflectie(bag.crossroadsReflectie);
+    if (bag.tankstop) setTankstop({ energie:"", lek:"", nodig:"", ...bag.tankstop });
+    if (bag.omweg) setOmweg({ tegenslag:"", bijstelling:"", lering:"", ...bag.omweg });
+    if (bag.deel2Inzicht != null) setDeel2Inzicht(bag.deel2Inzicht);
+    if (bag.vreemdeAnderResult) setVreemdeAnderResult(bag.vreemdeAnderResult);
+    if (bag.bridge) setBridge({ ballast:"", meenemen:"", vinden:"", gps:"", ...bag.bridge });
+    if (bag.deel3Terugblik) setDeel3Terugblik({ scharnierpunt:"", patroon:"", noorden:"", ...bag.deel3Terugblik });
+    if (bag.deel3Vooruitblik) setDeel3Vooruitblik({ nalatenschap:"", richting:"", belofte:"", ...bag.deel3Vooruitblik });
+    if (typeof bag.deel3Synthese === "string") setDeel3Synthese(bag.deel3Synthese);
+    if (bag.deel3Grow) setDeel3Grow({ goal:"", reality:"", options:"", will:"", ...bag.deel3Grow });
+    if (bag.smsChoice) setSmsChoice(bag.smsChoice);
+    if (bag.smsReflection != null) setSmsReflection(bag.smsReflection);
+    if (typeof bag.deel2Step === "number") setDeel2Step(bag.deel2Step);
+    if (typeof bag.deel3Step === "number") setDeel3Step(bag.deel3Step);
+
+    const stage = (data.currentStage || "").toLowerCase();
+    if (stage.startsWith("deel3") || bag.screen === "deel3") {
+      setScreen("deel3");
+      if (stage.includes("done")) setDeel3Step(typeof bag.deel3Step === "number" ? bag.deel3Step : 3);
+      return;
+    }
+    if (stage.startsWith("deel2") || bag.screen === "deel2") {
+      setScreen("deel2");
+      if (stage.includes("done")) setDeel2Step(typeof bag.deel2Step === "number" ? bag.deel2Step : 5);
+      return;
+    }
+    const phaseMatch = stage.match(/phase[_-]?(\d)/);
+    if (phaseMatch) {
+      setScreen("app");
+      const p = Math.min(6, Number(phaseMatch[1]));
+      setPhase(p);
+      if (p >= 6) setSaved(true);
+      return;
+    }
+    if (typeof bag.phase === "number") {
+      setScreen(bag.screen === "deel2" ? "deel2" : bag.screen === "deel3" ? "deel3" : "app");
+      setPhase(Math.min(6, bag.phase));
+      return;
+    }
+    setScreen("app");
+    setPhase(stage.includes("done") ? 6 : 0);
+    if (stage.includes("done")) setSaved(true);
   }
 
   function goToPhase(target){
@@ -1692,58 +2066,43 @@ export default function MoralMaps(){
     setScreen("deel3");
   }
   async function resumeWithCode(code){
-    const data = await dbLoadByParticipantCode(code);
-    if(!data){
-      alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal Deel 1 of Deel 2 af en probeer daarna opnieuw.");
-      return;
+    const normalized = String(code || "").trim().toUpperCase();
+    try {
+      const local = readLocalSession(normalized);
+      let remote = null;
+      try {
+        remote = await dbLoadByParticipantCode(normalized);
+      } catch (err) {
+        console.error("Resume remote load failed:", err);
+      }
+      if(!remote && !local){
+        alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal één stap af en probeer daarna opnieuw.");
+        return;
+      }
+      const data = local
+        ? {
+            participantCode: local.participantCode || remote?.participantCode || normalized,
+            currentStage: local.currentStage || remote?.currentStage,
+            groupCode: local.groupCode || remote?.groupCode,
+            age: local.age || remote?.age,
+            coreValues: (local.coreValues && local.coreValues.length ? local.coreValues : remote?.coreValues) || [],
+            dilemmaResponses: local.dilemmaResponses || remote?.dilemmaResponses || [],
+            starr: local.starr || remote?.starr,
+            dominantColor: local.dominantColor || remote?.dominantColor,
+            socialisatie: local.socialisatie || remote?.socialisatie,
+            vreemdeAnder: local.vreemdeAnder || remote?.vreemdeAnder || {},
+          }
+        : remote;
+      applyLoadedSession(data);
+      setSaveStatus(remote && !local ? "saved" : "local");
+    } catch (err) {
+      console.error("Resume failed:", err);
+      alert(`Hervatten mislukt (${err?.message || "onbekende fout"}). Probeer de code opnieuw of start een nieuwe sessie.`);
     }
-    setParticipantCode(data.participantCode || code.toUpperCase());
-    setGroupCode(data.groupCode || "");
-    setAge(data.age || "");
-    setCoreVals(data.coreValues || []);
-    setDilResp(data.dilemmaResponses || []);
-    const hydrated=hydrateFromSocialisatie(data.socialisatie);
-    setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null,...(data.starr||{})});
-    setSocialisatie(hydrated.soc);
-    setAnkerzin(hydrated.ankerzin);
-    setWeekdoel(hydrated.weekdoel);
-    setMicroJournal(hydrated.microJournal);
-    const stage = (data.currentStage || "").toLowerCase();
-    if(stage.startsWith("deel3")) {
-      setScreen("deel3");
-      return;
-    }
-    if(stage.startsWith("deel2")) {
-      setScreen("deel2");
-      setDeel2Step(0);
-      return;
-    }
-    const phaseMatch = stage.match(/phase[_-]?(\d)/);
-    if(phaseMatch) {
-      setScreen("app");
-      setPhase(Math.min(6, Number(phaseMatch[1])));
-      if(Number(phaseMatch[1]) >= 6) setSaved(true);
-      return;
-    }
-    setScreen("app");
-    setPhase(stage.includes("done") ? 6 : 0);
-    if(stage.includes("done")) setSaved(true);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(retryTimerRef.current)clearTimeout(retryTimerRef.current);retryCountRef.current=0;}
   async function saveProgress(currentStage){
-    if(!participantCode || !groupCode) return;
-    const result = await dbSave({
-      participantCode,
-      currentStage,
-      groupCode,
-      age,
-      coreValues: coreVals,
-      dilemmaResponses: dilResp,
-      starr,
-      dominantColor: domColor,
-      socialisatie: socialisatiePayload,
-    });
-    if(!result.ok) console.error("Save progress failed:", result.error);
+    return persistSession(currentStage);
   }
   async function saveAndFinish(){
     if(saving)return;
@@ -1751,41 +2110,14 @@ export default function MoralMaps(){
       setSaveErr(`Vul alle rugzak-velden in (minimaal ${SOCIALISATIE_MIN_CHARS} tekens per veld).`);
       return;
     }
-    const gen=++saveGenRef.current;
     setSaving(true);
     setSaveErr(null);
-    setSavedLocal(false);
-    const payload = {
-      participantCode,
-      currentStage:"deel1_done",
-      groupCode,
-      age,
-      coreValues:coreVals,
-      dilemmaResponses:dilResp,
-      starr,
-      dominantColor:domColor,
-      socialisatie: socialisatiePayload,
-    };
-    const result = await dbSave({
-      ...payload
-    });
-    if(gen!==saveGenRef.current)return;
-    if(result.ok){
-      setSaved(true);
-      setPhase(6);
-      setSaving(false);
-      return;
-    }
-    try{
-      localStorage.setItem("moralmaps_pending_save", JSON.stringify({
-        ...payload,
-        savedAt: new Date().toISOString(),
-      }));
-      setSavedLocal(true);
+    const result = await persistSession("deel1_done", { phase: 6, screen: "app" });
+    setPhase(6);
+    setSaved(result.ok);
+    setSavedLocal(!result.ok);
+    if(!result.ok){
       setSaveErr(`Online opslaan mislukt (${result.error}). Je voortgang is lokaal bewaard en je kunt verder.`);
-      setPhase(6);
-    }catch{
-      setSaveErr(`Opslaan mislukt: ${result.error}`);
     }
     setSaving(false);
   }
@@ -1859,12 +2191,13 @@ export default function MoralMaps(){
     ];
     return (
       <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
-        <div style={{maxWidth:880,margin:"0 auto",padding:"24px 16px 60px"}}>
+        <SessionCodeBar code={participantCode} groupCode={groupCode} age={age} saveStatus={saveStatus} onReset={reset}/>
+        <div style={{maxWidth:880,margin:"0 auto",padding:"16px 16px 60px"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
             <button onClick={()=>setScreen("trilogie-home")} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:999,padding:"8px 14px",cursor:"pointer",fontWeight:700,color:"#334155",fontFamily:FONT}}>← Terug</button>
             <div>
               <h2 style={{margin:0,fontSize:22,fontWeight:900,letterSpacing:-.4}}>Deel 2 — Onderweg</h2>
-              <p style={{margin:0,fontSize:12,color:"#64748b"}}>Crossroads en De Vreemde Ander · Code: {participantCode || "n.v.t."}</p>
+              <p style={{margin:0,fontSize:12,color:"#64748b"}}>Crossroads en De Vreemde Ander</p>
             </div>
           </div>
 
@@ -1905,7 +2238,7 @@ export default function MoralMaps(){
                   ))}
                 </div>
                 <textarea value={crossroadsReflectie} onChange={e=>setCrossroadsReflectie(e.target.value)} rows={3} placeholder="Waarom kies je deze route, en hoe past dit bij je kernwaarden?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT,marginBottom:12}} />
-                <button onClick={()=>setDeel2Step(2)} disabled={!crossroadsChoice} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:crossroadsChoice?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:crossroadsChoice?"pointer":"not-allowed",fontFamily:FONT}}>
+                <button onClick={()=>{setDeel2Step(2);persistSession("deel2_crossroads",{deel2Step:2,screen:"deel2",crossroadsChoice,crossroadsReflectie});}} disabled={!crossroadsChoice} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:crossroadsChoice?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:crossroadsChoice?"pointer":"not-allowed",fontFamily:FONT}}>
                   Verder naar Tankstop-check →
                 </button>
               </div>
@@ -1927,7 +2260,7 @@ export default function MoralMaps(){
                 <textarea value={tankstop.lek} onChange={e=>setTankstop({...tankstop,lek:e.target.value})} rows={2} placeholder="Wat kost je nu energie of leidt je af?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
                 <textarea value={tankstop.nodig} onChange={e=>setTankstop({...tankstop,nodig:e.target.value})} rows={2} placeholder="Wat heb je nodig voor de volgende etappe?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
               </div>
-              <button onClick={()=>setDeel2Step(3)} disabled={!tankstop.energie.trim() || !tankstop.nodig.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(tankstop.energie.trim() && tankstop.nodig.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:(tankstop.energie.trim() && tankstop.nodig.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
+              <button onClick={()=>{setDeel2Step(3);persistSession("deel2_tankstop",{deel2Step:3,screen:"deel2",tankstop});}} disabled={!tankstop.energie.trim() || !tankstop.nodig.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(tankstop.energie.trim() && tankstop.nodig.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:(tankstop.energie.trim() && tankstop.nodig.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
                 Verder naar Omweg-dilemma →
               </button>
             </div>
@@ -1948,7 +2281,7 @@ export default function MoralMaps(){
                 <textarea value={omweg.bijstelling} onChange={e=>setOmweg({...omweg,bijstelling:e.target.value})} rows={2} placeholder="Hoe heb je je koers of GPS bijgesteld?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
                 <textarea value={omweg.lering} onChange={e=>setOmweg({...omweg,lering:e.target.value})} rows={2} placeholder="Welke les neem je mee naar de volgende etappe?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} />
               </div>
-              <button onClick={()=>setDeel2Step(4)} disabled={!omweg.tegenslag.trim() || !omweg.bijstelling.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
+              <button onClick={()=>{setDeel2Step(4);persistSession("deel2_omweg",{deel2Step:4,screen:"deel2",omweg});}} disabled={!omweg.tegenslag.trim() || !omweg.bijstelling.trim()} style={{width:"100%",padding:"12px",borderRadius:999,border:"none",background:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:(omweg.tegenslag.trim() && omweg.bijstelling.trim())?"pointer":"not-allowed",fontFamily:FONT}}>
                 Verder naar De Vreemde Ander →
               </button>
             </div>
@@ -1957,9 +2290,15 @@ export default function MoralMaps(){
           {deel2Step===4&&(
             <VreemdeAnder
               coreVals={coreVals}
+              initial={vreemdeAnderResult}
+              onStepSave={(result,key)=>{
+                setVreemdeAnderResult(result);
+                persistSession(`deel2_vreemde_ander_${key}`,{vreemdeAnderResult:result,deel2Step:4,screen:"deel2"});
+              }}
               onComplete={(result)=>{
                 setVreemdeAnderResult(result);
                 setDeel2Step(5);
+                persistSession("deel2_vreemde_ander",{vreemdeAnderResult:result,deel2Step:5,screen:"deel2"});
               }}
             />
           )}
@@ -2025,17 +2364,15 @@ export default function MoralMaps(){
     const D3_PINK = "#d4537e";
     const D3_PINK_LIGHT = "rgba(212,83,126,.08)";
     const D3_PINK_BORDER = "rgba(212,83,126,.2)";
-    const nextBtn = (label, onClick, disabled=false) => (
-      <button onClick={onClick} disabled={disabled}
-        style={{width:"100%",padding:"12px",borderRadius:999,border:"none",
-          background:disabled?"#94a3b8":D3_PINK,color:"#fff",fontWeight:700,fontSize:14,
-          cursor:disabled?"not-allowed":"pointer",fontFamily:FONT,marginTop:14}}>
-        {label}
-      </button>
-    );
+    const d3NextStyle = (disabled=false) => ({
+      width:"100%",padding:"12px",borderRadius:999,border:"none",
+      background:disabled?"#94a3b8":D3_PINK,color:"#fff",fontWeight:700,fontSize:14,
+      cursor:disabled?"not-allowed":"pointer",fontFamily:FONT,marginTop:14,
+    });
     return (
       <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
-        <div style={{maxWidth:680,margin:"0 auto",padding:"24px 16px 60px"}}>
+        <SessionCodeBar code={participantCode} groupCode={groupCode} age={age} saveStatus={saveStatus} onReset={reset}/>
+        <div style={{maxWidth:680,margin:"0 auto",padding:"16px 16px 60px"}}>
 
           {/* Header */}
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -2045,7 +2382,7 @@ export default function MoralMaps(){
             </button>
             <div>
               <h2 style={{margin:0,fontSize:18,fontWeight:900,letterSpacing:-.4}}>Deel 3 — Final Destination</h2>
-              <p style={{margin:0,fontSize:11,color:"#64748b"}}>Stap {deel3Step+1} van 4 · Code: {participantCode||"n.v.t."}</p>
+              <p style={{margin:0,fontSize:11,color:"#64748b"}}>Stap {deel3Step+1} van 4</p>
             </div>
           </div>
 
@@ -2077,7 +2414,7 @@ export default function MoralMaps(){
                   <textarea value={bridge.vinden} onChange={e=>setBridge({...bridge,vinden:e.target.value})} rows={2} placeholder="Wat hoop je te vinden aan de overkant?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                   <textarea value={bridge.gps} onChange={e=>setBridge({...bridge,gps:e.target.value})} rows={2} placeholder="Welke kernwaarde stuurt je GPS?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
-                {nextBtn("Naar Terugblik →", ()=>setDeel3Step(1))}
+                <button type="button" onClick={()=>{setDeel3Step(1);persistSession("deel3_bridge",{deel3Step:1,screen:"deel3",bridge});}} style={d3NextStyle()}>Naar Terugblik →</button>
               </div>
             </div>
           )}
@@ -2099,7 +2436,7 @@ export default function MoralMaps(){
                   <textarea value={deel3Terugblik.patroon} onChange={e=>setDeel3Terugblik({...deel3Terugblik,patroon:e.target.value})} rows={2} placeholder="Welk patroon herken je in je morele keuzes?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                   <textarea value={deel3Terugblik.noorden} onChange={e=>setDeel3Terugblik({...deel3Terugblik,noorden:e.target.value})} rows={2} placeholder="Wat is nu jouw ware noorden?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
-                {nextBtn("Naar Vooruitblik →", ()=>setDeel3Step(2))}
+                <button type="button" onClick={()=>{setDeel3Step(2);persistSession("deel3_terugblik",{deel3Step:2,screen:"deel3",deel3Terugblik});}} style={d3NextStyle()}>Naar Vooruitblik →</button>
               </div>
             </div>
           )}
@@ -2124,7 +2461,7 @@ export default function MoralMaps(){
                 <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>📍 Persoonlijke routekaart</p>
                 <p style={{fontSize:13,color:"#64748b",lineHeight:1.6,marginBottom:8}}>Vat je route samen in een kort persoonlijk plan voor je volgende stappen.</p>
                 <textarea value={deel3Synthese} onChange={e=>setDeel3Synthese(e.target.value)} rows={4} placeholder="Mijn routekaart: waar sta ik nu, waar ga ik naartoe, en hoe ga ik handelen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-                {nextBtn("Naar GROW Actieplan →", ()=>setDeel3Step(3))}
+                <button type="button" onClick={()=>{setDeel3Step(3);persistSession("deel3_vooruitblik",{deel3Step:3,screen:"deel3",deel3Vooruitblik,deel3Synthese});}} style={d3NextStyle()}>Naar GROW Actieplan →</button>
               </div>
             </div>
           )}
@@ -2142,10 +2479,10 @@ export default function MoralMaps(){
                   Je besluit op basis van je reis en inzichten wat je anders gaat doen. Beantwoord de coachvragen volgens het GROW-model.
                 </p>
                 <div style={{display:"grid",gap:10}}>
-                  <textarea value={deel3Grow.goal} onChange={e=>setDeel3Grow({...deel3Grow,goal:e.target.value})} rows={2} placeholder="Goal: Welk concreet doel wil je bereiken in je professioneel handelen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-                  <textarea value={deel3Grow.reality} onChange={e=>setDeel3Grow({...deel3Grow,reality:e.target.value})} rows={2} placeholder="Reality: Wat is nu je realiteit? Wat gaat al goed en wat belemmert je nog?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-                  <textarea value={deel3Grow.options} onChange={e=>setDeel3Grow({...deel3Grow,options:e.target.value})} rows={2} placeholder="Options: Welke opties heb je om dit doel te halen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-                  <textarea value={deel3Grow.will} onChange={e=>setDeel3Grow({...deel3Grow,will:e.target.value})} rows={2} placeholder="Will: Wat ga je nu concreet doen, wanneer en waaraan merk je dat je het volhoudt?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                  <textarea value={deel3Grow.goal} onChange={e=>setDeel3Grow({...deel3Grow,goal:e.target.value})} rows={2} placeholder="Goal: Welk concreet doel wil je bereiken in je professioneel handelen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>{e.target.style.borderColor="#e2e8f0";persistSession("deel3_grow_goal",{screen:"deel3",deel3Step:3,deel3Grow:{...deel3Grow,goal:e.target.value}});}}/>
+                  <textarea value={deel3Grow.reality} onChange={e=>setDeel3Grow({...deel3Grow,reality:e.target.value})} rows={2} placeholder="Reality: Wat is nu je realiteit? Wat gaat al goed en wat belemmert je nog?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>{e.target.style.borderColor="#e2e8f0";persistSession("deel3_grow_reality",{screen:"deel3",deel3Step:3,deel3Grow:{...deel3Grow,reality:e.target.value}});}}/>
+                  <textarea value={deel3Grow.options} onChange={e=>setDeel3Grow({...deel3Grow,options:e.target.value})} rows={2} placeholder="Options: Welke opties heb je om dit doel te halen?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>{e.target.style.borderColor="#e2e8f0";persistSession("deel3_grow_options",{screen:"deel3",deel3Step:3,deel3Grow:{...deel3Grow,options:e.target.value}});}}/>
+                  <textarea value={deel3Grow.will} onChange={e=>setDeel3Grow({...deel3Grow,will:e.target.value})} rows={2} placeholder="Will: Wat ga je nu concreet doen, wanneer en waaraan merk je dat je het volhoudt?" style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}} onFocus={e=>e.target.style.borderColor=D3_PINK} onBlur={e=>{e.target.style.borderColor="#e2e8f0";persistSession("deel3_grow_will",{screen:"deel3",deel3Step:3,deel3Grow:{...deel3Grow,will:e.target.value}});}}/>
                 </div>
               </div>
               <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16}}>
@@ -2167,23 +2504,15 @@ export default function MoralMaps(){
   return(
     <div style={{background:"#f8fafc",minHeight:"100vh",fontFamily:FONT}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');*{box-sizing:border-box}textarea,input{font-family:inherit}@keyframes spin{to{transform:rotate(360deg)}}${RESPONSIVE_CSS}`}</style>
-      <div style={{maxWidth:680,margin:"0 auto",padding:"20px 16px 60px"}}>
-
-        {/* Header */}
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"14px 20px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:38,height:38,borderRadius:10,background:TEAL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>📍</div>
-            <div><div style={{fontWeight:800,fontSize:16}}>Moral Maps Trilogie</div><div style={{fontSize:10,color:"#94a3b8"}}>Code: {participantCode || "n.v.t."} · Groep: {groupCode} · {age}</div></div>
-          </div>
-          <button onClick={reset} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:600,color:"#64748b",cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw</button>
-        </div>
+      <SessionCodeBar code={participantCode} groupCode={groupCode} age={age} saveStatus={saveStatus} onReset={reset}/>
+      <div style={{maxWidth:680,margin:"0 auto",padding:"16px 16px 60px"}}>
 
         <PBar step={phase} pct={pct} onStepClick={phase<6?goToPhase:undefined}/>
 
         {/* P0 — Privilege Wiel */}
         {phase===0 && (
           <>
-            <PrivilegeWheel onComplete={()=>setPhase(1)}/>
+            <PrivilegeWheel onComplete={()=>{setPhase(1);persistSession("phase_1",{phase:1,screen:"app"});}}/>
             <MicroJournalBox journalKey="privilege" value={microJournal.privilege} onChange={(v)=>setJournalKey("privilege",v)}/>
           </>
         )}
@@ -2230,7 +2559,7 @@ export default function MoralMaps(){
               </div>
             )}
             {selVals.length>=10&&<MicroJournalBox journalKey="kaart" value={microJournal.kaart} onChange={(v)=>setJournalKey("kaart",v)}/>}
-            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}><button onClick={()=>setPhase(2)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Stel je GPS in →</button></div>}
+            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}><button onClick={()=>{setPhase(2);persistSession("phase_2",{phase:2,screen:"app",selVals});}} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Stel je GPS in →</button></div>}
           </div>
         )}
 
@@ -2269,7 +2598,7 @@ export default function MoralMaps(){
             {coreVals.length===3&&<MicroJournalBox journalKey="gps" value={microJournal.gps} onChange={(v)=>setJournalKey("gps",v)}/>}
             <div style={{textAlign:"center"}}>
               <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}><strong style={{color:TEAL}}>{coreVals.length}</strong> / 3 kernwaarden</p>
-              {coreVals.length===3&&<button onClick={()=>setPhase(3)} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>}
+              {coreVals.length===3&&<button onClick={()=>{if(!ankerzin.trim())setAnkerzin(formatAnkerzin(coreVals));setPhase(3);persistSession("phase_3",{phase:3,screen:"app",coreValues:coreVals});}} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Start de Route →</button>}
             </div>
           </div>
         )}
@@ -2320,11 +2649,18 @@ export default function MoralMaps(){
                     </div>
                     <button onClick={()=>{
                       const dilemmaTitle=activeDilemmas[curDil]?.title||"";
-                      setDilResp(prev=>[...prev,{...pending,title:dilemmaTitle}]);
+                      const nextResp=[...dilResp,{...pending,title:dilemmaTitle}];
+                      setDilResp(nextResp);
                       setPending(null);
                       setInsight(false);
-                      if(curDil < activeDilemmas.length - 1) setCurDil(prev=>prev + 1);
-                      else setPhase(4);
+                      if(curDil < activeDilemmas.length - 1) {
+                        const nextDil = curDil + 1;
+                        setCurDil(nextDil);
+                        persistSession(`phase_3_dilemma_${nextDil}`, { dilemmaResponses: nextResp, curDil: nextDil, phase: 3, screen: "app" });
+                      } else {
+                        setPhase(4);
+                        persistSession("phase_4", { dilemmaResponses: nextResp, phase: 4, screen: "app" });
+                      }
                     }}
                       style={{marginTop:14,width:"100%",padding:"11px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
                       {curDil<activeDilemmas.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
@@ -2362,6 +2698,7 @@ export default function MoralMaps(){
                   </svg>
                   <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>Kies een moment uit je leven waarbij jouw waarden echt het verschil maakten. Gebruik de STARR-stappen hieronder om dat moment te beschrijven.</p>
                 </div>
+                <PrivacyNote context="starr" />
                 <div>
                   <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Leidende kernwaarde</label>
                   <p style={{fontSize:11,color:"#94a3b8",marginBottom:8,lineHeight:1.5}}>Welke van jouw drie ankers was in dit verhaal het meest leidend?</p>
@@ -2389,7 +2726,7 @@ export default function MoralMaps(){
                 {saveErr&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#b91c1c",fontSize:12}} role="alert">⚠️ {saveErr}</div>}
                 <p style={{fontSize:11,color:"#64748b",margin:0}}>Vul alle vijf STARR-velden in (minimaal {STARR_MIN_CHARS} tekens) en kies je leidende kernwaarde.</p>
                 <MicroJournalBox journalKey="starr" value={microJournal.starr} onChange={(v)=>setJournalKey("starr",v)}/>
-                <button type="button" disabled={!starrReady} onClick={()=>starrReady&&setPhase(5)} aria-disabled={!starrReady}
+                <button type="button" disabled={!starrReady} onClick={()=>{if(!starrReady)return;setPhase(5);persistSession("phase_5",{phase:5,screen:"app",starr});}} aria-disabled={!starrReady}
                   style={{padding:"13px",borderRadius:99,border:"none",background:starrReady?TEAL:"#94a3b8",color:"#fff",fontWeight:700,fontSize:14,cursor:starrReady?"pointer":"not-allowed",boxShadow:starrReady?`0 4px 12px ${TEAL_GLOW}`:"none",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                   {!starr.leidendeWaardeId?"Kies je leidende kernwaarde":starrReady?"🎒 Naar Jouw Rugzak →":"Vul alle STARR-velden in om verder te gaan"}
                 </button>
@@ -2472,7 +2809,8 @@ export default function MoralMaps(){
                 <div style={{marginTop:16,background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 18px"}}>
                   <p style={{margin:0,fontSize:10,fontWeight:800,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1.2}}>⚠ Schrijf dit op of maak een screenshot</p>
                   <p style={{margin:"6px 0 0",fontSize:24,fontWeight:900,color:"#fff",fontFamily:"'DM Mono',monospace",letterSpacing:1}}>{participantCode}</p>
-                  <p style={{margin:"6px 0 0",fontSize:11,color:"#94a3b8"}}>Zonder deze code kun je je reis niet hervatten in Deel II of III.</p>
+                  <p style={{margin:"6px 0 8px",fontSize:11,color:"#94a3b8"}}>Zonder deze code kun je je reis niet hervatten in Deel II of III.</p>
+                  <button type="button" onClick={()=>navigator.clipboard?.writeText(participantCode)} style={{padding:"7px 12px",borderRadius:8,border:"none",background:"rgba(255,255,255,.12)",color:"#fff",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:FONT}}>Kopieer code</button>
                 </div>
               )}
             </div>

@@ -11,8 +11,6 @@
 //    onContinue  — functie, wordt aangeroepen bij "Ga naar Deel 2"
 // ============================================================
 
-import { useState, useEffect } from "react";
-
 const FONT_DISPLAY = "'Playfair Display', Georgia, serif";
 const FONT_BODY    = "'DM Sans', system-ui, sans-serif";
 
@@ -25,15 +23,9 @@ const COLOR_MAP = {
 };
 
 export default function HalteCrossroads({ coreValues = [], groupCode = "", onContinue }) {
-  const [visible, setVisible] = useState(false);
   const url = groupCode
     ? `https://moral-maps-2-crossroads.vercel.app?code=${encodeURIComponent(groupCode.toUpperCase())}`
     : "https://moral-maps-2-crossroads.vercel.app";
-
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 100);
-    return () => clearTimeout(t);
-  }, []);
 
   function handleGo() {
     if (onContinue) onContinue();
@@ -70,7 +62,7 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
           <div key={i} style={{
             position: "absolute", left: "50%", width: 2, height: 20,
             background: "rgba(255,255,255,.06)", transform: "translateX(-50%)",
-            top: i * 120 + (Date.now() % 120),
+            top: i * 120,
             animation: "roadScroll 2s linear infinite",
             animationDelay: `${i * -0.25}s`,
           }}/>
