@@ -8,11 +8,11 @@
 
 | Deel | Titel | URL | Tech |
 |------|-------|-----|------|
-| 1 | **The Beginning** | moral-maps.vercel.app | React + Vite |
-| 2 | **Crossroads** | moral-maps-2-crossroads.vercel.app | Next.js + Tailwind |
-| 3 | **Final Destination** | moral-maps-3-final-destination.vercel.app | Next.js + Tailwind |
+| 1–3 | **Moral Maps Trilogie** | moral-maps.vercel.app | React + Vite |
+| 2 (oud) | Crossroads | moral-maps-2-crossroads.vercel.app | redirect naar de hoofdapp |
+| 3 (oud) | Final Destination | moral-maps-3-final-destination.vercel.app | redirect naar de hoofdapp |
 
-Alle drie de apps leven in deze repository, in aparte mappen. Vercel deployt elk project automatisch vanuit zijn eigen Root Directory.
+De trilogie leeft in één app (`src/MoralMaps.jsx`). De oude Vercel-projecten voor Deel 2 en 3 blijven bestaan zodat bestaande URL’s blijven werken; ze sturen door naar `moral-maps.vercel.app`.
 
 ---
 
@@ -40,11 +40,10 @@ moral-maps/
 │   ├── HalteFinalDestination.jsx     ← Tussenpagina deel 2 → 3
 │   └── MapsLanding.jsx               ← Reserve landingspagina
 ├── apps/
-│   ├── moral-maps-2-crossroads/      ← Deel 2 (Next.js)
-│   └── moral-maps-3-final-destination/ ← Deel 3 (Next.js)
+│   ├── moral-maps-2-crossroads/      ← Redirect-stub (oud Vercel-project)
+│   └── moral-maps-3-final-destination/ ← Redirect-stub (oud Vercel-project)
 ├── public/                           ← Gedeelde assets
-├── LOGBOEK.md                        ← Sessielog met versiebeheer
-└── supabase_setup.sql                ← Database setup
+└── LOGBOEK.md                        ← Sessielog met versiebeheer
 ```
 
 ---
@@ -70,11 +69,11 @@ Tabel: `moralmaps_results`
 
 Vercel deployt automatisch bij elke push naar `main`.
 
-| Project | Root Directory |
-|---------|---------------|
-| moral-maps | `/` (root) |
-| moral-maps-2-crossroads | `apps/moral-maps-2-crossroads` |
-| moral-maps-3-final-destination | `apps/moral-maps-3-final-destination` |
+| Project | Root Directory | Opmerking |
+|---------|---------------|-----------|
+| moral-maps | `/` (root) | de echte app |
+| moral-maps-2-crossroads | `apps/moral-maps-2-crossroads` | redirect-stub |
+| moral-maps-3-final-destination | `apps/moral-maps-3-final-destination` | redirect-stub |
 
 ---
 
