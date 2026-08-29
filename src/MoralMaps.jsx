@@ -2,87 +2,13 @@
 //  MORAL APS — v1
 //  Bijgewerkt: Deel 1 (Vertrek) flow met neutrale terminologie
 //
-//  SETUP:
-//  1. npm install @supabase/supabase-js
-//  2. Vul SUPABASE_URL en SUPABASE_ANON_KEY in
-//  3. Voer supabase_setup.sql uit in de Supabase SQL Editor
+//  Volledig lokaal: alle sessiedata blijft in de browser (localStorage).
+//  Geen backend, geen database, geen netwerkopslag.
 // ============================================================
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
 import HalteCrossroads from "./HalteCrossroads";
 import HalteFinalDestination from "./HalteFinalDestination";
-
-// ── Supabase via Vite env vars (Vercel friendly) ─────────────
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_KEY;
-const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-const supabase = hasSupabaseConfig
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
-// ─────────────────────────────────────────────────────────────
-
-// ── Database functies ──────────────────────────────────────────
-
-async function dbSave(entry) {
-  if (!supabase) {
-    const msg = "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY";
-    console.error("Supabase save:", msg);
-    return { ok: false, error: msg };
-  }
-  const basePayload = {
-    group_code:        entry.groupCode,
-    age:               entry.age,
-    core_values:       entry.coreValues,
-    dilemma_responses: entry.dilemmaResponses,
-    starr:             entry.starr,
-    dominant_color:    entry.dominantColor,
-    socialisatie:      entry.socialisatie,
-  };
-
-  // Eerst proberen met volledige payload.
-  // Daarna stapsgewijs terugvallen naar oudere schema-varianten.
-  const fullPayload = {
-    ...basePayload,
-    participant_code: entry.participantCode,
-    current_stage: entry.currentStage,
-    vreemde_ander: entry.vreemdeAnder ?? {},
-  };
-
-  const { socialisatie: _dropSocialisatie, ...payloadNoSocialisatie } = basePayload;
-  const payloadStringified = {
-    ...payloadNoSocialisatie,
-    starr: JSON.stringify(basePayload.starr || {}),
-    socialisatie: JSON.stringify(basePayload.socialisatie || {}),
-  };
-  const { socialisatie: _dropSocialisatie2, ...payloadStringifiedNoSocialisatie } = payloadStringified;
-
-  const attempts = [
-    fullPayload,                    // nieuwste schema
-    basePayload,                    // zonder resume-kolommen
-    payloadNoSocialisatie,          // zonder socialisatie-kolom
-    payloadStringified,             // voor tekstkolommen i.p.v. json/jsonb
-    payloadStringifiedNoSocialisatie, // minimale compatibiliteit
-  ];
-
-  let lastError = null;
-  for (const payload of attempts) {
-    // Payloads die participant_code bevatten: upsert op die kolom, zodat
-    // een hervatte sessie de bestaande rij bijwerkt in plaats van een
-    // dubbele rij aan te maken. Oudere schema-varianten zonder die kolom
-    // (fallback) blijven gewoon inserten.
-    const { error } = payload.participant_code
-      ? await supabase.from("moralmaps_results").upsert(payload, { onConflict: "participant_code" })
-      : await supabase.from("moralmaps_results").insert(payload);
-    if (!error) return { ok: true, error: null };
-    lastError = error;
-  }
-
-  const message = lastError?.message || "Unknown Supabase save error";
-  if (lastError) { console.error("Supabase save:", message); }
-  return { ok: false, error: message };
-}
 
 function parseJsonField(value, fallback) {
   if (value == null) return fallback;
@@ -189,57 +115,23 @@ function readLocalSession(code) {
   return null;
 }
 
-async function dbLoad(groupCode) {
-  if (!supabase) {
-    console.error("Supabase load: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
-    return [];
-  }
-  const { data, error } = await supabase
-    .from("moralmaps_results")
-    .select("*")
-    .eq("group_code", groupCode.toUpperCase())
-    .order("created_at", { ascending: false });
-  if (error) { console.error("Supabase load:", error.message); return []; }
-  return (data || []).map(r => ({
-    participantCode:    r.participant_code,
-    currentStage:       r.current_stage,
-    groupCode:         r.group_code,
-    age:               r.age,
-    coreValues:        parseJsonField(r.core_values, []),
-    dilemmaResponses:  parseJsonField(r.dilemma_responses, []),
-    starr:             parseJsonField(r.starr, {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""}),
-    dominantColor:     r.dominant_color,
-    socialisatie:      parseJsonField(r.socialisatie, {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""}),
-    ts:                new Date(r.created_at).getTime(),
-  }));
-}
-
-async function dbLoadByParticipantCode(participantCode) {
-  if (!supabase) {
-    console.error("Supabase load: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
-    return null;
-  }
-  const { data, error } = await supabase
-    .from("moralmaps_results")
-    .select("*")
-    .eq("participant_code", participantCode.toUpperCase())
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) { console.error("Supabase load by participant:", error.message); return null; }
-  if (!data) return null;
-  return {
-    participantCode: data.participant_code,
-    currentStage: data.current_stage,
-    groupCode: data.group_code,
-    age: data.age,
-    coreValues: parseJsonField(data.core_values, []),
-    dilemmaResponses: parseJsonField(data.dilemma_responses, []),
-    starr: parseJsonField(data.starr, {situatie:"",taak:"",actie:"",resultaat:"",reflectie:""}),
-    dominantColor: data.dominant_color,
-    socialisatie: parseJsonField(data.socialisatie, {primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""}),
-    vreemdeAnder: parseProgressBag(data.vreemde_ander),
-  };
+function clearLocalSession(code) {
+  if (typeof localStorage === "undefined") return;
+  const wanted = String(code || "").trim().toUpperCase();
+  try {
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem(LOCAL_SESSION_MAP_KEY) || "{}") || {}; } catch { map = {}; }
+    if (wanted) {
+      delete map[wanted];
+      localStorage.removeItem(localSessionKey(wanted));
+    } else {
+      for (const k of Object.keys(map)) localStorage.removeItem(localSessionKey(k));
+      map = {};
+    }
+    localStorage.setItem(LOCAL_SESSION_MAP_KEY, JSON.stringify(map));
+    const last = String(localStorage.getItem(LOCAL_LAST_CODE_KEY) || "").trim().toUpperCase();
+    if (!wanted || last === wanted) localStorage.removeItem(LOCAL_LAST_CODE_KEY);
+  } catch { /* ignore */ }
 }
 
 // ── Constants ──────────────────────────────────────────────────
@@ -827,7 +719,7 @@ function PrivilegeWheel({onComplete}){
               </p>
             </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
-              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet opgeslagen in de database. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
+              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet bewaard. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
             </div>
             <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:`0 4px 20px ${TEAL_GLOW}`,fontFamily:FONT}}>
               Bekijk het wiel →
@@ -1346,134 +1238,13 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
   openPrintWindow(html);
 }
 
-// ── Dashboard ──────────────────────────────────────────────────
-
-function WordCloud({results}){
-  const words=useMemo(()=>{
-    const m={};
-    results.forEach(r=>(r.coreValues||[]).forEach(v=>{const k=`${v.name}|${v.color}`;m[k]=(m[k]||0)+1;}));
-    return Object.entries(m).map(([k,c])=>{const[n,col]=k.split("|");return{name:n,color:col,count:c};}).sort((a,b)=>b.count-a.count);
-  },[results]);
-  if(!words.length)return <p style={{color:"#94a3b8",textAlign:"center",padding:24,fontSize:13}}>Nog geen data voor deze groep.</p>;
-  const mx=words[0].count;
-  return(
-    <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",padding:"12px 0"}}>
-      {words.map(({name,color,count})=>{
-        const c=CM[color],s=0.75+(count/mx)*1.0;
-        return <span key={`${name}|${color}`} style={{fontSize:Math.round(11*s),fontWeight:count===mx?800:600,color:c.text,background:c.bg,border:`1.5px solid ${c.border}`,borderRadius:8,padding:"3px 9px"}}>{name}<sup style={{fontSize:8,opacity:.5,marginLeft:2}}>{count}</sup></span>;
-      })}
-    </div>
-  );
-}
-
-function Dashboard({groupCode,onBack}){
-  const [results,setResults]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [refreshing,setRefreshing]=useState(false);
-  const [error,setError]=useState(null);
-  const requestIdRef=useRef(0);
-
-  const loadResults=useCallback(async(isRefresh=false)=>{
-    const reqId=++requestIdRef.current;
-    if(isRefresh)setRefreshing(true); else setLoading(true);
-    setError(null);
-    try{
-      const data=await dbLoad(groupCode);
-      if(reqId!==requestIdRef.current)return;
-      setResults(data);
-    }catch{
-      if(reqId!==requestIdRef.current)return;
-      setError("Kon data niet ophalen. Controleer je Supabase-instellingen.");
-    }finally{
-      if(reqId===requestIdRef.current){
-        setLoading(false);
-        setRefreshing(false);
-      }
-    }
-  },[groupCode]);
-
-  useEffect(()=>{
-    loadResults(false);
-    return()=>{requestIdRef.current++;};
-  },[loadResults]);
-
-  const byAge=useMemo(()=>{const m={};AGE_CATS.forEach(a=>{m[a]=[];});results.forEach(r=>{if(m[r.age])m[r.age].push(r);});return m;},[results]);
-  function top3(es){const c={};es.forEach(r=>(r.coreValues||[]).forEach(v=>{if(!c[v.name])c[v.name]={count:0,color:v.color};c[v.name].count++;}));return Object.entries(c).sort(([,a],[,b])=>b.count-a.count).slice(0,3).map(([n,{color}])=>({name:n,color}));}
-  const cdist=useMemo(()=>{const d={geel:0,blauw:0,rood:0,groen:0,wit:0};results.forEach(r=>(r.coreValues||[]).forEach(v=>{d[v.color]=(d[v.color]||0)+1;}));const t=Object.values(d).reduce((a,b)=>a+b,0)||1;return Object.entries(d).map(([c,n])=>({color:c,pct:Math.round(n/t*100)}));},[results]);
-  const groepAnkers=useMemo(()=>top3(results),[results]);
-
-  return(
-    <div style={{maxWidth:700,margin:"0 auto",padding:"24px 16px 60px",fontFamily:FONT}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap');*{box-sizing:border-box}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
-        <button type="button" onClick={onBack} aria-label="Terug naar start" style={{background:"#f1f5f9",border:"none",borderRadius:99,padding:"8px 16px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#334155",fontFamily:FONT}}>← Terug</button>
-        <div><h2 style={{fontWeight:900,fontSize:20,margin:0}}>Dashboard</h2><p style={{margin:0,fontSize:12,color:"#64748b"}}>Groep: <strong>{groupCode}</strong>{!loading&&<span> · {results.length} deelnemers</span>}</p></div>
-        <button type="button" onClick={()=>loadResults(true)} disabled={loading||refreshing} aria-label="Dashboard vernieuwen" style={{marginLeft:"auto",background:TEAL_LIGHT,border:`1px solid ${TEAL}40`,borderRadius:99,padding:"6px 14px",cursor:loading||refreshing?"wait":"pointer",fontWeight:600,fontSize:12,color:TEAL,fontFamily:FONT,opacity:refreshing?.6:1}}>{refreshing?"↻ Laden…":"↻ Vernieuwen"}</button>
-      </div>
-      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"14px 18px",marginBottom:20,color:"#b91c1c",fontSize:13}} role="alert">⚠️ {error}</div>}
-      {loading?<Spinner/>:results.length===0?<div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"40px 24px",textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>📭</div>
-          <h3 style={{margin:"0 0 8px",fontSize:18,fontWeight:800,color:"#0f172a"}}>Nog geen resultaten</h3>
-          <p style={{margin:0,fontSize:14,color:"#64748b",lineHeight:1.7}}>Voor groepscode <strong>{groupCode}</strong> zijn nog geen opgeslagen reisverslagen gevonden. Laat studenten Deel 1 afronden of controleer de spelling van de code.</p>
-        </div>:<>
-        {groepAnkers.length>0&&(
-          <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-            <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>⚓ Meest gekozen ankers in deze groep</p>
-            <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:"0 0 12px"}}>Gespreksstarter voor de klas: welke waarden leven het sterkst — en waarom?</p>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              {groepAnkers.map((v,i)=>(
-                <span key={v.name} style={{display:"inline-flex",alignItems:"center",gap:6,background:CM[v.color].bg,border:`1.5px solid ${CM[v.color].border}`,color:CM[v.color].text,borderRadius:99,padding:"6px 14px",fontSize:12,fontWeight:700}}>
-                  <span style={{fontSize:10,opacity:.7}}>#{i+1}</span><Dot color={v.color} size={8}/>{v.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Wordcloud – Kernwaarden</p>
-          <WordCloud results={results}/>
-        </div>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Veranderkleuren Verdeling</p>
-          <div style={{display:"flex",height:28,borderRadius:8,overflow:"hidden",gap:2}}>
-            {cdist.filter(c=>c.pct>0).map(({color,pct})=>(
-              <div key={color} style={{width:`${pct}%`,background:CM[color].solid,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {pct>10&&<span style={{fontSize:10,fontWeight:700,color:color==="geel"?"#451A03":"#fff"}}>{pct}%</span>}
-              </div>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:8}}>
-            {cdist.map(({color,pct})=><span key={color} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#475569"}}><Dot color={color} size={8}/>{CM[color].label} {pct}%</span>)}
-          </div>
-        </div>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",overflow:"hidden"}}>
-          <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #f1f5f9"}}><p style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:0}}>Top 3 Waarden per Generatie</p></div>
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr style={{background:"#f8fafc"}}>{["Leeftijd","n","#1","#2","#3"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:700,color:"#64748b",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
-              <tbody>{AGE_CATS.map((age,idx)=>{const es=byAge[age]||[];const t=top3(es);return(
-                <tr key={age} style={{background:idx%2?"#f8fafc":"#fff",borderTop:"1px solid #f1f5f9"}}>
-                  <td style={{padding:"10px 16px",fontWeight:700,fontSize:13}}>{age}</td>
-                  <td style={{padding:"10px 16px",color:"#64748b",fontSize:12}}>{es.length}</td>
-                  {[0,1,2].map(i=>{const v=t[i];return<td key={i} style={{padding:"10px 16px"}}>{v?<span style={{display:"inline-flex",alignItems:"center",gap:4,background:CM[v.color].bg,border:`1px solid ${CM[v.color].border}`,color:CM[v.color].text,borderRadius:99,padding:"3px 10px",fontSize:11,fontWeight:600}}><Dot color={v.color} size={7}/>{v.name}</span>:<span style={{color:"#cbd5e1",fontSize:11}}>–</span>}</td>;})}
-                </tr>
-              );})}</tbody>
-            </table>
-          </div>
-        </div>
-      </>}
-    </div>
-  );
-}
-
 // ── Landing ────────────────────────────────────────────────────
 
-function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpenDashboard}){
+function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
   const [resumeCode,setResumeCode]=useState("");
   const [startHint, setStartHint] = useState("");
-  const [dashCodeInput, setDashCodeInput] = useState("");
   const canStart = gc.trim() && age;
   function runStart(action){
     if(!canStart){
@@ -1586,14 +1357,6 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpe
             <button onClick={()=>resumeCode.trim()&&onResume(resumeCode.trim().toUpperCase())} style={{padding:"10px 14px",borderRadius:10,border:"none",background:"#0f172a",color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Hervat</button>
           </div>
         </div>
-
-        <div style={{background:"#f8fafc",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginTop:12}}>
-          <label style={{display:"block",fontSize:10,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,marginBottom:6}}>📊 Begeleider? Bekijk het groepsdashboard</label>
-          <div style={{display:"flex",gap:8}}>
-            <input value={dashCodeInput} onChange={e=>setDashCodeInput(e.target.value.toUpperCase())} placeholder="Voer groepscode in…" style={{flex:1,padding:"10px 12px",borderRadius:10,border:"1.5px solid #d1d5db",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
-            <button onClick={()=>dashCodeInput.trim()&&onOpenDashboard(dashCodeInput.trim())} style={{padding:"10px 16px",borderRadius:10,border:"none",background:TEAL,color:"#fff",fontWeight:700,cursor:"pointer",fontFamily:FONT}}>Open →</button>
-          </div>
-        </div>
       <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #f1f5f9",textAlign:"center"}}>
           <p style={{fontSize:11,color:"#94a3b8",lineHeight:1.8,margin:0}}>
             Dit project maakt deel uit van de reeks <strong style={{color:"#64748b"}}>Moreel Vakmanschap</strong> van het <a href="https://www.linkedin.com/company/lectoraat-ethisch-werken-bijdragen" target="_blank" rel="noopener noreferrer" style={{color:"#1b9e77",textDecoration:"none",fontWeight:700}}>Fontys Lectoraat Ethisch Werken</a>
@@ -1608,7 +1371,6 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, onResume, onOpe
 function Landing({onStart, onResume, onStartDeel2}){
   const [gc,setGc]=useState("");
   const [age,setAge]=useState("");
-  const [dash,setDash]=useState("");
   const [resumeCode,setResumeCode]=useState("");
   const GM_BLUE = "#1a73e8";
   const GM_BG = "#f1f3f4";
@@ -1767,19 +1529,6 @@ function Landing({onStart, onResume, onStartDeel2}){
           </div>
         </div>
       </section>
-
-      {/* DASHBOARD */}
-      <section style={{background:"#f8f9fa",padding:"36px 24px",borderTop:`1px solid ${GM_BORDER}`}}>
-        <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
-          <p style={{color:GM_MUTED,fontSize:13,marginBottom:16}}>📊 <strong style={{color:GM_TEXT}}>Leidinggevende?</strong> Bekijk het groepsdashboard</p>
-          <div style={{display:"flex",gap:8}}>
-            <input value={dash} onChange={e=>setDash(e.target.value)} placeholder="Voer groepscode in…"
-              style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${GM_BORDER}`,background:"#fff",color:GM_TEXT,fontSize:13,outline:"none",fontFamily:"'DM Mono',monospace",letterSpacing:1}}/>
-            <button onClick={()=>dash.trim()&&onStart(null,null,dash.trim().toUpperCase())}
-              style={{padding:"10px 20px",borderRadius:10,border:"none",background:GM_BLUE,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Open →</button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
@@ -1791,7 +1540,6 @@ export default function MoralMaps(){
   const [participantCode,setParticipantCode]=useState("");
   const [groupCode,setGroupCode]=useState("");
   const [age,setAge]=useState("");
-  const [dashCode,setDashCode]=useState("");
   const [phase,setPhase]=useState(0); // 0=privilege, 1=kaart, 2=gps, 3=dilemma's, 4=starr
   const [selVals,setSelVals]=useState([]);
   const [coreVals,setCoreVals]=useState([]);
@@ -1844,7 +1592,6 @@ export default function MoralMaps(){
 
   const [saving,setSaving]=useState(false);
   const [saveStatus,setSaveStatus]=useState(null);
-  const saveGenRef=useRef(0);
   const snapshotRef=useRef({});
   const retryTimerRef=useRef(null);
   const retryCountRef=useRef(0);
@@ -1926,30 +1673,11 @@ export default function MoralMaps(){
       vreemdeAnder: progress,
     };
 
-    const gen = ++saveGenRef.current;
     setSaveStatus("saving");
     const localOk = writeLocalSession(payload);
-
-    const result = await dbSave(payload);
-    if (gen !== saveGenRef.current) return result;
-
-    if (result.ok) {
-      retryCountRef.current = 0;
-      setSaveStatus("saved");
-      setSavedLocal(false);
-      return result;
-    }
-
-    setSaveStatus(localOk ? "local" : null);
-    setSavedLocal(localOk);
-    if (localOk && retryCountRef.current < 3) {
-      retryCountRef.current += 1;
-      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = setTimeout(() => {
-        persistSession(currentStage, overrides);
-      }, 8000);
-    }
-    return result;
+    setSaveStatus(localOk ? "saved" : null);
+    setSavedLocal(false);
+    return { ok: localOk, error: localOk ? null : "Lokaal opslaan mislukt" };
   }
 
   function applyLoadedSession(data) {
@@ -2023,7 +1751,6 @@ export default function MoralMaps(){
   }
 
   function start(gc,ag,dc){
-    if(dc){setDashCode(dc);setScreen("dashboard");return;}
     setParticipantCode(generateParticipantCode());
     setGroupCode(gc);
     setAge(ag);
@@ -2069,38 +1796,23 @@ export default function MoralMaps(){
     const normalized = String(code || "").trim().toUpperCase();
     try {
       const local = readLocalSession(normalized);
-      let remote = null;
-      try {
-        remote = await dbLoadByParticipantCode(normalized);
-      } catch (err) {
-        console.error("Resume remote load failed:", err);
-      }
-      if(!remote && !local){
+      if(!local){
         alert("Nog geen opgeslagen sessie gevonden voor deze code. Rond eerst minimaal één stap af en probeer daarna opnieuw.");
         return;
       }
-      const data = local
-        ? {
-            participantCode: local.participantCode || remote?.participantCode || normalized,
-            currentStage: local.currentStage || remote?.currentStage,
-            groupCode: local.groupCode || remote?.groupCode,
-            age: local.age || remote?.age,
-            coreValues: (local.coreValues && local.coreValues.length ? local.coreValues : remote?.coreValues) || [],
-            dilemmaResponses: local.dilemmaResponses || remote?.dilemmaResponses || [],
-            starr: local.starr || remote?.starr,
-            dominantColor: local.dominantColor || remote?.dominantColor,
-            socialisatie: local.socialisatie || remote?.socialisatie,
-            vreemdeAnder: local.vreemdeAnder || remote?.vreemdeAnder || {},
-          }
-        : remote;
-      applyLoadedSession(data);
-      setSaveStatus(remote && !local ? "saved" : "local");
+      applyLoadedSession(local);
+      setSaveStatus("saved");
     } catch (err) {
       console.error("Resume failed:", err);
       alert(`Hervatten mislukt (${err?.message || "onbekende fout"}). Probeer de code opnieuw of start een nieuwe sessie.`);
     }
   }
   function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSavedLocal(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});if(retryTimerRef.current)clearTimeout(retryTimerRef.current);retryCountRef.current=0;}
+  function wisMijnSessie(){
+    if(!confirm("Weet je zeker dat je jouw ingevulde gegevens van dit apparaat wilt wissen? Dit kan niet ongedaan gemaakt worden. Download eerst je PDF als je die wilt bewaren."))return;
+    clearLocalSession(participantCode);
+    reset();
+  }
   async function saveProgress(currentStage){
     return persistSession(currentStage);
   }
@@ -2117,7 +1829,7 @@ export default function MoralMaps(){
     setSaved(result.ok);
     setSavedLocal(!result.ok);
     if(!result.ok){
-      setSaveErr(`Online opslaan mislukt (${result.error}). Je voortgang is lokaal bewaard en je kunt verder.`);
+      setSaveErr(result.error || "Lokaal opslaan mislukt");
     }
     setSaving(false);
   }
@@ -2151,9 +1863,8 @@ export default function MoralMaps(){
     </div>
   );
 
-  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode} onOpenDashboard={(code)=>{setDashCode(code.toUpperCase());setScreen("dashboard");}}/>;
+  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={(gc,ag)=>start(gc,ag,null)} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct} onResume={resumeWithCode}/>;
   if(screen==="landing")return <Landing onStart={start} onResume={resumeWithCode} onStartDeel2={startDeel2Direct}/>;
-  if(screen==="dashboard")return <div style={{minHeight:"100vh",background:"#f8fafc"}}><Dashboard groupCode={dashCode} onBack={()=>setScreen("trilogie-home")}/></div>;
 
   if(showReflectie1) return (
     <div style={{minHeight:"100vh",background:"#0f172a",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
@@ -2803,8 +2514,8 @@ export default function MoralMaps(){
               <div style={{fontSize:44,marginBottom:8}}>🏆</div>
               <h2 style={{color:"#fff",fontWeight:900,fontSize:22,margin:0}}>Jouw Reisverslag</h2>
               <p style={{color:"#94a3b8",fontSize:12,marginTop:6}}>Wat je hebt ontdekt over je waarden, keuzes en richting</p>
-              {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen in Supabase</div>}
-              {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Lokaal bewaard (online save later opnieuw proberen)</div>}
+              {saved&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Opgeslagen op dit apparaat</div>}
+              {savedLocal&&<div style={{marginTop:10,display:"inline-flex",alignItems:"center",gap:6,background:"#1e293b",borderRadius:99,padding:"5px 14px",fontSize:11,color:"#facc15",fontWeight:600}}>⚠ Opslaan op dit apparaat is mislukt</div>}
               {participantCode&&(
                 <div style={{marginTop:16,background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 18px"}}>
                   <p style={{margin:0,fontSize:10,fontWeight:800,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1.2}}>⚠ Schrijf dit op of maak een screenshot</p>
@@ -2897,6 +2608,7 @@ export default function MoralMaps(){
               <button onClick={()=>setShowReflectie1(true)} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT,minWidth:140}}>✨ Afsluiten & verder →</button>
               <button onClick={()=>exportPDF(coreVals,dilResp,starr,{smsChoice,smsReflection},domColor,groupCode,age,{ankerzin:ankerzin||formatAnkerzin(coreVals),weekdoel,microJournal})} style={{flex:1,padding:"12px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT,minWidth:140}}>↓ Download PDF</button>
               <button onClick={reset} style={{flex:1,padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>↺ Opnieuw beginnen</button>
+              <button onClick={wisMijnSessie} style={{flex:"1 1 100%",padding:"10px",borderRadius:99,border:"1px solid #fca5a5",background:"#fff",color:"#b91c1c",fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:FONT}}>🗑 Wis mijn gegevens van dit apparaat</button>
             </div>
           </div>
         )}
