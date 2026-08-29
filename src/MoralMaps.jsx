@@ -719,7 +719,7 @@ function PrivilegeWheel({onComplete}){
               </p>
             </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
-              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet opgeslagen in de database. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
+              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet bewaard. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
             </div>
             <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:`0 4px 20px ${TEAL_GLOW}`,fontFamily:FONT}}>
               Bekijk het wiel →
