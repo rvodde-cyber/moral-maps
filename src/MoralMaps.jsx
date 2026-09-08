@@ -23,6 +23,11 @@ const supabase = hasSupabaseConfig
   : null;
 // ─────────────────────────────────────────────────────────────
 
+// ── Contactverwijzing (per opleiding aan te passen) ──────────
+// Pas deze regel aan naar de juiste contactpersoon voor jouw opleiding.
+const MENTOR_CONTACT = "je mentor of de studentendecaan";
+// ─────────────────────────────────────────────────────────────
+
 // ── Database functies ──────────────────────────────────────────
 
 async function dbSave(entry) {
@@ -826,8 +831,12 @@ function PrivilegeWheel({onComplete}){
                 <strong>Wat je gaat doen:</strong> Klik per segment op de positie die het meest op jou van toepassing is. Er zijn geen goede of foute antwoorden — dit is een persoonlijk reflectiemoment.
               </p>
             </div>
+            <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px",marginBottom:20}}>
+              <h3 style={{fontSize:14,fontWeight:800,color:"#334155",margin:"0 0 8px",letterSpacing:-.2}}>Waarom deze onderwerpen?</h3>
+              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op een bekend model uit diversiteits- en inclusie-educatie. Het gebruikt deze dertien kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+            </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
-              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet opgeslagen in de database. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk.</p>
+              <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet opgeslagen in de database. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk. Een onderdeel overslaan mag altijd — je bent nergens toe verplicht. Roept een onderwerp iets bij je op waar je met iemand over wilt praten? Neem contact op met {MENTOR_CONTACT}.</p>
             </div>
             <button onClick={()=>setShowIntro(false)} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:`0 4px 20px ${TEAL_GLOW}`,fontFamily:FONT}}>
               Bekijk het wiel →
