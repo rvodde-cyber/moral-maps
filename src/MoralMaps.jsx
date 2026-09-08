@@ -1183,7 +1183,7 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
 
 // ── Landing ────────────────────────────────────────────────────
 
-function WelcomeBack({ journey, onContinue, onRestart }) {
+function WelcomeBack({ journey, onContinue, onRestart, onHome }) {
   const stage = String(journey?.currentStage || "");
   const bag = journey?.vreemdeAnder || {};
   let deel = "Deel I";
@@ -1200,6 +1200,9 @@ function WelcomeBack({ journey, onContinue, onRestart }) {
         <p style={{margin:"10px 0 0",fontSize:14,color:"#475569",lineHeight:1.7}}>We vonden een eerder gestarte reis op dit toestel (groep <strong>{group}</strong>, laatst bezig in <strong>{deel}</strong>). Wil je doorgaan waar je was gebleven?</p>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:18}}>
           <button onClick={onContinue} style={{width:"100%",padding:"13px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:`0 4px 20px ${TEAL_GLOW}`,fontFamily:FONT}}>Ga verder →</button>
+          {onHome && (
+            <button onClick={onHome} style={{width:"100%",padding:"12px",borderRadius:99,border:"1.5px solid #e2e8f0",background:"#fff",color:"#334155",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Kies zelf een deel op het startscherm →</button>
+          )}
           <button onClick={onRestart} style={{width:"100%",padding:"12px",borderRadius:99,border:"1.5px solid #fecaca",background:"#fff",color:"#b91c1c",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>Opnieuw beginnen (wist mijn gegevens)</button>
         </div>
         <DeviceWarning style={{marginTop:16}} />
@@ -1208,9 +1211,9 @@ function WelcomeBack({ journey, onContinue, onRestart }) {
   );
 }
 
-function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3}){
-  const [gc,setGc]=useState("");
-  const [age,setAge]=useState("");
+function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, initialGroup="", initialAge=""}){
+  const [gc,setGc]=useState(initialGroup);
+  const [age,setAge]=useState(initialAge);
   const [startHint, setStartHint] = useState("");
   const canStart = gc.trim() && age;
   function runStart(action){
@@ -1761,8 +1764,22 @@ export default function MoralMaps(){
     setScreen("app");
     setPhase(0);
   }
+  // Probeer een bestaande lokale reis met kernwaarden op te pikken i.p.v.
+  // een nieuwe (voorbeeld)sessie te starten. Retourneert true bij succes.
+  function pickUpLocalJourney(targetScreen){
+    const j = journey.read();
+    if(j && Array.isArray(j.coreValues) && j.coreValues.length){
+      applyLoadedSession(j);
+      setScreen(targetScreen);
+      if(targetScreen==="deel2") setDeel2Step(0);
+      setPendingJourney(null);
+      return true;
+    }
+    return false;
+  }
   function startDeel2Direct(gc, ag){
     if(coreVals.length===0){
+      if(pickUpLocalJourney("deel2")) return;
       const ok = window.confirm(
         "Je hebt Deel I nog niet doorlopen. Deel II start dan met voorbeeld-kernwaarden (Integriteit, Empathie, Reflectie) in plaats van jouw eigen waarden.\n\nDit is alleen bedoeld voor een testronde — niet voor een echte deelnemer.\n\nToch doorgaan met voorbeeldwaarden?"
       );
@@ -1778,9 +1795,11 @@ export default function MoralMaps(){
     setAge(ag);
     setScreen("deel2");
     setDeel2Step(0);
+    setPendingJourney(null);
   }
   function startDeel3Direct(gc, ag){
     if(coreVals.length===0){
+      if(pickUpLocalJourney("deel3")) return;
       const ok = window.confirm(
         "Je hebt Deel I en II nog niet doorlopen. Deel III start dan met voorbeeld-kernwaarden (Integriteit, Empathie, Reflectie) in plaats van jouw eigen waarden.\n\nDit is alleen bedoeld voor een testronde — niet voor een echte deelnemer.\n\nToch doorgaan met voorbeeldwaarden?"
       );
@@ -1795,6 +1814,7 @@ export default function MoralMaps(){
     setGroupCode(gc);
     setAge(ag);
     setScreen("deel3");
+    setPendingJourney(null);
   }
   function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   // Enige, volledige manier om alle lokale gegevens te verwijderen.
@@ -1851,8 +1871,11 @@ export default function MoralMaps(){
     </div>
   );
 
-  if(screen==="trilogie-home" && pendingJourney)return <WelcomeBack journey={pendingJourney} onContinue={()=>{applyLoadedSession(pendingJourney);setPendingJourney(null);}} onRestart={wipeDevice}/>;
-  if(screen==="trilogie-home")return <TrilogieHome onStartDeel1={start} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct}/>;
+  if(screen==="trilogie-home" && pendingJourney)return <WelcomeBack journey={pendingJourney} onContinue={()=>{applyLoadedSession(pendingJourney);setPendingJourney(null);}} onRestart={wipeDevice} onHome={()=>setPendingJourney(null)}/>;
+  if(screen==="trilogie-home"){
+    const saved = journey.read();
+    return <TrilogieHome initialGroup={saved?.groupCode||""} initialAge={saved?.age||""} onStartDeel1={start} onStartDeel2={startDeel2Direct} onStartDeel3={startDeel3Direct}/>;
+  }
 
   if(showReflectie1) return (
     <div style={{minHeight:"100vh",background:"#0f172a",fontFamily:FONT,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
