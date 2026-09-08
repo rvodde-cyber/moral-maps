@@ -48,20 +48,27 @@ moral-maps/
 
 ---
 
-## Supabase
+## Opslag (100% lokaal)
 
-Tabel: `moralmaps_results`
+Deel 1 gebruikt **geen backend of database**. Alle voortgang van de student
+wordt lokaal op het toestel bewaard in `localStorage`, onder één sleutel:
 
-| Kolom | Type | Inhoud |
-|-------|------|--------|
-| group_code | TEXT | Groepscode |
-| age | TEXT | Leeftijdscategorie |
-| core_values | JSONB | Kernwaarden [{id, name, color}] |
-| dilemma_responses | JSONB | Keuzes [{text, color}] |
-| starr | JSONB | {situatie, taak, actie, resultaat, reflectie} |
-| dominant_color | TEXT | Dominante veranderkleur |
-| vreemde_ander | JSONB | Reflectie de vreemde ander |
-| socialisatie | JSONB | Socialisatieverslag |
+```
+moralmaps_journey
+```
+
+Dit object bevat de volledige reis (groepscode, leeftijdscategorie, gekozen
+waarden, kernwaarden/GPS, dilemma-antwoorden, STARR, Rugzak, en welk deel/stap
+actief is). Er worden geen omgevingsvariabelen gebruikt en er verlaat niets het
+apparaat.
+
+- **Hervatten:** bij het openen detecteert de app automatisch een bestaande
+  reis en biedt "Welkom terug — doorgaan?" aan. Er is geen code meer nodig.
+- **Deel II/III direct:** starten vanaf het startscherm pikt de bestaande
+  lokale kernwaarden op (geen losse sessie met voorbeeldwaarden).
+- **Wissen:** de knop "🗑 Wis mijn gegevens" verwijdert de sleutel volledig.
+- **Let op:** de voortgang is toestel- en browsergebonden. Gebruik voor elk
+  deel hetzelfde toestel en dezelfde browser, en werk niet in privénavigatie.
 
 ---
 

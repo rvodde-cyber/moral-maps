@@ -1,0 +1,19 @@
+{
+  "name": "Moral Maps Trilogie",
+  "install": "npm ci && npm --prefix apps/persoonlijke-integriteitsmeting ci && npm --prefix apps/organisatie-lakmoesproef ci",
+  "terminals": [
+    {
+      "name": "deel-1-the-beginning",
+      "command": "npm run dev -- --host --port 5173"
+    },
+    {
+      "name": "persoonlijke-integriteitsmeting",
+      "command": "npm --prefix apps/persoonlijke-integriteitsmeting run dev -- --host --port 5174"
+    },
+    {
+      "name": "organisatie-lakmoesproef",
+      "command": "npm --prefix apps/organisatie-lakmoesproef run dev -- --host --port 5175"
+    }
+  ],
+  "ports": [5173, 5174, 5175]
+}
