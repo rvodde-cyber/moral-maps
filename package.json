@@ -19,6 +19,7 @@
     "lint:maps3": "npm --prefix \"apps/moral-maps-3-final-destination\" run lint"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
