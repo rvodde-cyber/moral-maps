@@ -122,62 +122,99 @@ const VALUES = [
   {id:34,name:"Passie",color:"wit"},{id:35,name:"Intuïtie",color:"wit"},
 ];
 
-const DILEMMAS = [
-  {
-    title: "De Promotie en het Geheim",
-    scenario: "Je beste vriend Mark en jij solliciteerden allebei op dezelfde managementfunctie. Gisteravond biechtte Mark je in vertrouwen op dat hij kampt met een beginnende burn-out, maar dat hij deze kans móét grijpen om zijn schulden af te betalen. Vanochtend keek de directeur je recht aan: 'Je kent Mark door en door. Heeft hij de veerkracht die deze loodzware functie eist, of voorzie jij risico's?' Als je de waarheid spreekt, bescherm je het bedrijf én Marks gezondheid — maar steel je de promotie die hij zo hard nodig heeft.",
-    options: [
-      {text: "Ik spreek de waarheid over zijn mentale staat tegenover de directeur.", color: "blauw"},
-      {text: "Ik zeg niets en laat Mark zelf zijn keuzes maken.", color: "rood"},
-      {text: "Ik spreek Mark eerst aan en geef hem de kans het zelf te vertellen.", color: "groen"}
-    ]
-  },
-  {
-    title: "De Gunst van de Directeur",
-    scenario: "Je nieuwe baas heeft een angstcultuur gecreëerd: wie hem tegenspreekt, wordt weggewerkt. Nu heeft hij zijn pijlen gericht op jouw collega Sophie, die geweldig werk levert. Hij neemt je apart en biedt je het budget voor jouw droomproject aan — iets waar je al jaren voor vecht. De voorwaarde: je moet een onterecht negatief prestatierapport over Sophie ondertekenen om haar ontslagdossier sluitend te maken. Weiger je, dan verdwijnt jouw project én ben jij waarschijnlijk het volgende slachtoffer.",
-    options: [
-      {text: "Ik weiger te tekenen en accepteer de consequenties voor mijn eigen positie.", color: "groen"},
-      {text: "Ik teken het rapport — mijn project en positie zijn te belangrijk om te verliezen.", color: "geel"},
-      {text: "Ik meld de situatie bij HR of een hogere leidinggevende.", color: "blauw"}
-    ]
-  },
-  {
-    title: "De Gefantaseerde Ervaring",
-    scenario: "Je broer zit al een jaar werkloos thuis en raakt steeds dieper in de problemen. Je hebt hem voorgedragen voor een functie op jouw afdeling. De selectiecommissie is enthousiast. Maar gisteren ontdekte je dat hij zijn werkervaring volledig heeft verzonnen — de grote projecten die hij claimt te hebben geleid, bestaan niet. Hij smeekt je te zwijgen en belooft keihard te rennen om het bij te leren. Morgen moet jij jouw definitieve aanbeveling geven.",
-    options: [
-      {text: "Ik spreek de waarheid tegenover mijn manager, ook al kost het mijn broer de baan.", color: "blauw"},
-      {text: "Ik zwijg en vertrouw erop dat hij zijn belofte nakomt.", color: "rood"},
-      {text: "Ik geef mijn broer 24 uur om zich terug te trekken en dit zelf recht te zetten.", color: "groen"}
-    ]
-  },
-  {
-    title: "De Online Lynchpartij",
-    scenario: "Een collega-docent is het doelwit van een online lastercampagne. Een anoniem account beschuldigt hem van grensoverschrijdend gedrag — de video's gaan viraal. Jij weet honderd procent zeker dat een groepje eindexamenleerlingen dit als wraak heeft opgezet voor slechte cijfers; je hebt ze er zelf over horen opscheppen. De docent is inmiddels geschorst. De leerlingen zijn jouw mentorklas en zeiden: 'Als u ons verraadt, is onze toekomst vernietigd.'",
-    options: [
-      {text: "Ik meld wat ik weet bij de directie — de onschuldige docent moet worden vrijgepleit.", color: "blauw"},
-      {text: "Ik confronteer de leerlingen en geef ze de kans zichzelf te melden.", color: "groen"},
-      {text: "Ik zwijg — ik kan mijn mentorklas niet verraden op basis van wat ik heb opgevangen.", color: "rood"}
-    ]
-  },
+// ── Dilemma-pool (8 stuks) ──────────────────────────────────────
+const DILEMMA_POOL = [
   {
     title: "De Meelifter",
-    scenario: "Een medestudent doet weinig in de projectgroep, maar krijgt wel hetzelfde cijfer. De deadline nadert en het werk is nog niet af.",
+    scenario:
+      "Een medestudent doet weinig in de projectgroep, maar krijgt wel hetzelfde cijfer. De deadline nadert en het werk is nog niet af.",
     options: [
-      {text: "Ik meld dit bij de docent.", color: "blauw"},
-      {text: "Ik ga het gesprek aan met de medestudent.", color: "groen"},
-      {text: "Ik accepteer het en doe het werk zelf.", color: "rood"}
-    ]
+      { text: "Ik meld dit bij de docent.", color: "blauw" },
+      { text: "Ik ga het gesprek aan met de medestudent.", color: "groen" },
+      { text: "Ik accepteer het en doe het werk zelf.", color: "rood" },
+    ],
   },
   {
     title: "Het Vertrouwelijke Gesprek",
-    scenario: "Een collega vertelt je in vertrouwen dat ze overweegt ontslag te nemen. Je manager vraagt jou direct of je weet waarom deze collega zich anders gedraagt.",
+    scenario:
+      "Een collega vertelt je in vertrouwen dat ze overweegt ontslag te nemen. Je manager vraagt jou direct of je weet waarom deze collega zich anders gedraagt.",
     options: [
-      {text: "Ik vertel eerlijk wat ik weet aan de manager.", color: "geel"},
-      {text: "Ik houd het vertrouwen en zeg niets.", color: "rood"},
-      {text: "Ik moedig de collega aan om zelf het gesprek te gaan voeren.", color: "groen"}
-    ]
+      { text: "Ik vertel eerlijk wat ik weet aan de manager.", color: "geel" },
+      { text: "Ik houd het vertrouwen en zeg niets.", color: "rood" },
+      { text: "Ik moedig de collega aan om zelf het gesprek te voeren.", color: "groen" },
+    ],
+  },
+  {
+    title: "De Foutieve Rapportage",
+    scenario:
+      "Tijdens je stage ontdek je dat een collega per ongeluk verkeerde cijfers heeft doorgegeven aan een opdrachtgever, die daardoor een verkeerd besluit dreigt te nemen. Het is al laat en de deadline is morgen.",
+    options: [
+      { text: "Ik meld het direct bij mijn begeleider, ook al brengt dat de collega in een lastig parket.", color: "blauw" },
+      { text: "Ik spreek de collega er eerst op aan, zodat die het zelf kan rechtzetten.", color: "groen" },
+      { text: "Ik pas het stilletjes zelf aan, zodat niemand er last van heeft.", color: "wit" },
+    ],
+  },
+  {
+    title: "De Onterechte Beoordeling",
+    scenario:
+      "Je ziet dat een medestudent een onterecht lage beoordeling krijgt van een docent, terwijl jij weet dat diegene hard heeft gewerkt.",
+    options: [
+      { text: "Ik ga namens de groep in gesprek met de docent om dit aan te kaarten.", color: "geel" },
+      { text: "Ik moedig de medestudent aan zelf in gesprek te gaan en ervoor op te komen.", color: "wit" },
+      { text: "Ik laat het passeren, het is niet aan mij om me ermee te bemoeien.", color: "rood" },
+    ],
+  },
+  {
+    title: "De Onveilige Werkplek",
+    scenario:
+      "Tijdens je stage zie je door tijdsdruk een onveilige situatie ontstaan voor een cliënt, maar je leidinggevende zet je onder druk om door te werken.",
+    options: [
+      { text: "Ik stop het werk en volg het veiligheidsprotocol, ook al levert dat vertraging op.", color: "blauw" },
+      { text: "Ik bespreek mijn zorgen eerst met collega's, om te kijken hoe zij het zien.", color: "groen" },
+      { text: "Ik werk door — mijn leidinggevende zal wel een goede reden hebben.", color: "geel" },
+    ],
+  },
+  {
+    title: "De Anonieme Tip",
+    scenario:
+      "Je hoort via via dat een medestudent tijdens een tentamen heeft gefraudeerd. Niemand anders lijkt het te weten.",
+    options: [
+      { text: "Ik meld dit bij de examencommissie — regels zijn er niet voor niets.", color: "blauw" },
+      { text: "Ik confronteer de medestudent eerst persoonlijk, voordat ik iets meld.", color: "rood" },
+      { text: "Ik zeg niets — het is mijn verantwoordelijkheid niet.", color: "wit" },
+    ],
+  },
+  {
+    title: "De Duurzame Keuze",
+    scenario:
+      "Je opdrachtgever vraagt je een goedkopere maar minder duurzame oplossing te kiezen om deadline en budget te halen, terwijl jij weet dat een duurzamer alternatief beter is voor mens en milieu.",
+    options: [
+      { text: "Ik leg de afweging expliciet voor en beargumenteer waarom de duurzame optie beter is.", color: "groen" },
+      { text: "Ik voer de opdracht uit zoals gevraagd — het is niet aan mij om dit te bepalen.", color: "geel" },
+      { text: "Ik zoek zelf naar een tussenweg die aansluit bij mijn eigen waarden.", color: "wit" },
+    ],
+  },
+  {
+    title: "De Nieuwe Collega",
+    scenario:
+      "Een nieuwe, onzekere collega maakt herhaaldelijk fouten die het team vertragen. Het team begint gefrustreerd te raken.",
+    options: [
+      { text: "Ik neem de tijd om de collega persoonlijk te begeleiden en te ondersteunen.", color: "rood" },
+      { text: "Ik stel voor om duidelijkere afspraken en een vast stappenplan te maken.", color: "blauw" },
+      { text: "Ik organiseer een gezamenlijk gesprek waarin iedereen feedback en ideeën deelt.", color: "groen" },
+    ],
   },
 ];
+
+// ── Randomisatie: Fisher-Yates shuffle + slice ───────────────────
+function pickRandomDilemmas(pool, count = 2) {
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+}
 
 
 const AGE_CATS = ["<18","18-25","26-40","41-60","60+"];
@@ -368,7 +405,7 @@ function generateParticipantCode(){
 
 function restoreDilemmas(titles) {
   if (!Array.isArray(titles) || !titles.length) return null;
-  const restored = titles.map((t) => DILEMMAS.find((d) => d.title === t)).filter(Boolean);
+  const restored = titles.map((t) => DILEMMA_POOL.find((d) => d.title === t)).filter(Boolean);
   return restored.length ? restored : null;
 }
 
@@ -1156,7 +1193,7 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
     </div>
     <div class="section"><div class="label">Kernwaarden</div><div>${(coreVals||[]).map(cv=>{const cc=CM[cv.color];return `<span class="chip" style="background:${cc.bg};border:1px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("") || "<span class='value'>Niet ingevuld</span>"}</div></div>
     <div class="section"><div class="label">Dominante veranderkleur</div><div class="dominant"><div class="value" style="font-weight:800;color:${c.text}">${c.label}</div><div class="value">${c.desc}</div></div></div>
-    <div class="section"><div class="label">Dilemma-keuzes Deel 1</div>${DILEMMAS.map((d,i)=>{const r=dilResp?.[i];return `<div class="value" style="margin-bottom:8px"><strong>${i+1}. ${d.title}</strong><br/>${r?.text || "Niet ingevuld"}</div>`;}).join("")}</div>
+    <div class="section"><div class="label">Dilemma-keuzes Deel 1</div>${(dilResp||[]).map((r,i)=>`<div class="value" style="margin-bottom:8px"><strong>${i+1}. ${r.title||""}</strong><br/>${r?.text || "Niet ingevuld"}</div>`).join("") || "<div class='value'>Niet ingevuld</div>"}</div>
     <div class="section"><div class="label">STARR</div>${Object.entries(starr||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
     <div class="section"><div class="label">Socialisatie / Rugzak</div>${Object.entries(socialisatie||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
     <div class="section"><div class="label">SMS-einddilemma</div><div class="value"><strong>Keuze:</strong> ${smsDilemma?.smsChoice || "Niet ingevuld"}</div><div class="value"><strong>Reflectie:</strong> ${smsDilemma?.smsReflection || "Niet ingevuld"}</div></div>
@@ -1523,10 +1560,7 @@ export default function MoralMaps(){
   const [coreVals,setCoreVals]=useState([]);
   const [dilResp,setDilResp]=useState([]);
   const [curDil,setCurDil]=useState(0);
-  const [activeDilemmas,setActiveDilemmas]=useState(()=>{
-    const shuffled=[...DILEMMAS].sort(()=>Math.random()-.5);
-    return shuffled.slice(0,2);
-  });
+  const [dilemmas,setDilemmas]=useState(()=>pickRandomDilemmas(DILEMMA_POOL, 2));
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
@@ -1574,7 +1608,7 @@ export default function MoralMaps(){
   const snapshotRef=useRef({});
 
   const pct=useMemo(()=>{
-    const dilCount=activeDilemmas.length||1;
+    const dilCount=dilemmas.length||1;
     if(phase===0)return 2;
     if(phase===1)return 14+(selVals.length/10)*12;
     if(phase===2)return 28+(coreVals.length/3)*12;
@@ -1582,7 +1616,7 @@ export default function MoralMaps(){
     if(phase===4)return 58;
     if(phase===5)return 76;
     return 100;
-  },[phase,selVals.length,coreVals.length,curDil,activeDilemmas.length]);
+  },[phase,selVals.length,coreVals.length,curDil,dilemmas.length]);
 
   const domColor=useMemo(()=>calcDomColor(coreVals,dilResp),[coreVals,dilResp]);
   const starrReady=isStarrComplete(starr);
@@ -1596,7 +1630,7 @@ export default function MoralMaps(){
   useEffect(()=>{
     snapshotRef.current = {
       participantCode, groupCode, age, screen, phase, selVals, coreVals, dilResp, curDil,
-      activeDilemmas, starr, socialisatiePayload, bridge, deel3Terugblik, deel3Vooruitblik,
+      dilemmas, starr, socialisatiePayload, bridge, deel3Terugblik, deel3Vooruitblik,
       deel3Synthese, deel3Grow, deel2Step, deel3Step, crossroadsChoice, crossroadsReflectie,
       tankstop, omweg, deel2Inzicht, vreemdeAnderResult, smsChoice, smsReflection, domColor,
     };
@@ -1621,7 +1655,7 @@ export default function MoralMaps(){
       deel3Step: overrides.deel3Step ?? s.deel3Step,
       selVals: overrides.selVals ?? s.selVals,
       curDil: overrides.curDil ?? s.curDil,
-      activeDilemmaTitles: (overrides.activeDilemmas ?? s.activeDilemmas ?? []).map((d) => d.title),
+      activeDilemmaTitles: (overrides.dilemmas ?? s.dilemmas ?? []).map((d) => d.title),
       crossroadsChoice: overrides.crossroadsChoice ?? s.crossroadsChoice,
       crossroadsReflectie: overrides.crossroadsReflectie ?? s.crossroadsReflectie,
       tankstop: overrides.tankstop ?? s.tankstop,
@@ -1703,7 +1737,7 @@ export default function MoralMaps(){
     if (bag.selVals) setSelVals(bag.selVals);
     if (typeof bag.curDil === "number") setCurDil(bag.curDil);
     const restored = restoreDilemmas(bag.activeDilemmaTitles);
-    if (restored) setActiveDilemmas(restored);
+    if (restored) setDilemmas(restored);
     if (bag.crossroadsChoice) setCrossroadsChoice(bag.crossroadsChoice);
     if (bag.crossroadsReflectie != null) setCrossroadsReflectie(bag.crossroadsReflectie);
     if (bag.tankstop) setTankstop({ energie:"", lek:"", nodig:"", ...bag.tankstop });
@@ -1816,7 +1850,7 @@ export default function MoralMaps(){
     setScreen("deel3");
     setPendingJourney(null);
   }
-  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
+  function reset(){setScreen("trilogie-home");setParticipantCode("");setGroupCode("");setAge("");setPhase(0);setSelVals([]);setCoreVals([]);setDilResp([]);setCurDil(0);setDilemmas(pickRandomDilemmas(DILEMMA_POOL, 2));setPending(null);setInsight(false);setFilter(null);setStarr({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});setSocialisatie({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});setAnkerzin("");setWeekdoel("");setMicroJournal({...EMPTY_MICRO_JOURNAL});setBridge({ballast:"",meenemen:"",vinden:"",gps:""});setDeel3Terugblik({scharnierpunt:"",patroon:"",noorden:""});setDeel3Vooruitblik({nalatenschap:"",richting:"",belofte:""});setDeel3Synthese("");setDeel3Grow({goal:"",reality:"",options:"",will:""});setSaved(false);setSaveErr(null);setSaveStatus(null);setShowSmsDilemma(false);setSmsChoice("");setSmsReflection("");setDeel2Step(0);setDeel3Step(0);setReflectie1("");setReflectie2("");setReflectie3("");setShowReflectie1(false);setShowReflectie2(false);setShowReflectie3(false);setCrossroadsChoice("");setCrossroadsReflectie("");setTankstop({energie:"",lek:"",nodig:""});setOmweg({tegenslag:"",bijstelling:"",lering:""});setDeel2Inzicht("");setVreemdeAnderResult(null);setContentProfile({locale:"nl",workContext:"algemeen",extraAssignment:""});}
   // Enige, volledige manier om alle lokale gegevens te verwijderen.
   function wipeDevice(){
     const ok = window.confirm("Weet je zeker dat je al je gegevens van dit toestel wilt wissen? Dit verwijdert je volledige voortgang en kan niet ongedaan worden gemaakt.");
@@ -2333,18 +2367,18 @@ export default function MoralMaps(){
               <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Deel 1 smartphone mockup" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {activeDilemmas.length}</span>
-              <div style={{display:"flex",gap:6}} role="progressbar" aria-valuenow={curDil+1} aria-valuemin={1} aria-valuemax={activeDilemmas.length}>{activeDilemmas.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
+              <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {dilemmas.length}</span>
+              <div style={{display:"flex",gap:6}} role="progressbar" aria-valuenow={curDil+1} aria-valuemin={1} aria-valuemax={dilemmas.length}>{dilemmas.map((_,i)=><div key={i} style={{width:20,height:5,borderRadius:99,background:i<=curDil?TEAL:"#e2e8f0",transition:"background .3s"}}/>)}</div>
             </div>
             <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #e2e8f0",marginBottom:16}}>
               <div style={{background:"#0f172a",padding:"20px 20px 18px"}}>
-                <h3 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📍 {activeDilemmas[curDil].title}</h3>
-                <p style={{color:"#94a3b8",fontSize:13,marginTop:8,lineHeight:1.6}}>{activeDilemmas[curDil].scenario}</p>
+                <h3 style={{color:"#fff",fontWeight:800,fontSize:18,margin:0}}>📍 {dilemmas[curDil].title}</h3>
+                <p style={{color:"#94a3b8",fontSize:13,marginTop:8,lineHeight:1.6}}>{dilemmas[curDil].scenario}</p>
               </div>
               <div style={{background:"#fff",padding:18}}>
                 <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Wat doe jij?</p>
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {activeDilemmas[curDil].options.map((opt,i)=>{const c=CM[opt.color];const isSel=pending?.text===opt.text;return(
+                  {dilemmas[curDil].options.map((opt,i)=>{const c=CM[opt.color];const isSel=pending?.text===opt.text;return(
                     <button key={i} disabled={insight}
                       onClick={()=>{setPending(opt);setInsight(true);}}
                       style={{textAlign:"left",padding:"13px 16px",borderRadius:12,border:`2px solid ${isSel?c.border:c.border+"60"}`,background:isSel?c.bg:"#fff",color:c.text,fontWeight:500,fontSize:13,cursor:insight?"not-allowed":"pointer",opacity:insight&&!isSel?0.4:1,display:"flex",alignItems:"flex-start",gap:10,lineHeight:1.5,boxShadow:isSel?`0 0 0 3px ${c.border}30`:"none",fontFamily:FONT}}>
@@ -2371,12 +2405,12 @@ export default function MoralMaps(){
                       {coreVals.map(cv=>{const cc=CM[cv.color];const act=cv.color===pending.color;return<span key={cv.id} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:99,border:`1px solid ${act?cc.border:"#e2e8f0"}`,background:act?cc.bg:"#f8fafc",color:act?cc.text:"#64748b"}}><Dot color={cv.color} size={7}/>{cv.name}</span>;})}
                     </div>
                     <button onClick={()=>{
-                      const dilemmaTitle=activeDilemmas[curDil]?.title||"";
+                      const dilemmaTitle=dilemmas[curDil]?.title||"";
                       const nextResp=[...dilResp,{...pending,title:dilemmaTitle}];
                       setDilResp(nextResp);
                       setPending(null);
                       setInsight(false);
-                      if(curDil < activeDilemmas.length - 1) {
+                      if(curDil < dilemmas.length - 1) {
                         const nextDil = curDil + 1;
                         setCurDil(nextDil);
                         persistSession(`phase_3_dilemma_${nextDil}`, { dilemmaResponses: nextResp, curDil: nextDil, phase: 3, screen: "app" });
@@ -2386,7 +2420,7 @@ export default function MoralMaps(){
                       }
                     }}
                       style={{marginTop:14,width:"100%",padding:"11px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:FONT}}>
-                      {curDil<activeDilemmas.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
+                      {curDil<dilemmas.length-1?"Volgende dilemma →":"Naar STARR Reflectie →"}
                     </button>
                   </div>
                 </div>
