@@ -448,3 +448,58 @@ Status veilig opgeslagen. Laatste werk is afgerond en gepusht.
 - Privacy-zin op TrilogieHome en vóór STARR.
 - `supabase_setup.sql`: unique index + anon UPDATE-policy (nodig voor upsert).
 
+---
+
+## 2026-09-21 — Les: dode `Landing`-component per abuis bewerkt, daarna verwijderd
+
+### Wat er misging
+Een tekst-opdracht (warmere copy, "10 → 7 waarden") werd eerst doorgevoerd in een
+functie genaamd `Landing` (met een lokale `STEPS`-array) in `src/MoralMaps.jsx`.
+Build en lint waren groen, dus dat leek een correcte wijziging. Pas bij het
+daadwerkelijk openen van de app in de browser (voor Taak 3) bleek de live
+landingspagina de oude tekst nog te tonen: **`Landing` werd nergens
+gerenderd.** De echte, live landingspagina is `TrilogieHome` — een andere
+functie in hetzelfde bestand met een oppervlakkig vergelijkbare vorm
+(zelfde soort hero + groepscode/leeftijd-formulier), waardoor de vergissing
+niet meteen opviel bij het lezen van de code.
+
+### Waarom `Landing` er stond
+Vermoedelijk een eerdere landingspagina-opzet die is vervangen door
+`TrilogieHome` toen de trilogie-structuur (Deel 1/2/3 op één centrale
+startpagina) werd ingevoerd, zonder de oude functie op te ruimen. Er bestaat
+daarnaast ook nog een **los bestand `src/MapsLanding.jsx`** ("Centrale
+Landing", met een commentaar dat verwijst naar "vervang de huidige
+Landing-component in MoralMaps.jsx") — ook dat wordt nergens geïmporteerd
+in `main.jsx` en is dus eveneens ongebruikt. Dat bestand is nu *niet*
+aangeraakt (buiten scope van deze opdracht), maar is een vergelijkbare
+opruim-kandidaat voor een volgende sessie.
+
+### Waarom verwijderd i.p.v. laten staan
+Op verzoek gecontroleerd met een repo-brede grep (`Landing`, `STEPS`,
+buiten `node_modules`/`.git`) of er ergens — ook in test- of
+buildscripts — nog een aanroep of import naar deze functie of array
+bestond. Resultaat: geen enkele functionele referentie meer, alleen een
+ongerelateerd sectie-commentaar (`// ── Landing ──`, een kopregel die al
+langer boven `WelcomeBack`/`TrilogieHome` stond) en de zelfstandige
+`MapsLanding.jsx`. Daarna pas verwijderd (commit `84cf1ea`): eslint bleef
+schoon (geen nieuwe unused-var-meldingen op de lokale `GM_*`-kleuren die
+alleen in `Landing` werden gebruikt), build bleef groen, bundle-grootte
+onveranderd (bevestigt dat het al dode/tree-shaken code was), en een
+browser-smoketest toonde een identieke landingspagina vóór en na.
+
+### Les voor volgende sessies
+- **Build/lint groen bewijst niet dat een tekstwijziging live zichtbaar is** —
+  een niet-gerenderde component compileert net zo probleemloos als een wel
+  gerenderde. Bij een copy-wijziging in dit bestand: eerst zoeken of de
+  functie ook echt vanuit `export default function MoralMaps()` (of een
+  onderliggende `screen`/`phase`-tak daarvan) wordt aangeroepen, niet alleen
+  of de tekst gevonden wordt.
+- Dit bestand bevat meerdere gelijk-ogende "startscherm"-functies
+  (`TrilogieHome` = live, `Landing` = was dood, `MapsLanding.jsx` = los
+  bestand, ook dood). Controleer bij twijfel met een render-smoketest
+  (dev server + Playwright-screenshot) in plaats van alleen de broncode te
+  lezen.
+- Vóór het verwijderen van vermeend dode code: repo-breed grep op de
+  symboolnaam (niet alleen binnen het ene bestand), inclusief test-/
+  buildscripts, om verborgen aanroepen uit te sluiten.
+
