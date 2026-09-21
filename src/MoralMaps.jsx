@@ -108,18 +108,41 @@ const CM = {
 };
 
 const VALUES = [
-  {id:1,name:"Resultaatgerichtheid",color:"geel"},{id:2,name:"Invloed",color:"geel"},{id:3,name:"Daadkracht",color:"geel"},
-  {id:4,name:"Strategie",color:"geel"},{id:5,name:"Onderhandelen",color:"geel"},{id:6,name:"Ambitie",color:"geel"},
-  {id:7,name:"Rechtvaardigheid",color:"blauw"},{id:8,name:"Zorgvuldigheid",color:"blauw"},{id:9,name:"Transparantie",color:"blauw"},
-  {id:10,name:"Objectiviteit",color:"blauw"},{id:11,name:"Discipline",color:"blauw"},{id:12,name:"Integriteit",color:"blauw"},
-  {id:13,name:"Professionaliteit",color:"blauw"},{id:14,name:"Harmonie",color:"rood"},{id:15,name:"Loyaliteit",color:"rood"},
-  {id:16,name:"Empathie",color:"rood"},{id:17,name:"Geborgenheid",color:"rood"},{id:18,name:"Hulpvaardigheid",color:"rood"},
-  {id:19,name:"Respect",color:"rood"},{id:20,name:"Verbinding",color:"rood"},{id:21,name:"Leervermogen",color:"groen"},
-  {id:22,name:"Dialoog",color:"groen"},{id:23,name:"Openheid",color:"groen"},{id:24,name:"Reflectie",color:"groen"},
-  {id:25,name:"Samenwerking",color:"groen"},{id:26,name:"Nieuwsgierigheid",color:"groen"},{id:27,name:"Ontwikkeling",color:"groen"},
-  {id:28,name:"Autonomie",color:"wit"},{id:29,name:"Moed",color:"wit"},{id:30,name:"Authenticiteit",color:"wit"},
-  {id:31,name:"Creativiteit",color:"wit"},{id:32,name:"Zingeving",color:"wit"},{id:33,name:"Vrijheid",color:"wit"},
-  {id:34,name:"Passie",color:"wit"},{id:35,name:"Intuïtie",color:"wit"},
+  {id:1,name:"Resultaatgerichtheid",color:"geel",short:"dingen laten gebeuren",desc:"Je wilt dat dingen ook echt gebeuren, niet alleen bedacht worden."},
+  {id:2,name:"Invloed",color:"geel",short:"je stem laten meetellen",desc:"Je vindt het belangrijk dat jouw stem meetelt in beslissingen."},
+  {id:3,name:"Daadkracht",color:"geel",short:"durven handelen",desc:"Je durft te handelen, ook zonder dat alles al zeker is."},
+  {id:4,name:"Strategie",color:"geel",short:"vooruitdenken",desc:"Je denkt graag een paar stappen vooruit."},
+  {id:5,name:"Onderhandelen",color:"geel",short:"naar een uitkomst zoeken",desc:"Je zoekt naar een uitkomst waar iedereen mee verder kan."},
+  {id:6,name:"Ambitie",color:"geel",short:"jezelf blijven ontwikkelen",desc:"Je wilt jezelf blijven ontwikkelen en verder komen."},
+  {id:7,name:"Rechtvaardigheid",color:"blauw",short:"eerlijke kansen",desc:"Je vindt dat iedereen een eerlijke kans verdient."},
+  {id:8,name:"Zorgvuldigheid",color:"blauw",short:"het goed doen",desc:"Je neemt de tijd om dingen goed te doen, niet snel."},
+  {id:9,name:"Transparantie",color:"blauw",short:"open over je aanpak",desc:"Je bent open over hoe en waarom je iets doet."},
+  {id:10,name:"Objectiviteit",color:"blauw",short:"feiten boven aannames",desc:"Je probeert naar feiten te kijken, niet naar aannames."},
+  {id:11,name:"Discipline",color:"blauw",short:"je aan afspraken houden",desc:"Je houdt je aan afspraken, ook als het lastig wordt."},
+  {id:12,name:"Integriteit",color:"blauw",short:"doen wat je zegt",desc:"Je doet wat je zegt, ook als niemand kijkt."},
+  {id:13,name:"Professionaliteit",color:"blauw",short:"werk serieus nemen",desc:"Je neemt je werk en de mensen om je heen serieus."},
+  {id:14,name:"Harmonie",color:"rood",short:"rust tussen mensen",desc:"Je voelt je het prettigst als het rustig is tussen mensen."},
+  {id:15,name:"Loyaliteit",color:"rood",short:"blijven achter mensen staan",desc:"Je blijft achter mensen staan, ook als het spannend wordt."},
+  {id:16,name:"Empathie",color:"rood",short:"aanvoelen wat nodig is",desc:"Je voelt goed aan wat een ander nodig heeft."},
+  {id:17,name:"Geborgenheid",color:"rood",short:"veiligheid bieden",desc:"Je wilt dat mensen zich veilig voelen bij jou."},
+  {id:18,name:"Hulpvaardigheid",color:"rood",short:"ongevraagd bijspringen",desc:"Je springt bij zonder dat het gevraagd hoeft te worden."},
+  {id:19,name:"Respect",color:"rood",short:"iedereen gelijk behandelen",desc:"Je behandelt iedereen zoals je zelf behandeld wilt worden."},
+  {id:20,name:"Verbinding",color:"rood",short:"mensen samenbrengen",desc:"Je zoekt naar wat mensen samenbrengt."},
+  {id:21,name:"Leervermogen",color:"groen",short:"steeds bijleren",desc:"Je vindt het leuk om steeds bij te leren."},
+  {id:22,name:"Dialoog",color:"groen",short:"het gesprek aangaan",desc:"Je gaat het gesprek aan, ook bij een ander standpunt."},
+  {id:23,name:"Openheid",color:"groen",short:"openstaan voor anders",desc:"Je staat ervoor open dat het ook anders kan."},
+  {id:24,name:"Reflectie",color:"groen",short:"nadenken over je keuzes",desc:"Je denkt na over wat je deed en waarom."},
+  {id:25,name:"Samenwerking",color:"groen",short:"sámen bereiken",desc:"Je bereikt liever iets sámen dan alleen."},
+  {id:26,name:"Nieuwsgierigheid",color:"groen",short:"hoe zit het écht",desc:"Je wilt weten hoe iets écht zit."},
+  {id:27,name:"Ontwikkeling",color:"groen",short:"groei als vanzelfsprekend",desc:"Je ziet groei als iets vanzelfsprekends."},
+  {id:28,name:"Autonomie",color:"wit",short:"zelf bepalen hoe",desc:"Je wilt zelf kunnen bepalen hoe je iets aanpakt."},
+  {id:29,name:"Moed",color:"wit",short:"durven ondanks spanning",desc:"Je durft iets te zeggen of doen, ook als het spannend is."},
+  {id:30,name:"Authenticiteit",color:"wit",short:"jezelf kunnen zijn",desc:"Je wilt jezelf kunnen zijn, ook op je werk."},
+  {id:31,name:"Creativiteit",color:"wit",short:"een eigen aanpak bedenken",desc:"Je bedenkt graag een eigen, originele aanpak."},
+  {id:32,name:"Zingeving",color:"wit",short:"ergens toe dienen",desc:"Je wilt dat wat je doet ergens toe dient."},
+  {id:33,name:"Vrijheid",color:"wit",short:"je eigen weg kiezen",desc:"Je wilt ruimte om je eigen weg te kiezen."},
+  {id:34,name:"Passie",color:"wit",short:"vol overgave",desc:"Je zet je vol overgave in voor wat je belangrijk vindt."},
+  {id:35,name:"Intuïtie",color:"wit",short:"vertrouwen op je onderbuikgevoel",desc:"Je vertrouwt vaak op je onderbuikgevoel."},
 ];
 
 // ── Dilemma-pool (8 stuks) ──────────────────────────────────────
@@ -1272,7 +1295,7 @@ function TrilogieHome({onStartDeel1, onStartDeel2, onStartDeel3, initialGroup=""
               <p style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:1.2,margin:"0 0 6px"}}>Moral Maps Trilogie</p>
               <h1 style={{margin:0,fontSize:32,fontWeight:900,letterSpacing:-.8,color:"#0f172a"}}>Welkom bij je morele reis</h1>
               <p style={{margin:"10px 0 0",fontSize:14,color:"#475569",lineHeight:1.7}}>
-                Kies het deel waar je vandaag aan wilt werken. Je ontdekt je waarden, reflecteert op je keuzes en formuleert richting — stap voor stap, in je eigen tempo.
+                Wat vind jij écht belangrijk in je werk? Ontdek het in een paar minuten.
               </p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
                 <span style={{fontSize:11,padding:"4px 10px",borderRadius:99,background:"#eef2ff",color:"#3730a3",fontWeight:700}}>I: The Beginning</span>
@@ -1564,6 +1587,7 @@ export default function MoralMaps(){
   const [pending,setPending]=useState(null);
   const [insight,setInsight]=useState(false);
   const [filter,setFilter]=useState(null);
+  const [hoverDesc,setHoverDesc]=useState(null); // {name,desc} | null
   const [starr,setStarr]=useState({situatie:"",taak:"",actie:"",resultaat:"",reflectie:"",leidendeWaardeId:null});
   const [socialisatie,setSocialisatie]=useState({primair:"",secundair:"",transcultureel:"",professioneel:"",reflectie:""});
   const [ankerzin,setAnkerzin]=useState("");
@@ -2291,13 +2315,24 @@ export default function MoralMaps(){
                 </button>
               ))}
             </div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"10px 16px",marginBottom:10,minHeight:20,display:"flex",alignItems:"center"}} aria-live="polite">
+              <p style={{fontSize:12,color:hoverDesc?"#334155":"#94a3b8",margin:0,fontStyle:hoverDesc?"normal":"italic"}}>
+                {hoverDesc ? <><strong>{hoverDesc.name}:</strong> {hoverDesc.desc}</> : "Tik of hover op een waarde voor een korte uitleg."}
+              </p>
+            </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginBottom:16}}>
               <div className="mm-values-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))",gap:8}}>
                 {filtered.map(v=>{const sel=selVals.some(s=>s.id===v.id);const c=CM[v.color];return(
                   <button key={v.id} disabled={!sel&&selVals.length>=7}
+                    title={v.desc}
+                    onMouseEnter={()=>setHoverDesc({name:v.name,desc:v.desc})}
+                    onMouseLeave={()=>setHoverDesc(null)}
+                    onFocus={()=>setHoverDesc({name:v.name,desc:v.desc})}
+                    onBlur={()=>setHoverDesc(null)}
                     onClick={()=>{if(sel)setSelVals(selVals.filter(s=>s.id!==v.id));else if(selVals.length<7)setSelVals([...selVals,v]);}}
-                    style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${sel?c.border:c.border+"60"}`,background:sel?c.solid:c.bg,color:sel?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:600,fontSize:12.5,cursor:!sel&&selVals.length>=7?"not-allowed":"pointer",opacity:!sel&&selVals.length>=7?0.35:1,display:"flex",alignItems:"center",gap:6,transition:"all .15s",boxShadow:sel?`0 0 0 2px ${c.border}44`:"none",fontFamily:FONT}}>
-                    {sel?"✓ ":<Dot color={v.color}/>}{v.name}
+                    style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${sel?c.border:c.border+"60"}`,background:sel?c.solid:c.bg,color:sel?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:600,fontSize:12.5,cursor:!sel&&selVals.length>=7?"not-allowed":"pointer",opacity:!sel&&selVals.length>=7?0.35:1,display:"flex",flexDirection:"column",alignItems:"flex-start",gap:2,transition:"all .15s",boxShadow:sel?`0 0 0 2px ${c.border}44`:"none",fontFamily:FONT}}>
+                    <span style={{display:"flex",alignItems:"center",gap:6}}>{sel?"✓ ":<Dot color={v.color}/>}{v.name}</span>
+                    <span style={{fontSize:9.5,fontWeight:500,opacity:.75,lineHeight:1.25,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>{v.short}</span>
                   </button>
                 );})}
               </div>
@@ -2365,6 +2400,9 @@ export default function MoralMaps(){
           <div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:8,marginBottom:12}}>
               <img src={ASSET_IMAGES.deel1.phoneMockup} alt="Deel 1 smartphone mockup" style={{width:"100%",height:"auto",display:"block",borderRadius:10,maxHeight:260,objectFit:"cover"}} />
+            </div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16}}>
+              <p style={{fontSize:13,color:"#334155",lineHeight:1.6,margin:0}}>Twee situaties, één vraag: wat zou jij doen? En past dat bij je top 3?</p>
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Dilemma {curDil+1} van {dilemmas.length}</span>
