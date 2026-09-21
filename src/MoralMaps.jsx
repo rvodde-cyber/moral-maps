@@ -1390,9 +1390,9 @@ function Landing({onStart, onResume, onStartDeel2}){
 
   const STEPS=[
     {color:TEAL,sc:TEAL_DARK,icon:"🌸",num:"00",label:"Privilege Wiel",tag:"Bewustwording",desc:"Verken jouw eigen rugzak. Reflecteer op privilege als startpunt voor bewustwording."},
-    {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 10 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
-    {color:"#EAB308",sc:"#a16207",icon:"📍",num:"02",label:"De GPS",tag:"Koersbepaling",desc:"Verklein je selectie naar 3 kernwaarden — de ankerpunten op jouw morele GPS."},
-    {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Reageer op vier realistische dilemma's en ontdek of je keuzes overeenkomen met jouw GPS."},
+    {color:"#3B82F6",sc:"#1d4ed8",icon:"🗺",num:"01",label:"De Kaart",tag:"Vertrekpunt",desc:"Kies 7 waarden die bij jou passen uit 35 professionele waarden, verdeeld over vijf Caluwé-kleuren."},
+    {color:"#EAB308",sc:"#a16207",icon:"📍",num:"02",label:"De GPS",tag:"Koersbepaling",desc:"Welke drie horen echt bij jou? Deze drie vormen je kompas."},
+    {color:"#F43F5E",sc:"#be123c",icon:"🛣",num:"03",label:"De Route",tag:"Onderweg",desc:"Twee situaties, één vraag: wat zou jij doen? En past dat bij je top 3?"},
     {color:"#22C55E",sc:"#15803d",icon:"✨",num:"04",label:"STARR Reflectie",tag:"Eigen Ervaring",desc:"Beschrijf een situatie uit je verleden via de STARR-methode, waarbij één van je kernwaarden zichtbaar werd."},
   ];
 
@@ -1413,7 +1413,7 @@ function Landing({onStart, onResume, onStartDeel2}){
               MORAL MAPS PLATFORM
             </div>
             <h1 style={{fontSize:"clamp(34px,6vw,56px)",fontWeight:900,lineHeight:1.0,letterSpacing:-1.5,marginBottom:16,color:GM_TEXT}}>Moral Maps<br/><span style={{color:GM_BLUE,textShadow:"0 0 18px rgba(26,115,232,.25)"}}>The beginning</span></h1>
-            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Start hier jouw traject in het Moral Maps platform en werk stap voor stap door Deel 1, Deel 2 en Deel 3.</p>
+            <p style={{color:GM_MUTED,fontSize:16,lineHeight:1.75,marginBottom:36,maxWidth:420}}>Wat vind jij écht belangrijk in je werk? Ontdek het in een paar minuten.</p>
 
             {/* START FORM */}
             <div style={{background:"#fff",borderRadius:20,border:`1px solid ${GM_BORDER}`,padding:24,boxShadow:"0 1px 2px rgba(60,64,67,.2),0 2px 6px rgba(60,64,67,.12)"}}>
@@ -1610,7 +1610,7 @@ export default function MoralMaps(){
   const pct=useMemo(()=>{
     const dilCount=dilemmas.length||1;
     if(phase===0)return 2;
-    if(phase===1)return 14+(selVals.length/10)*12;
+    if(phase===1)return 14+(selVals.length/7)*12;
     if(phase===2)return 28+(coreVals.length/3)*12;
     if(phase===3)return 42+(curDil/dilCount)*14;
     if(phase===4)return 58;
@@ -2279,8 +2279,8 @@ export default function MoralMaps(){
           <div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"16px 20px",marginBottom:16}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div><h2 style={{fontWeight:800,fontSize:17,margin:0}}>🗺 De Grote Kaart</h2><p style={{fontSize:12,color:"#64748b",margin:"4px 0 0"}}>Kies <strong>10 waarden</strong> die bij jou passen.</p></div>
-                <div style={{width:48,height:48,borderRadius:"50%",background:TEAL_LIGHT,border:`2px solid ${TEAL}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:TEAL}}>{selVals.length}<span style={{fontSize:10,color:"#94a3b8"}}>/10</span></div>
+                <div><h2 style={{fontWeight:800,fontSize:17,margin:0}}>🗺 De Grote Kaart</h2><p style={{fontSize:12,color:"#64748b",margin:"4px 0 0"}}>Kies <strong>7 waarden</strong> die bij jou passen.</p></div>
+                <div style={{width:48,height:48,borderRadius:"50%",background:TEAL_LIGHT,border:`2px solid ${TEAL}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:TEAL}}>{selVals.length}<span style={{fontSize:10,color:"#94a3b8"}}>/7</span></div>
               </div>
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:12,marginBottom:16,display:"flex",flexWrap:"wrap",gap:8}}>
@@ -2294,9 +2294,9 @@ export default function MoralMaps(){
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginBottom:16}}>
               <div className="mm-values-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))",gap:8}}>
                 {filtered.map(v=>{const sel=selVals.some(s=>s.id===v.id);const c=CM[v.color];return(
-                  <button key={v.id} disabled={!sel&&selVals.length>=10}
-                    onClick={()=>{if(sel)setSelVals(selVals.filter(s=>s.id!==v.id));else if(selVals.length<10)setSelVals([...selVals,v]);}}
-                    style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${sel?c.border:c.border+"60"}`,background:sel?c.solid:c.bg,color:sel?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:600,fontSize:12.5,cursor:!sel&&selVals.length>=10?"not-allowed":"pointer",opacity:!sel&&selVals.length>=10?0.35:1,display:"flex",alignItems:"center",gap:6,transition:"all .15s",boxShadow:sel?`0 0 0 2px ${c.border}44`:"none",fontFamily:FONT}}>
+                  <button key={v.id} disabled={!sel&&selVals.length>=7}
+                    onClick={()=>{if(sel)setSelVals(selVals.filter(s=>s.id!==v.id));else if(selVals.length<7)setSelVals([...selVals,v]);}}
+                    style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${sel?c.border:c.border+"60"}`,background:sel?c.solid:c.bg,color:sel?(v.color==="geel"?"#451A03":"#fff"):c.text,fontWeight:600,fontSize:12.5,cursor:!sel&&selVals.length>=7?"not-allowed":"pointer",opacity:!sel&&selVals.length>=7?0.35:1,display:"flex",alignItems:"center",gap:6,transition:"all .15s",boxShadow:sel?`0 0 0 2px ${c.border}44`:"none",fontFamily:FONT}}>
                     {sel?"✓ ":<Dot color={v.color}/>}{v.name}
                   </button>
                 );})}
@@ -2308,15 +2308,15 @@ export default function MoralMaps(){
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{selVals.map(v=>{const c=CM[v.color];return<button key={v.id} onClick={()=>setSelVals(selVals.filter(s=>s.id!==v.id))} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:99,border:`1px solid ${c.border}`,background:c.bg,color:c.text,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:FONT}}>{v.name} ×</button>;})}</div>
               </div>
             )}
-            {selVals.length>=10&&(
+            {selVals.length>=7&&(
               <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 16px",marginBottom:14}}>
                 <p style={{fontSize:12,color:"#1a5c46",lineHeight:1.7,margin:0}}>
                   <strong>Even stilstaan:</strong> welke gekozen waarde verraste je? En welke laat je bewust los? Zelfkennis begint bij die afweging.
                 </p>
               </div>
             )}
-            {selVals.length>=10&&<MicroJournalBox journalKey="kaart" value={microJournal.kaart} onChange={(v)=>setJournalKey("kaart",v)}/>}
-            {selVals.length>=10&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}><button onClick={()=>{setPhase(2);persistSession("phase_2",{phase:2,screen:"app",selVals});}} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Stel je GPS in →</button></div>}
+            {selVals.length>=7&&<MicroJournalBox journalKey="kaart" value={microJournal.kaart} onChange={(v)=>setJournalKey("kaart",v)}/>}
+            {selVals.length>=7&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}><button onClick={()=>{setPhase(2);persistSession("phase_2",{phase:2,screen:"app",selVals});}} style={{padding:"11px 24px",borderRadius:99,border:"none",background:TEAL,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",boxShadow:`0 4px 12px ${TEAL_GLOW}`,fontFamily:FONT}}>Kies je top 3 →</button></div>}
           </div>
         )}
 
@@ -2326,7 +2326,7 @@ export default function MoralMaps(){
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:"20px",marginBottom:16,textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:8}}>📍</div>
               <h2 style={{fontWeight:800,fontSize:17,margin:0}}>De GPS</h2>
-              <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Kies <strong>3 kernwaarden</strong> als morele ankers — jouw navigatiepunten op de Moral Maps-route.</p>
+              <p style={{fontSize:12,color:"#64748b",marginTop:6}}>Welke drie horen echt bij jou? Deze drie vormen je kompas.</p>
             </div>
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:20,marginBottom:16}}>
               <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center"}}>
