@@ -100,11 +100,11 @@ const TEAL_LIGHT = "#e6f5f0";
 const TEAL_GLOW = "#1b9e7740";
 
 const CM = {
-  geel:  { bg:"#FEF9C3", border:"#EAB308", text:"#713F12", solid:"#EAB308", label:"Geel",  desc:"Macht · Belangen · Politiek",   dot:"#EAB308" },
-  blauw: { bg:"#DBEAFE", border:"#3B82F6", text:"#1E3A8A", solid:"#3B82F6", label:"Blauw", desc:"Regels · Structuur · Rationeel",  dot:"#3B82F6" },
-  rood:  { bg:"#FFE4E6", border:"#F43F5E", text:"#881337", solid:"#F43F5E", label:"Rood",  desc:"Mens · Relatie · Harmonie",       dot:"#F43F5E" },
-  groen: { bg:"#DCFCE7", border:"#22C55E", text:"#14532D", solid:"#22C55E", label:"Groen", desc:"Leren · Groei · Dialoog",         dot:"#22C55E" },
-  wit:   { bg:"#F1F5F9", border:"#94A3B8", text:"#334155", solid:"#94A3B8", label:"Wit",   desc:"Essentie · Energie · Autonomie",  dot:"#94A3B8" },
+  geel:  { bg:"#FEF9C3", border:"#EAB308", text:"#713F12", solid:"#EAB308", label:"Macht & Invloed",           desc:"Macht · Belangen · Politiek",   dot:"#EAB308" },
+  blauw: { bg:"#DBEAFE", border:"#3B82F6", text:"#1E3A8A", solid:"#3B82F6", label:"Structuur & Zorgvuldigheid", desc:"Regels · Structuur · Rationeel",  dot:"#3B82F6" },
+  rood:  { bg:"#FFE4E6", border:"#F43F5E", text:"#881337", solid:"#F43F5E", label:"Mens & Verbinding",         desc:"Mens · Relatie · Harmonie",       dot:"#F43F5E" },
+  groen: { bg:"#DCFCE7", border:"#22C55E", text:"#14532D", solid:"#22C55E", label:"Groei & Dialoog",           desc:"Leren · Groei · Dialoog",         dot:"#22C55E" },
+  wit:   { bg:"#F1F5F9", border:"#94A3B8", text:"#334155", solid:"#94A3B8", label:"Autonomie & Zingeving",     desc:"Essentie · Energie · Autonomie",  dot:"#94A3B8" },
 };
 
 const VALUES = [
@@ -1097,7 +1097,7 @@ function exportPDF(coreVals, dilResp, starr, smsDilemma, domColor, groupCode, ag
         <p style="color:rgba(255,255,255,.7);font-size:13px;margin-top:4px;">Groep: ${groupCode||'–'} · Leeftijd: ${age||'–'} · ${date}</p>
       </div>
       <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px;text-align:center;">
-        <p style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Dominante kleur</p>
+        <p style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Jouw dominante waardenkleur</p>
         <p style="font-size:20px;font-weight:900;color:#fff;margin-top:2px;">${c.label}</p>
         <p style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px;">${c.desc}</p>
       </div>
@@ -1215,7 +1215,7 @@ function exportPDFDeel3Portfolio({coreVals, dilResp, starr, smsDilemma, bridge, 
       <p style="opacity:.85;font-size:12px;margin-top:6px">Groep: ${groupCode || "-"} · Leeftijd: ${age || "-"} · Context: ${profile.workContext || "algemeen"} · Taal: ${profile.locale || "nl"}</p>
     </div>
     <div class="section"><div class="label">Kernwaarden</div><div>${(coreVals||[]).map(cv=>{const cc=CM[cv.color];return `<span class="chip" style="background:${cc.bg};border:1px solid ${cc.border};color:${cc.text}">${cv.name}</span>`;}).join("") || "<span class='value'>Niet ingevuld</span>"}</div></div>
-    <div class="section"><div class="label">Dominante veranderkleur</div><div class="dominant"><div class="value" style="font-weight:800;color:${c.text}">${c.label}</div><div class="value">${c.desc}</div></div></div>
+    <div class="section"><div class="label">Jouw dominante waardenkleur</div><div class="dominant"><div class="value" style="font-weight:800;color:${c.text}">${c.label}</div><div class="value">${c.desc}</div></div></div>
     <div class="section"><div class="label">Dilemma-keuzes Deel 1</div>${(dilResp||[]).map((r,i)=>`<div class="value" style="margin-bottom:8px"><strong>${i+1}. ${r.title||""}</strong><br/>${r?.text || "Niet ingevuld"}</div>`).join("") || "<div class='value'>Niet ingevuld</div>"}</div>
     <div class="section"><div class="label">STARR</div>${Object.entries(starr||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
     <div class="section"><div class="label">Socialisatie / Rugzak</div>${Object.entries(socialisatie||{}).map(([k,v])=>`<div class="value"><strong>${k}:</strong> ${v || "Niet ingevuld"}</div>`).join("")}</div>
@@ -2327,11 +2327,11 @@ export default function MoralMaps(){
                     {coreVals.map((cv)=><option key={cv.id} value={cv.id}>{cv.name} ({CM[cv.color].label})</option>)}
                   </select>
                 </div>
-                {[{key:"situatie",label:"Situatie",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,hint})=>(
+                {[{key:"situatie",label:"Situatie",lidwoord:"de",hint:"Wat was de context? Waar en wanneer speelde het zich af?"},{key:"taak",label:"Taak",lidwoord:"de",hint:"Wat was jouw rol of verantwoordelijkheid in deze situatie?"},{key:"actie",label:"Actie",lidwoord:"de",hint:"Welke stappen heb je concreet ondernomen? Wat deed jij?"},{key:"resultaat",label:"Resultaat",lidwoord:"het",hint:"Wat was het resultaat van jouw aanpak?"},{key:"reflectie",label:"Reflectie",lidwoord:"de",hint:"Wat heb je hiervan geleerd? Wat zou je anders doen? Welke kernwaarde speelde een rol?"}].map(({key,label,lidwoord,hint})=>(
                   <div key={key}>
                     <label style={{fontSize:11,fontWeight:800,color:TEAL,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>{label}</label>
                     <p style={{fontSize:11,color:"#94a3b8",marginBottom:6}}>{hint}</p>
-                    <textarea value={starr[key]} onChange={e=>setStarr({...starr,[key]:e.target.value})} placeholder={`Beschrijf de ${label.toLowerCase()}…`} rows={3} aria-label={`STARR ${label}`}
+                    <textarea value={starr[key]} onChange={e=>setStarr({...starr,[key]:e.target.value})} placeholder={`Beschrijf ${lidwoord} ${label.toLowerCase()}…`} rows={3} aria-label={`STARR ${label}`}
                       style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}
                       onFocus={e=>e.target.style.borderColor=TEAL} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                     <div style={{textAlign:"right",fontSize:10,color:starr[key].trim().length>=STARR_MIN_CHARS?TEAL:"#94a3b8",marginTop:4}}>
@@ -2377,7 +2377,8 @@ export default function MoralMaps(){
                 {
                   key:"transcultureel",
                   label:"Transculturele aspecten",
-                  hint:"Welke rol speelden cultuur, afkomst, taal of migratie in hoe jij naar jezelf en anderen kijkt?",
+                  hint:"Hoe heeft jouw achtergrond jou gevormd in de manier waarop je naar jezelf en anderen kijkt?",
+                  placeholder:"Beschrijf hier je antwoord…",
                 },
                 {
                   key:"professioneel",
@@ -2386,10 +2387,10 @@ export default function MoralMaps(){
                 },
                 {
                   key:"reflectie",
-                  label:"Reflectie & koppeling aan Caluwe",
-                  hint:"Welke veranderkleur herken je het meest in jezelf, en hoe zie je die terug in je keuzes en gedrag?",
+                  label:"Reflectie & koppeling aan je kernwaarden",
+                  hint:"Welke van jouw kernwaarden herken je het meest in jezelf terug, en hoe zie je die terug in je keuzes en gedrag?",
                 }
-              ].map(({key,label,hint})=>(
+              ].map(({key,label,hint,placeholder})=>(
                 <div key={key}>
                   <label style={{fontSize:11,fontWeight:800,color:"#7c3aed",textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>{label}</label>
                   <p style={{fontSize:11,color:"#94a3b8",lineHeight:1.6,margin:"0 0 6px"}}>{hint}</p>
@@ -2397,7 +2398,7 @@ export default function MoralMaps(){
                     value={socialisatie[key]}
                     onChange={e=>setSocialisatie({...socialisatie,[key]:e.target.value})}
                     rows={3}
-                    placeholder={`Beschrijf ${label.toLowerCase()}...`}
+                    placeholder={placeholder || `Beschrijf ${label.toLowerCase()}...`}
                     style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:FONT}}
                   />
                 </div>
