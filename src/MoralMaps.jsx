@@ -980,7 +980,7 @@ function VreemdeAnder({coreVals, onComplete, onStepSave, initial}){
             <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Een reflectie op ontmoeting, verschil en inclusie.</p>
           </div>
           <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Je hebt net vier dilemma's doorlopen vanuit jouw eigen GPS. Nu richt je de blik op de ander — op iemand die buiten jouw cirkel valt.</p>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Je hebt je route gekozen en onderweg je koers bijgesteld, vanuit jouw eigen GPS. Nu richt je de blik op de ander — op iemand die buiten jouw cirkel valt.</p>
             <div style={{background:"#eef2ff",borderRadius:12,border:"1px solid #a5b4fc",padding:"14px 18px",marginBottom:16}}>
               <p style={{fontSize:13,color:"#3730a3",lineHeight:1.7,margin:0}}><strong>Drie stappen:</strong> De Spiegel (wie is de ander voor jou?), De Tussenruimte (wat gebeurt er tussen jullie?) en Insluiting (wat kun jij doen?).</p>
             </div>

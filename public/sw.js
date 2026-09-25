@@ -3,7 +3,7 @@
 // Er wordt géén dynamische data gecachet — alle voortgang staat al lokaal
 // in localStorage ("moralmaps_journey").
 
-const CACHE = "moral-maps-static-v2";
+const CACHE = "moral-maps-static-v3";
 
 // Kernbestanden die we meteen bij installatie precachen.
 const CORE = [
