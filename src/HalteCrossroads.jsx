@@ -99,15 +99,14 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
           fontWeight: 900, lineHeight: 1.1, letterSpacing: -1.5,
           color: "#f1f5f9", marginBottom: 16,
         }}>
-          Je GPS is<br/>
-          <em style={{ color: "#ef9f27", fontStyle: "italic" }}>ingesteld.</em>
+          Klaar voor<br/>
+          <em style={{ color: "#ef9f27", fontStyle: "italic" }}>Deel II.</em>
         </h1>
 
         <p className="fade2" style={{
           fontSize: 15, color: "#64748b", lineHeight: 1.8, marginBottom: 36,
         }}>
-          Je weet wie je bent en wat je drijft.<br/>
-          Nu wachten de kruispunten.
+          Je hebt een eerste beeld van wat jou drijft. In Deel II ontdek je wat er gebeurt als de weg zich splitst. Je kiest een route, kijkt naar je energie, staat stil bij een omweg en ontmoet de vreemde ander.
         </p>
 
         {/* Kernwaarden samenvatting */}
@@ -152,9 +151,8 @@ export default function HalteCrossroads({ coreValues = [], groupCode = "", onCon
                 Volgende halte — Crossroads
               </p>
               <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.75 }}>
-                Je staat op een kruispunt. Welke afslagen neem je?
-                Hoe bewaar je energie en houd je koers — ook als de weg onduidelijk is?
-                In deel 2 navigeer je door de complexiteit van je leven en werk.
+                Vier haltes: Het Kruispunt, De Tankstop, De Omweg en De Vreemde Ander.
+                Onderzoek hoe je kiest als waarden, energie en de ander op je pad komen.
               </p>
             </div>
           </div>

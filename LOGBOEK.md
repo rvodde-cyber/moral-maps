@@ -503,3 +503,9 @@ browser-smoketest toonde een identieke landingspagina vóór en na.
   symboolnaam (niet alleen binnen het ene bestand), inclusief test-/
   buildscripts, om verborgen aanroepen uit te sluiten.
 
+## 2026-09-25 — Deel I-teksten van 22-09 live op main
+
+- `origin/main` stond nog op `9991eb5`. Branch `claude/blissful-gates-oqf4g9` is gemerged via PR #11 (merge-commit `8a0558f`); de tekstcommit is `be690c8`.
+- Service worker-cache `moral-maps-static-v3`. Intro De Vreemde Ander: route gekozen en koers bijgesteld, vanuit de eigen GPS.
+- Lint en build groen vóór de merge. Productiebundle `index-lkOIyIn9.js` toont Kies 7 waarden, teller `/7`, de vijf waardenfamilies, STARR-lidwoord `het resultaat` en de rugzakvraag over achtergrond. Kompas blijft 3.
+

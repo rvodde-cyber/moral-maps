@@ -87,7 +87,7 @@ export default function HalteFinalDestination({ groupCode = "", onContinue }) {
           color: "#f1f5f9", marginBottom: 16,
         }}>
           Je hebt de kruispunten<br/>
-          <em style={{ color: "#d4537e", fontStyle: "italic" }}>doorstaan.</em>
+          <em style={{ color: "#d4537e", fontStyle: "italic" }}>achter je.</em>
         </h1>
 
         <p className="fade2" style={{
@@ -113,9 +113,7 @@ export default function HalteFinalDestination({ groupCode = "", onContinue }) {
                 Eindbestemming — Final Destination
               </p>
               <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.75 }}>
-                Kijk terug op de reis die je hebt gemaakt.
-                Activeer je persoonlijke morele GPS en maak concreet
-                waar je naartoe wilt — bewust, vanuit wie je bent geworden.
+                In Deel III kijk je terug op je reis, kies je wat je meeneemt en maak je een concreet plan.
               </p>
             </div>
           </div>
@@ -131,7 +129,7 @@ export default function HalteFinalDestination({ groupCode = "", onContinue }) {
           </p>
           {[
             { icon: "🗺", label: "The Beginning", desc: "Waarden in kaart, GPS ingesteld", color: "#1d9e75" },
-            { icon: "🛣", label: "Crossroads",    desc: "Kruispunten genavigeerd, koers gehouden", color: "#ef9f27" },
+            { icon: "🛣", label: "Crossroads",    desc: "Keuzes onderzocht, koers bijgesteld", color: "#ef9f27" },
           ].map((s, i) => (
             <div key={i} style={{
               display: "flex", gap: 12, alignItems: "center",
