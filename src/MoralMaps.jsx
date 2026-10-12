@@ -829,7 +829,7 @@ function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
             <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Voordat je aan de reis begint, sta je even stil bij jezelf.</p>
           </div>
           <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel laat dertien kenmerken zien, zoals opleiding, taal en gezondheid. Bij elk kenmerk kijk je waar jij staat: dichter bij het centrum, in het midden of meer aan de rand.</p>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel laat elf kenmerken zien, zoals opleiding, taal en gezondheid. Bij elk kenmerk kijk je waar jij staat: dichter bij het centrum, in het midden of meer aan de rand.</p>
             <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 18px",marginBottom:20}}>
               <p style={{fontSize:13,color:"#1a5c46",lineHeight:1.7,margin:0}}>
                 <strong>Wat je gaat doen:</strong> Klik per segment op de positie die het meest op jou van toepassing is. Er zijn geen goede of foute antwoorden — dit is een persoonlijk reflectiemoment.
@@ -837,7 +837,7 @@ function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
             </div>
             <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px",marginBottom:20}}>
               <h3 style={{fontSize:14,fontWeight:800,color:"#334155",margin:"0 0 8px",letterSpacing:-.2}}>Waarom deze onderwerpen?</h3>
-              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op een bekend model uit diversiteits- en inclusie-educatie. Het gebruikt deze dertien kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op een bekend model uit diversiteits- en inclusie-educatie. Het gebruikt deze elf kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
             </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
               <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet bewaard. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk. Een onderdeel overslaan mag altijd — je bent nergens toe verplicht. Roept een onderwerp iets bij je op waar je met iemand over wilt praten? Neem contact op met {MENTOR_CONTACT}.</p>
