@@ -11,6 +11,11 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import HalteCrossroads from "./HalteCrossroads";
 import HalteFinalDestination from "./HalteFinalDestination";
+import {
+  HANDELEN_KOP,
+  HANDELEN_PROFIELEN,
+  computeHandelenProfiel,
+} from "./handelen.js";
 
 // ── Contactverwijzing (per opleiding aan te passen) ──────────
 // Pas deze regel aan naar de juiste contactpersoon voor jouw opleiding.
@@ -259,11 +264,12 @@ const RESPONSIVE_CSS = `
 `;
 
 const EMPTY_MICRO_JOURNAL = {
-  privilege: "", kaart: "", gps: "", dilemma: "", starr: "", rugzak: "",
+  privilege: "", handelenStap: "", kaart: "", gps: "", dilemma: "", starr: "", rugzak: "",
 };
 
 const MICRO_JOURNAL_LABELS = {
   privilege: "het privilege wiel",
+  handelenStap: "mijn eerste kleine stap (privilege wiel)",
   kaart: "De Kaart",
   gps: "De GPS",
   dilemma: "De Route",
@@ -584,67 +590,80 @@ function SessionCodeBar({ groupCode, age, saveStatus, onReset }) {
 
 const WHEEL_SEGMENTS = [
   { id:"opleiding", label:"Opleiding", icon:"🎓",
-    desc:"Deze as gaat over opleidingskapitaal en toegang tot formele kansen.",
-    inside:"Universiteit / HBO+",
-    middle:"MBO / HAVO",
-    outside:"Basisonderwijs / VSO" },
+    desc:"Deze as gaat over je eigen formele opleiding, niet over die van je ouders.",
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Hbo of wo afgerond",
+    middle:"Mbo 3-4 of havo/vwo",
+    outside:"Vmbo, mbo 1-2, praktijkonderwijs of geen diploma" },
   { id:"huisvesting", label:"Huisvesting", icon:"🏘️",
     desc:"Deze as kijkt naar woonzekerheid, woonkwaliteit en eigendom.",
-    inside:"Koopwoning (Vrijstaand/Stad)",
-    middle:"Huurwoning (Sector)",
-    outside:"Sociale huur / Onzeker" },
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Koopwoning",
+    middle:"Huurwoning met een vast contract",
+    outside:"Onzekere of tijdelijke woonsituatie" },
   { id:"sociaal_milieu", label:"Sociaal Milieu", icon:"👥",
-    desc:"Deze as gaat over netwerkpositie, culturele codes en sociaal kapitaal.",
-    inside:"Gevestigde Bovenlaag",
-    middle:"Middenklasse",
-    outside:"Arbeidersmilieu" },
-  { id:"huidskleur", label:"Huidskleur", icon:"🌍",
-    desc:"Deze as gaat over hoe huidskleur iemands behandeling in systemen kan beïnvloeden.",
-    inside:"Wit",
-    middle:"Lichte tinten",
-    outside:"Bruin / Donker" },
+    desc:"Deze as gaat over hoe goed de codes en contacten van je opvoeding aansloten bij onderwijs en werk.",
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Aansluiting was vanzelfsprekend",
+    middle:"Gedeeltelijk aansluitend",
+    outside:"Weinig aansluiting; ik leerde de codes later" },
+  { id:"huidskleur", label:"Etniciteit / huidskleur", icon:"🌍",
+    desc:"Deze as gaat over hoe je in de samenleving gelezen wordt, niet over je paspoort (dat staat bij Paspoort).",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Ik word vanzelf als 'gewoon Nederlands' gezien",
+    middle:"Ik word soms als 'anders' gezien",
+    outside:"Ik word vaak of structureel als 'anders' gezien vanwege mijn uiterlijk" },
   { id:"gender", label:"Gender", icon:"⚧",
     desc:"Deze as gaat over gendernormen en hoe die toegang en veiligheid beïnvloeden.",
-    inside:"Cis-Man",
-    middle:"Cis-Vrouw",
-    outside:"Trans / Non-binair" },
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Ik word als man gezien en behandeld",
+    middle:"Mijn gender wijkt af van de norm, maar dat belemmert zelden",
+    outside:"Ik word vaak of structureel anders behandeld vanwege mijn gender (bijv. vrouw, non-binair of transgender)" },
   { id:"seksualiteit", label:"Seksualiteit", icon:"🏳️‍🌈",
-    desc:"Deze as gaat over heteronormativiteit en sociale acceptatie.",
-    inside:"Heteroseksueel",
-    middle:"Homo / Lesbisch",
-    outside:"LHBTQ+ Overig" },
-  { id:"immigratie", label:"Immigratie", icon:"🧳",
-    desc:"Deze as gaat over migratieachtergrond en ervaren institutionele drempels.",
-    inside:"In NL geboren (ouders ook)",
-    middle:"2e Generatie",
-    outside:"Zelf naar NL gekomen" },
+    desc:"Deze as gaat over hoe vanzelfsprekend je relatie of gezinssituatie in je omgeving is. Voorbeelden van niet-heteroseksuele oriëntaties: homo, lesbisch, bi, pan, queer.",
+    instructie:"Denk aan: waar hoor je zelf bij?",
+    inside:"Heteroseksueel; ik hoef mijn relatie zelden te verantwoorden",
+    middle:"Niet hetero; acceptatie, maar niet altijd vanzelfsprekend",
+    outside:"Niet hetero; ik ervaar vaak uitsluiting of verberg het" },
+  { id:"immigratie", label:"Paspoort en verblijfsstatus", icon:"🧳",
+    desc:"Deze as gaat over wat je paspoort of verblijfsstatus je toestaat (reizen, wonen, werken, zekerheid), niet over je culturele achtergrond.",
+    instructie:"Denk aan: welke deuren opent of sluit jouw paspoort?",
+    inside:"Mijn paspoort opent veel deuren",
+    middle:"Sterk paspoort, maar ik merk soms extra drempels",
+    outside:"Mijn paspoort of verblijfsstatus beperkt wat ik kan" },
   { id:"taal", label:"Taal", icon:"💬",
-    desc:"Deze as gaat over taalvoorsprong in onderwijs, werk en instanties.",
-    inside:"NL / Engels (Moedertaal)",
-    middle:"NL als tweede taal",
-    outside:"Anderstalig" },
+    desc:"Deze as gaat over je moedertaal. Een accent kan ook meetellen.",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Nederlands is mijn moedertaal",
+    middle:"Ik spreek Nederlands vloeiend, maar het is niet mijn moedertaal",
+    outside:"Nederlands is niet mijn moedertaal; ik doe vaak extra moeite" },
   { id:"woonregio", label:"Woonregio", icon:"🗺️",
     desc:"Deze as kijkt naar regionale toegang tot voorzieningen en kansen.",
-    inside:"Stedelijk / Grote stad",
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Stedelijk gebied met veel voorzieningen",
     middle:"Middelgrote stad",
-    outside:"Platteland / Krimp" },
+    outside:"Regio met weinig voorzieningen binnen bereik" },
   { id:"neurodiversiteit", label:"Neurodiversiteit", icon:"🧠",
     desc:"Deze as gaat over aansluiting tussen neuroprofiel en maatschappelijke normen.",
-    inside:"Neurotypisch",
-    middle:"Enige divergentie",
-    outside:"Sterk neurodivergent" },
+    instructie:"Denk aan: waar hoor je zelf bij?",
+    inside:"Mijn denken en leren sluit aan bij de norm",
+    middle:"Enige divergentie; soms extra aanpassing",
+    outside:"Structureel neurodivergent; aanpassingen komen niet vanzelf" },
   { id:"beperking", label:"Beperking", icon:"♿",
     desc:"Deze as gaat over fysieke/mentale toegankelijkheid en meedoen.",
-    inside:"Geen beperking",
-    middle:"Lichte beperking",
-    outside:"Ernstige beperking" },
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Geen beperking die mijn dagelijks functioneren raakt",
+    middle:"Beperking die soms impact heeft",
+    outside:"Beperking die mijn toegang regelmatig beperkt" },
   { id:"vermogen", label:"Vermogen", icon:"💶",
     desc:"Deze as gaat over financiële buffers en economische handelingsruimte.",
-    inside:"Rijk / Vermogend",
-    middle:"Modaal inkomen",
-    outside:"Minimum / Schulden" },
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Ruime financiële buffer",
+    middle:"Voldoende middelen, geen grote buffer",
+    outside:"Weinig of geen buffer; geldzorgen" },
   { id:"lichaamsbouw", label:"Lichaamsbouw", icon:"🧍",
     desc:"Deze as kijkt naar normbeelden rond lichaam en sociale waardering.",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
     inside:"Slank / Atletisch",
     middle:"Gemiddeld",
     outside:"Groter lichaam dan de norm" },
@@ -711,7 +730,66 @@ function PBar({step,pct,onStepClick}){
 
 // ── Privilege Wiel Component ───────────────────────────────────
 
-function PrivilegeWheel({onComplete}){
+function PrivilegeHandelenBlok({ selected, handelenStap, onHandelenStapChange }) {
+  const profielKey = useMemo(
+    () => computeHandelenProfiel(selected, WHEEL_SEGMENTS),
+    [selected]
+  );
+  const profiel = HANDELEN_PROFIELEN[profielKey];
+  if (!profiel) return null;
+
+  return (
+    <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #e2e8f0" }}>
+      <h3 style={{ fontWeight: 800, fontSize: 16, margin: "0 0 10px", textAlign: "center", color: "#334155" }}>
+        {HANDELEN_KOP}
+      </h3>
+      <p style={{ fontSize: 12, fontStyle: "italic", color: "#64748b", lineHeight: 1.7, margin: "0 0 14px" }}>
+        {profiel.inleiding}
+      </p>
+      <p style={{ fontWeight: 800, fontSize: 14, color: TEAL, margin: "0 0 12px" }}>{profiel.titel}</p>
+      {profiel.acties.map((actie) => {
+        const badge = FASE_BADGE[actie.fase] || FASE_BADGE.Handelen;
+        return (
+          <div key={actie.tekst} style={{ marginBottom: 12 }}>
+            <span style={{
+              display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: 0.6,
+              textTransform: "uppercase", padding: "2px 8px", borderRadius: 6, marginBottom: 4,
+              background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,
+            }}>{actie.fase}</span>
+            <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.65, margin: 0 }}>{actie.tekst}</p>
+          </div>
+        );
+      })}
+      <p style={{ fontWeight: 800, fontSize: 13, color: "#334155", margin: "16px 0 10px" }}>Reflectie</p>
+      {profiel.reflectievragen.map((v) => {
+        const badge = FASE_BADGE[v.fase] || FASE_BADGE.Volhouden;
+        return (
+          <div key={v.tekst} style={{ marginBottom: 12 }}>
+            <span style={{
+              display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: 0.6,
+              textTransform: "uppercase", padding: "2px 8px", borderRadius: 6, marginBottom: 4,
+              background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,
+            }}>{v.fase}</span>
+            <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.65, margin: 0 }}>{v.tekst}</p>
+          </div>
+        );
+      })}
+      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", margin: "16px 0 8px" }}>
+        Mijn eerste kleine stap (optioneel)
+      </label>
+      <input
+        type="text"
+        value={handelenStap}
+        onChange={(e) => onHandelenStapChange(e.target.value)}
+        maxLength={200}
+        placeholder="Bijv. ik vraag iemand om mee te kijken…"
+        style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: FONT, outline: "none" }}
+      />
+    </div>
+  );
+}
+
+function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
   const [selected, setSelected] = useState({}); // id -> "inside" | "middle" | "outside" | null
   const [activeInfo, setActiveInfo] = useState(null);
   const [showIntro, setShowIntro] = useState(true);
@@ -897,6 +975,11 @@ function PrivilegeWheel({onComplete}){
                 <div style={{fontSize:24,marginBottom:6}}>{activeSegment.icon}</div>
                 <p style={{fontWeight:800,fontSize:14,color:TEAL,margin:"0 0 8px"}}>{activeSegment.label}</p>
                 <p style={{fontSize:12,color:"#334155",lineHeight:1.7,margin:0}}>{activeSegment.desc}</p>
+                {activeSegment.instructie && (
+                  <p style={{ fontSize: 11, fontStyle: "italic", color: "#64748b", lineHeight: 1.6, margin: "10px 0 0" }}>
+                    {activeSegment.instructie}
+                  </p>
+                )}
               </div>
               <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
               <button onClick={()=>toggle(activeSegment.id,"inside")}
@@ -1002,6 +1085,11 @@ function PrivilegeWheel({onComplete}){
               </p>
             </div>
           </div>
+          <PrivilegeHandelenBlok
+            selected={selected}
+            handelenStap={handelenStap || ""}
+            onHandelenStapChange={onHandelenStapChange}
+          />
         </div>
       )}
 
@@ -2268,7 +2356,11 @@ export default function MoralMaps(){
         {/* P0 — Privilege Wiel */}
         {phase===0 && (
           <>
-            <PrivilegeWheel onComplete={()=>{setPhase(1);persistSession("phase_1",{phase:1,screen:"app"});}}/>
+            <PrivilegeWheel
+              handelenStap={microJournal.handelenStap}
+              onHandelenStapChange={(v) => setJournalKey("handelenStap", v)}
+              onComplete={()=>{setPhase(1);persistSession("phase_1",{phase:1,screen:"app"});}}
+            />
             <MicroJournalBox journalKey="privilege" value={microJournal.privilege} onChange={(v)=>setJournalKey("privilege",v)}/>
           </>
         )}
