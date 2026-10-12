@@ -11,6 +11,11 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import HalteCrossroads from "./HalteCrossroads";
 import HalteFinalDestination from "./HalteFinalDestination";
+import {
+  HANDELEN_KOP,
+  HANDELEN_PROFIELEN,
+  computeHandelenProfiel,
+} from "./handelen.js";
 
 // ── Contactverwijzing (per opleiding aan te passen) ──────────
 // Pas deze regel aan naar de juiste contactpersoon voor jouw opleiding.
@@ -259,11 +264,12 @@ const RESPONSIVE_CSS = `
 `;
 
 const EMPTY_MICRO_JOURNAL = {
-  privilege: "", kaart: "", gps: "", dilemma: "", starr: "", rugzak: "",
+  privilege: "", handelenStap: "", kaart: "", gps: "", dilemma: "", starr: "", rugzak: "",
 };
 
 const MICRO_JOURNAL_LABELS = {
   privilege: "het privilege wiel",
+  handelenStap: "mijn eerste kleine stap (privilege wiel)",
   kaart: "De Kaart",
   gps: "De GPS",
   dilemma: "De Route",
@@ -581,74 +587,141 @@ function SessionCodeBar({ groupCode, age, saveStatus, onReset }) {
 }
 
 // ── Privilege Wiel Data ────────────────────────────────────────
+// Assen en teksten gelijk aan wheel-of-privilege (src/data/axesSelf.js). Theoretische basis: Crenshaw (1989), McIntosh (1989), Luyendijk (2022). Bij wijzigingen daar, hier gelijk trekken.
 
 const WHEEL_SEGMENTS = [
   { id:"opleiding", label:"Opleiding", icon:"🎓",
-    desc:"Deze as gaat over opleidingskapitaal en toegang tot formele kansen.",
-    inside:"Universiteit / HBO+",
-    middle:"MBO / HAVO",
-    outside:"Basisonderwijs / VSO" },
-  { id:"huisvesting", label:"Huisvesting", icon:"🏘️",
-    desc:"Deze as kijkt naar woonzekerheid, woonkwaliteit en eigendom.",
-    inside:"Koopwoning (Vrijstaand/Stad)",
-    middle:"Huurwoning (Sector)",
-    outside:"Sociale huur / Onzeker" },
-  { id:"sociaal_milieu", label:"Sociaal Milieu", icon:"👥",
-    desc:"Deze as gaat over netwerkpositie, culturele codes en sociaal kapitaal.",
-    inside:"Gevestigde Bovenlaag",
-    middle:"Middenklasse",
-    outside:"Arbeidersmilieu" },
-  { id:"huidskleur", label:"Huidskleur", icon:"🌍",
-    desc:"Deze as gaat over hoe huidskleur iemands behandeling in systemen kan beïnvloeden.",
-    inside:"Wit",
-    middle:"Lichte tinten",
-    outside:"Bruin / Donker" },
+    desc:"Je eigen formele opleiding, niet die van je ouders.",
+    instructie:"Kies wat het beste past bij je hoogst afgeronde opleiding.",
+    inside:"Hbo of wo afgerond",
+    middle:"Mbo 3-4 of havo/vwo",
+    outside:"Vmbo, mbo 1-2, praktijkonderwijs of geen diploma" },
+  { id:"klasse", label:"Klasse", icon:"🏘️",
+    desc:"Sociaaleconomische klasse: de financiële ruimte waarin je opgroeide, ook woning en omgeving, niet alleen je huidige inkomen.",
+    instructie:"Kies wat het beste past bij je achtergrond.",
+    inside:"Ik groeide op met financiële zekerheid: eigen woning en ruimte voor onverwachte uitgaven",
+    middle:"Ik groeide op met voldoende middelen, zonder grote buffer",
+    outside:"Ik groeide op met weinig financiële ruimte; geldzorgen hoorden erbij" },
+  { id:"ouders", label:"Ouders", icon:"👪",
+    desc:"De hoogste opleiding van je ouders of verzorgers, voor zover je die kent. Geld en woning horen bij Klasse.",
+    instructie:"Kies wat het beste past bij de hoogst opgeleide ouder of verzorger.",
+    inside:"Minstens één ouder of verzorger had hoger onderwijs afgerond (hbo of wo)",
+    middle:"Mijn ouders of verzorgers hadden mbo 3-4 of havo/vwo als hoogste opleiding",
+    outside:"Mijn ouders of verzorgers hadden vmbo, mbo 1-2, praktijkonderwijs of geen diploma" },
+  { id:"etniciteit", label:"Etniciteit", icon:"🌍",
+    desc:"Etniciteit en huidskleur: hoe je in de samenleving gelezen wordt, niet je paspoort (dat staat bij Paspoort). Machtsverschillen tussen witte Nederlanders onderling komen terug bij Klasse, Ouders, Opleiding en Taal.",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Ik word vanzelf als 'gewoon Nederlands' gezien",
+    middle:"Ik word soms als 'anders' gezien",
+    outside:"Ik word vaak of structureel als 'anders' gezien vanwege mijn uiterlijk" },
   { id:"gender", label:"Gender", icon:"⚧",
     desc:"Deze as gaat over gendernormen en hoe die toegang en veiligheid beïnvloeden.",
-    inside:"Cis-Man",
-    middle:"Cis-Vrouw",
-    outside:"Trans / Non-binair" },
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Ik word als man gezien en behandeld",
+    middle:"Mijn gender wijkt af van de norm, maar dat belemmert zelden",
+    outside:"Ik word vaak of structureel anders behandeld vanwege mijn gender (bijv. vrouw, non-binair of transgender)" },
   { id:"seksualiteit", label:"Seksualiteit", icon:"🏳️‍🌈",
-    desc:"Deze as gaat over heteronormativiteit en sociale acceptatie.",
-    inside:"Heteroseksueel",
-    middle:"Homo / Lesbisch",
-    outside:"LHBTQ+ Overig" },
-  { id:"immigratie", label:"Immigratie", icon:"🧳",
-    desc:"Deze as gaat over migratieachtergrond en ervaren institutionele drempels.",
-    inside:"In NL geboren (ouders ook)",
-    middle:"2e Generatie",
-    outside:"Zelf naar NL gekomen" },
+    desc:"Deze as gaat over hoe vanzelfsprekend je relatie of gezinssituatie in je omgeving is. Voorbeelden van niet-heteroseksuele oriëntaties: homo, lesbisch, bi, pan, queer.",
+    instructie:"Denk aan: waar hoor je zelf bij?",
+    inside:"Heteroseksueel; ik hoef mijn relatie zelden te verantwoorden",
+    middle:"Niet hetero; acceptatie, maar niet altijd vanzelfsprekend",
+    outside:"Niet hetero; ik ervaar vaak uitsluiting of verberg het" },
+  { id:"religie", label:"Religie", icon:"🕊️",
+    desc:"Religie en levensbeschouwing: wiens feestdagen, gewoonten en vanzelfsprekendheden in jouw omgeving de norm zijn. Een meerderheid van de Nederlanders is niet-religieus.",
+    instructie:"Denk aan: waar hoor je zelf bij?",
+    inside:"Geen religie, atheïst, agnost of christelijk (kerkelijk of cultureel)",
+    middle:"Een religie of levensbeschouwing die in mijn omgeving soms opvalt of uitleg vraagt",
+    outside:"Een religie of levensbeschouwing die in mijn omgeving vaak bevraagd wordt of tot nadeel leidt (bijvoorbeeld moslim of joods)" },
   { id:"taal", label:"Taal", icon:"💬",
-    desc:"Deze as gaat over taalvoorsprong in onderwijs, werk en instanties.",
-    inside:"NL / Engels (Moedertaal)",
-    middle:"NL als tweede taal",
-    outside:"Anderstalig" },
-  { id:"woonregio", label:"Woonregio", icon:"🗺️",
-    desc:"Deze as kijkt naar regionale toegang tot voorzieningen en kansen.",
-    inside:"Stedelijk / Grote stad",
-    middle:"Middelgrote stad",
-    outside:"Platteland / Krimp" },
+    desc:"Deze as gaat over je moedertaal. Een accent kan ook meetellen.",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Nederlands is mijn moedertaal",
+    middle:"Ik spreek Nederlands vloeiend, maar het is niet mijn moedertaal",
+    outside:"Nederlands is niet mijn moedertaal; ik doe vaak extra moeite" },
+  { id:"gezondheid", label:"Gezondheid", icon:"♿",
+    desc:"Gezondheid en lichamelijke beperking. Ook onzichtbare kenmerken tellen mee; kies wat in de praktijk voor jou merkbaar is.",
+    instructie:"Denk aan: hoe word je meestal gezien en behandeld?",
+    inside:"Geen beperking die mijn dagelijks functioneren raakt",
+    middle:"Beperking die soms impact heeft",
+    outside:"Beperking die mijn toegang regelmatig beperkt" },
   { id:"neurodiversiteit", label:"Neurodiversiteit", icon:"🧠",
     desc:"Deze as gaat over aansluiting tussen neuroprofiel en maatschappelijke normen.",
-    inside:"Neurotypisch",
-    middle:"Enige divergentie",
-    outside:"Sterk neurodivergent" },
-  { id:"beperking", label:"Beperking", icon:"♿",
-    desc:"Deze as gaat over fysieke/mentale toegankelijkheid en meedoen.",
-    inside:"Geen beperking",
-    middle:"Lichte beperking",
-    outside:"Ernstige beperking" },
-  { id:"vermogen", label:"Vermogen", icon:"💶",
-    desc:"Deze as gaat over financiële buffers en economische handelingsruimte.",
-    inside:"Rijk / Vermogend",
-    middle:"Modaal inkomen",
-    outside:"Minimum / Schulden" },
-  { id:"lichaamsbouw", label:"Lichaamsbouw", icon:"🧍",
-    desc:"Deze as kijkt naar normbeelden rond lichaam en sociale waardering.",
-    inside:"Slank / Atletisch",
-    middle:"Gemiddeld",
-    outside:"Groter lichaam dan de norm" },
+    instructie:"Denk aan: waar hoor je zelf bij?",
+    inside:"Mijn denken en leren sluit aan bij de norm",
+    middle:"Enige divergentie; soms extra aanpassing",
+    outside:"Structureel neurodivergent; aanpassingen komen niet vanzelf" },
+  { id:"migratie", label:"Paspoort", icon:"🛂",
+    desc:"Paspoort en verblijfsstatus: wat je paspoort je toestaat (reizen, wonen, werken, zekerheid), niet je culturele achtergrond.",
+    instructie:"Denk aan: welke deuren opent of sluit jouw paspoort?",
+    inside:"Mijn paspoort opent veel deuren",
+    middle:"Sterk paspoort, maar ik merk soms extra drempels",
+    outside:"Mijn paspoort of verblijfsstatus beperkt wat ik kan" },
 ];
+
+const BRONNEN_MACHTSKRUISING_APA = [
+  "Centraal Bureau voor de Statistiek. (2020, 21 december). Meerderheid Nederlandse bevolking behoort niet tot religieuze groep. https://www.cbs.nl/nl-nl/nieuws/2020/51/meerderheid-nederlandse-bevolking-behoort-niet-tot-religieuze-groep",
+  "Centraal Bureau voor de Statistiek. (2022, juli). CBS introduceert nieuwe indeling bevolking naar herkomst. https://www.cbs.nl/nl-nl/nieuws/2022/07/cbs-introduceert-nieuwe-indeling-bevolking-naar-herkomst",
+  "Crenshaw, K. (1989). Demarginalizing the intersection of race and sex: A Black feminist critique of antidiscrimination doctrine, feminist theory and antiracist politics. University of Chicago Legal Forum, 1989(1), 139–167.",
+  "Luyendijk, J. (2022). De zeven vinkjes: Hoe mannen zoals ik de samenleving domineren. Pluim.",
+  "McIntosh, P. (1989). White privilege: Unpacking the invisible knapsack. Peace and Freedom, July/August, 10–12.",
+];
+
+const BRONNEN_MACHTSKRUISING_LI_STYLE = {
+  fontSize: 11,
+  color: "#64748b",
+  lineHeight: 1.65,
+  marginBottom: 8,
+  paddingLeft: "1.5em",
+  textIndent: "-1.5em",
+  wordBreak: "break-word",
+};
+
+function bronUrlFromApaLine(line) {
+  const match = line.match(/(https:\/\/\S+)$/);
+  return match ? match[1] : null;
+}
+
+function MachtskruisingBronnenBlok({ marginTop = 12 }) {
+  const items = [
+    <>
+      Centraal Bureau voor de Statistiek. (2020, 21 december).{" "}
+      <em>Meerderheid Nederlandse bevolking behoort niet tot religieuze groep.</em>{" "}
+      {bronUrlFromApaLine(BRONNEN_MACHTSKRUISING_APA[0])}
+    </>,
+    <>
+      Centraal Bureau voor de Statistiek. (2022, juli).{" "}
+      <em>CBS introduceert nieuwe indeling bevolking naar herkomst.</em>{" "}
+      {bronUrlFromApaLine(BRONNEN_MACHTSKRUISING_APA[1])}
+    </>,
+    <>
+      Crenshaw, K. (1989). Demarginalizing the intersection of race and sex: A Black feminist critique of
+      antidiscrimination doctrine, feminist theory and antiracist politics.{" "}
+      <em>University of Chicago Legal Forum</em>, 1989(1), 139–167.
+    </>,
+    <>
+      Luyendijk, J. (2022). <em>De zeven vinkjes: Hoe mannen zoals ik de samenleving domineren.</em> <em>Pluim</em>.
+    </>,
+    <>
+      McIntosh, P. (1989). White privilege: Unpacking the invisible knapsack. <em>Peace and Freedom</em>,
+      July/August, 10–12.
+    </>,
+  ];
+
+  return (
+    <details style={{ marginTop, fontFamily: FONT }}>
+      <summary style={{ fontSize: 12, fontWeight: 700, color: "#64748b", cursor: "pointer", listStyle: "none" }}>
+        Bronnen
+      </summary>
+      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0" }}>
+        {items.map((content, i) => (
+          <li key={BRONNEN_MACHTSKRUISING_APA[i]} style={BRONNEN_MACHTSKRUISING_LI_STYLE}>
+            {content}
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 // ── Micro components ───────────────────────────────────────────
 
@@ -711,7 +784,66 @@ function PBar({step,pct,onStepClick}){
 
 // ── Privilege Wiel Component ───────────────────────────────────
 
-function PrivilegeWheel({onComplete}){
+function PrivilegeHandelenBlok({ selected, handelenStap, onHandelenStapChange }) {
+  const profielKey = useMemo(
+    () => computeHandelenProfiel(selected, WHEEL_SEGMENTS),
+    [selected]
+  );
+  const profiel = HANDELEN_PROFIELEN[profielKey];
+  if (!profiel) return null;
+
+  return (
+    <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #e2e8f0" }}>
+      <h3 style={{ fontWeight: 800, fontSize: 16, margin: "0 0 10px", textAlign: "center", color: "#334155" }}>
+        {HANDELEN_KOP}
+      </h3>
+      <p style={{ fontSize: 12, fontStyle: "italic", color: "#64748b", lineHeight: 1.7, margin: "0 0 14px" }}>
+        {profiel.inleiding}
+      </p>
+      <p style={{ fontWeight: 800, fontSize: 14, color: TEAL, margin: "0 0 12px" }}>{profiel.titel}</p>
+      {profiel.acties.map((actie) => {
+        const badge = FASE_BADGE[actie.fase] || FASE_BADGE.Handelen;
+        return (
+          <div key={actie.tekst} style={{ marginBottom: 12 }}>
+            <span style={{
+              display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: 0.6,
+              textTransform: "uppercase", padding: "2px 8px", borderRadius: 6, marginBottom: 4,
+              background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,
+            }}>{actie.fase}</span>
+            <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.65, margin: 0 }}>{actie.tekst}</p>
+          </div>
+        );
+      })}
+      <p style={{ fontWeight: 800, fontSize: 13, color: "#334155", margin: "16px 0 10px" }}>Reflectie</p>
+      {profiel.reflectievragen.map((v) => {
+        const badge = FASE_BADGE[v.fase] || FASE_BADGE.Volhouden;
+        return (
+          <div key={v.tekst} style={{ marginBottom: 12 }}>
+            <span style={{
+              display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: 0.6,
+              textTransform: "uppercase", padding: "2px 8px", borderRadius: 6, marginBottom: 4,
+              background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,
+            }}>{v.fase}</span>
+            <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.65, margin: 0 }}>{v.tekst}</p>
+          </div>
+        );
+      })}
+      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", margin: "16px 0 8px" }}>
+        Mijn eerste kleine stap (optioneel)
+      </label>
+      <input
+        type="text"
+        value={handelenStap}
+        onChange={(e) => onHandelenStapChange(e.target.value)}
+        maxLength={200}
+        placeholder="Bijv. ik vraag iemand om mee te kijken…"
+        style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: FONT, outline: "none" }}
+      />
+    </div>
+  );
+}
+
+function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
   const [selected, setSelected] = useState({}); // id -> "inside" | "middle" | "outside" | null
   const [activeInfo, setActiveInfo] = useState(null);
   const [showIntro, setShowIntro] = useState(true);
@@ -762,7 +894,7 @@ function PrivilegeWheel({onComplete}){
             <p style={{color:"rgba(255,255,255,.8)",fontSize:13,marginTop:8,lineHeight:1.7}}>Voordat je aan de reis begint, sta je even stil bij jezelf.</p>
           </div>
           <div style={{padding:"24px 28px"}}>
-            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel laat dertien kenmerken zien, zoals opleiding, taal en gezondheid. Bij elk kenmerk kijk je waar jij staat: dichter bij het centrum, in het midden of meer aan de rand.</p>
+            <p style={{fontSize:14,color:"#334155",lineHeight:1.8,marginBottom:16}}>Dit wiel laat elf kenmerken zien, zoals opleiding, taal en gezondheid. Bij elk kenmerk kijk je waar jij staat: dichter bij het centrum, in het midden of meer aan de rand.</p>
             <div style={{background:TEAL_LIGHT,borderRadius:12,border:`1px solid ${TEAL}40`,padding:"14px 18px",marginBottom:20}}>
               <p style={{fontSize:13,color:"#1a5c46",lineHeight:1.7,margin:0}}>
                 <strong>Wat je gaat doen:</strong> Klik per segment op de positie die het meest op jou van toepassing is. Er zijn geen goede of foute antwoorden — dit is een persoonlijk reflectiemoment.
@@ -770,7 +902,8 @@ function PrivilegeWheel({onComplete}){
             </div>
             <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px",marginBottom:20}}>
               <h3 style={{fontSize:14,fontWeight:800,color:"#334155",margin:"0 0 8px",letterSpacing:-.2}}>Waarom deze onderwerpen?</h3>
-              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op een bekend model uit diversiteits- en inclusie-educatie. Het gebruikt deze dertien kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op het denken over intersectionaliteit (Crenshaw, 1989) en over privilege als onzichtbaar voordeel (McIntosh, 1989), en sluit aan bij de beschrijving van dominante posities in <em>De zeven vinkjes</em> (Luyendijk, 2022). Het gebruikt deze elf kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+              <MachtskruisingBronnenBlok marginTop={14} />
             </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
               <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet bewaard. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk. Een onderdeel overslaan mag altijd — je bent nergens toe verplicht. Roept een onderwerp iets bij je op waar je met iemand over wilt praten? Neem contact op met {MENTOR_CONTACT}.</p>
@@ -827,6 +960,7 @@ function PrivilegeWheel({onComplete}){
           <span style={{fontSize:12,fontWeight:700,color:TEAL}}>{answeredCount}/{WHEEL_SEGMENTS.length}</span>
         </div>
         <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie: <strong>machtscentrum</strong>, <strong>middenzone</strong> of <strong>marginale zone</strong>.</p>
+        <MachtskruisingBronnenBlok marginTop={12} />
       </div>
 
       <div className="mm-privilege-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:16}}>
@@ -897,6 +1031,11 @@ function PrivilegeWheel({onComplete}){
                 <div style={{fontSize:24,marginBottom:6}}>{activeSegment.icon}</div>
                 <p style={{fontWeight:800,fontSize:14,color:TEAL,margin:"0 0 8px"}}>{activeSegment.label}</p>
                 <p style={{fontSize:12,color:"#334155",lineHeight:1.7,margin:0}}>{activeSegment.desc}</p>
+                {activeSegment.instructie && (
+                  <p style={{ fontSize: 11, fontStyle: "italic", color: "#64748b", lineHeight: 1.6, margin: "10px 0 0" }}>
+                    {activeSegment.instructie}
+                  </p>
+                )}
               </div>
               <p style={{fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,margin:"4px 0 2px"}}>Jouw positie:</p>
               <button onClick={()=>toggle(activeSegment.id,"inside")}
@@ -1002,6 +1141,12 @@ function PrivilegeWheel({onComplete}){
               </p>
             </div>
           </div>
+          <PrivilegeHandelenBlok
+            selected={selected}
+            handelenStap={handelenStap || ""}
+            onHandelenStapChange={onHandelenStapChange}
+          />
+          <MachtskruisingBronnenBlok marginTop={16} />
         </div>
       )}
 
@@ -2268,7 +2413,11 @@ export default function MoralMaps(){
         {/* P0 — Privilege Wiel */}
         {phase===0 && (
           <>
-            <PrivilegeWheel onComplete={()=>{setPhase(1);persistSession("phase_1",{phase:1,screen:"app"});}}/>
+            <PrivilegeWheel
+              handelenStap={microJournal.handelenStap}
+              onHandelenStapChange={(v) => setJournalKey("handelenStap", v)}
+              onComplete={()=>{setPhase(1);persistSession("phase_1",{phase:1,screen:"app"});}}
+            />
             <MicroJournalBox journalKey="privilege" value={microJournal.privilege} onChange={(v)=>setJournalKey("privilege",v)}/>
           </>
         )}
