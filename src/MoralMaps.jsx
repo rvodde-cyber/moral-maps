@@ -658,6 +658,71 @@ const WHEEL_SEGMENTS = [
     outside:"Mijn paspoort of verblijfsstatus beperkt wat ik kan" },
 ];
 
+const BRONNEN_MACHTSKRUISING_APA = [
+  "Centraal Bureau voor de Statistiek. (2020, 21 december). Meerderheid Nederlandse bevolking behoort niet tot religieuze groep. https://www.cbs.nl/nl-nl/nieuws/2020/51/meerderheid-nederlandse-bevolking-behoort-niet-tot-religieuze-groep",
+  "Centraal Bureau voor de Statistiek. (2022, juli). CBS introduceert nieuwe indeling bevolking naar herkomst. https://www.cbs.nl/nl-nl/nieuws/2022/07/cbs-introduceert-nieuwe-indeling-bevolking-naar-herkomst",
+  "Crenshaw, K. (1989). Demarginalizing the intersection of race and sex: A Black feminist critique of antidiscrimination doctrine, feminist theory and antiracist politics. University of Chicago Legal Forum, 1989(1), 139–167.",
+  "Luyendijk, J. (2022). De zeven vinkjes: Hoe mannen zoals ik de samenleving domineren. Pluim.",
+  "McIntosh, P. (1989). White privilege: Unpacking the invisible knapsack. Peace and Freedom, July/August, 10–12.",
+];
+
+const BRONNEN_MACHTSKRUISING_LI_STYLE = {
+  fontSize: 11,
+  color: "#64748b",
+  lineHeight: 1.65,
+  marginBottom: 8,
+  paddingLeft: "1.5em",
+  textIndent: "-1.5em",
+  wordBreak: "break-word",
+};
+
+function bronUrlFromApaLine(line) {
+  const match = line.match(/(https:\/\/\S+)$/);
+  return match ? match[1] : null;
+}
+
+function MachtskruisingBronnenBlok({ marginTop = 12 }) {
+  const items = [
+    <>
+      Centraal Bureau voor de Statistiek. (2020, 21 december).{" "}
+      <em>Meerderheid Nederlandse bevolking behoort niet tot religieuze groep.</em>{" "}
+      {bronUrlFromApaLine(BRONNEN_MACHTSKRUISING_APA[0])}
+    </>,
+    <>
+      Centraal Bureau voor de Statistiek. (2022, juli).{" "}
+      <em>CBS introduceert nieuwe indeling bevolking naar herkomst.</em>{" "}
+      {bronUrlFromApaLine(BRONNEN_MACHTSKRUISING_APA[1])}
+    </>,
+    <>
+      Crenshaw, K. (1989). Demarginalizing the intersection of race and sex: A Black feminist critique of
+      antidiscrimination doctrine, feminist theory and antiracist politics.{" "}
+      <em>University of Chicago Legal Forum</em>, 1989(1), 139–167.
+    </>,
+    <>
+      Luyendijk, J. (2022). <em>De zeven vinkjes: Hoe mannen zoals ik de samenleving domineren.</em> <em>Pluim</em>.
+    </>,
+    <>
+      McIntosh, P. (1989). White privilege: Unpacking the invisible knapsack. <em>Peace and Freedom</em>,
+      July/August, 10–12.
+    </>,
+  ];
+
+  return (
+    <details style={{ marginTop, fontFamily: FONT }}>
+      <summary style={{ fontSize: 12, fontWeight: 700, color: "#64748b", cursor: "pointer", listStyle: "none" }}>
+        Bronnen
+      </summary>
+      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0" }}>
+        {items.map((content, i) => (
+          <li key={BRONNEN_MACHTSKRUISING_APA[i]} style={BRONNEN_MACHTSKRUISING_LI_STYLE}>
+            {content}
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
 // ── Micro components ───────────────────────────────────────────
 
 function Dot({color,size=9}){
@@ -837,7 +902,8 @@ function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
             </div>
             <div style={{background:"#f8fafc",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px",marginBottom:20}}>
               <h3 style={{fontSize:14,fontWeight:800,color:"#334155",margin:"0 0 8px",letterSpacing:-.2}}>Waarom deze onderwerpen?</h3>
-              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op een bekend model uit diversiteits- en inclusie-educatie. Het gebruikt deze elf kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+              <p style={{fontSize:13,color:"#475569",lineHeight:1.7,margin:0}}>Dit wiel is gebaseerd op het denken over intersectionaliteit (Crenshaw, 1989) en over privilege als onzichtbaar voordeel (McIntosh, 1989), en sluit aan bij de beschrijving van dominante posities in <em>De zeven vinkjes</em> (Luyendijk, 2022). Het gebruikt deze elf kenmerken omdat ze aantoonbaar invloed hebben op hoeveel toegang, ruimte en gehoor iemand in de samenleving krijgt. Dat is geen waardeoordeel over jou, en geen wedstrijd wie het moeilijker heeft gehad. Het doel is bewustwording: als (aankomend) professional werk je met mensen die vanuit een andere positie naar de wereld kijken dan jij. Dit wiel helpt je zien vanuit welke positie jíj kijkt, zodat je je eigen blinde vlekken beter herkent.</p>
+              <MachtskruisingBronnenBlok marginTop={14} />
             </div>
             <div style={{background:"#f8fafc",borderRadius:10,border:"1px solid #e2e8f0",padding:"12px 16px",marginBottom:24}}>
               <p style={{fontSize:12,color:"#64748b",lineHeight:1.6,margin:0}}>🔒 <strong>Anoniem:</strong> Jouw keuzes in dit scherm worden niet bewaard. Het wiel dient alleen als bewustwordingsmoment voor jou persoonlijk. Een onderdeel overslaan mag altijd — je bent nergens toe verplicht. Roept een onderwerp iets bij je op waar je met iemand over wilt praten? Neem contact op met {MENTOR_CONTACT}.</p>
@@ -894,6 +960,7 @@ function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
           <span style={{fontSize:12,fontWeight:700,color:TEAL}}>{answeredCount}/{WHEEL_SEGMENTS.length}</span>
         </div>
         <p style={{fontSize:12,color:"#64748b",margin:0}}>Klik per segment op jouw positie: <strong>machtscentrum</strong>, <strong>middenzone</strong> of <strong>marginale zone</strong>.</p>
+        <MachtskruisingBronnenBlok marginTop={12} />
       </div>
 
       <div className="mm-privilege-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:16}}>
@@ -1079,6 +1146,7 @@ function PrivilegeWheel({ onComplete, handelenStap, onHandelenStapChange }) {
             handelenStap={handelenStap || ""}
             onHandelenStapChange={onHandelenStapChange}
           />
+          <MachtskruisingBronnenBlok marginTop={16} />
         </div>
       )}
 
