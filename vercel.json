@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://moral-maps-2.vercel.app/",
+      "permanent": false
+    }
+  ]
+}
